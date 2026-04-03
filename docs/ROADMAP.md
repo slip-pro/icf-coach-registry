@@ -1,9 +1,9 @@
 # Roadmap: ICF Cyprus Coach Registry
 
-## Current Stage: Pre-development
+## Current Stage: Phase 1 — MVP in progress
 
-Concept approved (v4), HTML mockup of coach card exists, brandbook available.
-No code yet. WordPress access pending.
+G-001 (Coach Catalog) delivered. G-002 (Registration Flow) next.
+WordPress access still pending for final deployment.
 
 ---
 

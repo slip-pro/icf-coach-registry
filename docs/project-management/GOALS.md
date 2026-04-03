@@ -2,30 +2,7 @@
 
 ## Active Goals
 
-### G-001: MVP Coach Catalog
-**Status**: In progress (Sprint 1)
-**Phase**: 1
-**Started**: 2026-04-03
-
-**Context**: ICF Cyprus website has a static coach list with no filtering or search. Clients can't find the right coach efficiently. This goal delivers the core catalog — the foundation everything else builds on (registration, AI matching, analytics).
-
-**Acceptance Criteria**:
-- [ ] Catalog displays coach cards from Google Sheets data
-- [ ] All 5 filters work without page reload
-- [ ] Contact buttons open messenger/email with pre-filled text
-- [ ] Works on mobile (iOS Safari, Android Chrome)
-- [ ] UI available in 3 languages
-
-**Sprint Decomposition**:
-- [ ] T1: DESIGN.md + UI spec (@designer)
-- [ ] T2: Scaffolding + i18n module
-- [ ] T3: Google Sheets integration (F-005)
-- [ ] T4: Coach Card component (F-001)
-- [ ] T5: Filter Panel + Responsive Layout (F-002, F-006)
-- [ ] T6: Contact Buttons (F-003)
-- [ ] T7: WP Embedding + final bundle (F-007)
-
-**Notes**: `docs/notes/G-001.md`
+### _(next goal: G-002 — Coach Registration Flow)_
 
 ---
 
@@ -63,10 +40,39 @@
 
 ## Achieved Goals
 
-_(none yet)_
+### G-001: MVP Coach Catalog
+**Status**: Achieved
+**Phase**: 1
+**Completed**: 2026-04-03
+**Commit**: 884b48b
+
+**Acceptance Criteria**:
+- [x] Catalog displays coach cards from Google Sheets data
+- [x] All 5 filters work without page reload
+- [x] Contact buttons open messenger/email with pre-filled text
+- [x] Works on mobile (iOS Safari, Android Chrome)
+- [x] UI available in 3 languages
+
+**Notes**: `docs/notes/G-001.md`
 
 ---
 
 ## Technical Debt
 
-_(none yet — project hasn't started)_
+### TD-001: ARIA keyboard navigation in filter dropdown
+**Problem**: Specialization dropdown uses `role="listbox"` but lacks arrow key navigation between options
+**Fix**: Implement arrow key navigation or change to `role="group"`
+**Priority**: Medium
+**Source**: G-001 Sprint 1 (audit finding)
+
+### TD-002: WhatsApp number country code assumption
+**Problem**: WhatsApp normalization assumes Cyprus prefix (+357) for numbers starting with 0
+**Fix**: Document assumption or require full international format
+**Priority**: Low
+**Source**: G-001 Sprint 1 (audit finding)
+
+### TD-003: CSP compatibility for inline styles
+**Problem**: Avatar placeholders use inline `style` attribute for dynamic colors — blocked by strict CSP
+**Fix**: Move dynamic color to CSS variable via JS `.style` property
+**Priority**: Low
+**Source**: G-001 Sprint 1 (audit finding)

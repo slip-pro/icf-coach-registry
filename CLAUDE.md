@@ -56,5 +56,12 @@ Replaces the current static HTML list with a filterable catalog + AI matching as
 ## Commands
 
 ```bash
-# TBD — will be defined when src/ is created
+# Development — open src/index.html in browser (no build step needed)
+open src/index.html
+
+# Or use a local server (for proper ES module loading):
+npx serve src
+# Then open http://localhost:3000
+
+# No lint/test/build commands yet — vanilla JS, no tooling
 ```
