@@ -1,0 +1,264 @@
+/**
+ * ICF Registry — Google Sheets Data Fetcher
+ *
+ * Fetches coach data from a published Google Sheet (CSV export).
+ * Falls back to local mock data in development.
+ *
+ * Usage:
+ *   import { fetchCoaches } from './sheets.js';
+ *   const coaches = await fetchCoaches('SHEET_ID');
+ *   // or for dev: const coaches = await fetchCoaches();
+ */
+
+/**
+ * @typedef {Object} Coach
+ * @property {string} id
+ * @property {string} name
+ * @property {string} photo
+ * @property {string[]} specializations
+ * @property {string} icfLevel — 'ACC' | 'PCC' | 'MCC' | 'Member'
+ * @property {string[]} languages
+ * @property {string} format — 'online' | 'offline' | 'both'
+ * @property {number} priceMin
+ * @property {number} priceMax
+ * @property {string} bio
+ * @property {string} email
+ * @property {string} whatsapp
+ * @property {string} telegram
+ * @property {string} instagram
+ * @property {string} linkedin
+ * @property {string} facebook
+ */
+
+/**
+ * Build the public CSV export URL for a Google Sheet.
+ * @param {string} sheetId
+ * @returns {string}
+ */
+function buildSheetURL(sheetId) {
+  return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
+}
+
+/**
+ * Parse a CSV string into an array of string arrays.
+ * Handles quoted fields with commas and newlines.
+ * @param {string} csv
+ * @returns {string[][]}
+ */
+function parseCSV(csv) {
+  const rows = [];
+  let current = '';
+  let inQuotes = false;
+  /** @type {string[]} */
+  let row = [];
+
+  for (let i = 0; i < csv.length; i++) {
+    const char = csv[i];
+    const next = csv[i + 1];
+
+    if (inQuotes) {
+      if (char === '"' && next === '"') {
+        // Escaped quote
+        current += '"';
+        i++;
+      } else if (char === '"') {
+        inQuotes = false;
+      } else {
+        current += char;
+      }
+    } else {
+      if (char === '"') {
+        inQuotes = true;
+      } else if (char === ',') {
+        row.push(current.trim());
+        current = '';
+      } else if (char === '\n' || (char === '\r' && next === '\n')) {
+        row.push(current.trim());
+        current = '';
+        if (row.length > 1 || row[0] !== '') {
+          rows.push(row);
+        }
+        row = [];
+        if (char === '\r') i++;
+      } else {
+        current += char;
+      }
+    }
+  }
+
+  // Last field / row
+  if (current || row.length > 0) {
+    row.push(current.trim());
+    rows.push(row);
+  }
+
+  return rows;
+}
+
+/**
+ * Split a delimited string (comma or semicolon separated)
+ * into a trimmed array, filtering empty strings.
+ * @param {string} value
+ * @returns {string[]}
+ */
+function splitList(value) {
+  if (!value) return [];
+  return value
+    .split(/[,;]/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Normalize a format string to 'online' | 'offline' | 'both'.
+ * @param {string} value
+ * @returns {string}
+ */
+function normalizeFormat(value) {
+  const lower = (value || '').toLowerCase();
+  if (lower.includes('both') || (lower.includes('online') && lower.includes('offline'))) {
+    return 'both';
+  }
+  if (lower.includes('offline')) return 'offline';
+  return 'online';
+}
+
+/**
+ * Normalize ICF level string to standard values.
+ * @param {string} value
+ * @returns {string}
+ */
+function normalizeLevel(value) {
+  const upper = (value || '').toUpperCase();
+  if (upper.includes('MCC')) return 'MCC';
+  if (upper.includes('PCC')) return 'PCC';
+  if (upper.includes('ACC')) return 'ACC';
+  return 'Member';
+}
+
+/**
+ * Map CSV header names to normalized keys.
+ * Supports both English column names and common variants.
+ * @type {Record<string, string>}
+ */
+const HEADER_MAP = {
+  // English
+  'id': 'id',
+  'name': 'name',
+  'photo': 'photo',
+  'specializations': 'specializations',
+  'specialization': 'specializations',
+  'icf level': 'icfLevel',
+  'icflevel': 'icfLevel',
+  'level': 'icfLevel',
+  'credential': 'icfLevel',
+  'languages': 'languages',
+  'language': 'languages',
+  'format': 'format',
+  'price min': 'priceMin',
+  'pricemin': 'priceMin',
+  'price_min': 'priceMin',
+  'price max': 'priceMax',
+  'pricemax': 'priceMax',
+  'price_max': 'priceMax',
+  'price': 'priceMin',
+  'bio': 'bio',
+  'description': 'bio',
+  'about': 'bio',
+  'email': 'email',
+  'whatsapp': 'whatsapp',
+  'telegram': 'telegram',
+  'instagram': 'instagram',
+  'linkedin': 'linkedin',
+  'facebook': 'facebook',
+};
+
+/**
+ * Convert CSV rows (with header) into Coach objects.
+ * @param {string[][]} rows — first row is headers
+ * @returns {Coach[]}
+ */
+function csvToCoaches(rows) {
+  if (rows.length < 2) return [];
+
+  const headers = rows[0].map((h) => {
+    const key = h.toLowerCase().trim();
+    return HEADER_MAP[key] || key;
+  });
+
+  return rows.slice(1).map((row, index) => {
+    /** @type {Record<string, string>} */
+    const raw = {};
+    headers.forEach((header, i) => {
+      raw[header] = row[i] || '';
+    });
+
+    return {
+      id: raw.id || String(index + 1),
+      name: raw.name || '',
+      photo: raw.photo || '',
+      specializations: splitList(raw.specializations),
+      icfLevel: normalizeLevel(raw.icfLevel),
+      languages: splitList(raw.languages),
+      format: normalizeFormat(raw.format),
+      priceMin: parseInt(raw.priceMin, 10) || 0,
+      priceMax: parseInt(raw.priceMax, 10) || 0,
+      bio: raw.bio || '',
+      email: raw.email || '',
+      whatsapp: raw.whatsapp || '',
+      telegram: raw.telegram || '',
+      instagram: raw.instagram || '',
+      linkedin: raw.linkedin || '',
+      facebook: raw.facebook || '',
+    };
+  }).filter((coach) => coach.name);
+}
+
+/**
+ * Fetch coaches from a published Google Sheet.
+ * If no sheetId is provided, loads from local mock data.
+ *
+ * @param {string} [sheetId] — Google Sheet ID
+ * @returns {Promise<Coach[]>}
+ * @throws {Error} if fetch or parse fails
+ */
+export async function fetchCoaches(sheetId) {
+  if (!sheetId) {
+    return loadMockData();
+  }
+
+  const url = buildSheetURL(sheetId);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
+  let response;
+  try {
+    response = await fetch(url, { signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch sheet data: ${response.status} ${response.statusText}`
+    );
+  }
+
+  const csv = await response.text();
+  const rows = parseCSV(csv);
+  return csvToCoaches(rows);
+}
+
+/**
+ * Load mock coach data from local JSON file.
+ * Uses a path relative to the HTML entry point.
+ * @returns {Promise<Coach[]>}
+ */
+async function loadMockData() {
+  const response = await fetch('./data/mock-coaches.json');
+
+  if (!response.ok) {
+    throw new Error('Failed to load mock data');
+  }
+
+  return response.json();
+}

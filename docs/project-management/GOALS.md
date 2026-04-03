@@ -3,25 +3,29 @@
 ## Active Goals
 
 ### G-001: MVP Coach Catalog
-**Status**: Not started
+**Status**: In progress (Sprint 1)
 **Phase**: 1
-**Description**: Deliver a working interactive coach directory with filtering, contact buttons, and multilingual UI, embedded into the ICF Cyprus WordPress site.
+**Started**: 2026-04-03
 
-**Key Results**:
-- [ ] Coach card component with all profile fields
-- [ ] Filter panel (specialization, language, format, ICF level, price)
-- [ ] Contact buttons (WhatsApp, Telegram, Email with pre-filled messages)
-- [ ] Language switcher (EN / RU / EL)
-- [ ] Google Sheets integration as data source
-- [ ] Responsive design (mobile-first)
-- [ ] Embedded into WordPress page
+**Context**: ICF Cyprus website has a static coach list with no filtering or search. Clients can't find the right coach efficiently. This goal delivers the core catalog — the foundation everything else builds on (registration, AI matching, analytics).
 
 **Acceptance Criteria**:
-- Catalog displays coach cards from Google Sheets data
-- All 5 filters work without page reload
-- Contact buttons open messenger/email with pre-filled text
-- Works on mobile (iOS Safari, Android Chrome)
-- UI available in 3 languages
+- [ ] Catalog displays coach cards from Google Sheets data
+- [ ] All 5 filters work without page reload
+- [ ] Contact buttons open messenger/email with pre-filled text
+- [ ] Works on mobile (iOS Safari, Android Chrome)
+- [ ] UI available in 3 languages
+
+**Sprint Decomposition**:
+- [ ] T1: DESIGN.md + UI spec (@designer)
+- [ ] T2: Scaffolding + i18n module
+- [ ] T3: Google Sheets integration (F-005)
+- [ ] T4: Coach Card component (F-001)
+- [ ] T5: Filter Panel + Responsive Layout (F-002, F-006)
+- [ ] T6: Contact Buttons (F-003)
+- [ ] T7: WP Embedding + final bundle (F-007)
+
+**Notes**: `docs/notes/G-001.md`
 
 ---
 

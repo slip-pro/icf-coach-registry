@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ICF Cyprus Coach Registry — Development</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Widget Styles -->
+  <link rel="stylesheet" href="./styles/main.css">
+
+  <style>
+    /* Page-level reset for standalone testing only.
+       In WordPress, this is not needed — the WP theme provides its own reset. */
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: #f5f5f0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Widget container — in WP, this div is placed on the page -->
+  <div id="icf-coach-registry"></div>
+
+  <!-- Widget initialization -->
+  <script type="module">
+    import { ICFRegistry } from './js/app.js';
+
+    ICFRegistry.init({
+      // sheetId: 'YOUR_GOOGLE_SHEET_ID_HERE',
+      // Omit sheetId to use mock data during development
+    });
+  </script>
+
+</body>
+</html>
