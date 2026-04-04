@@ -961,14 +961,14 @@ export function renderRegistrationForm(container, onSubmit) {
     try {
       await onSubmit(data);
 
-      // Success state
+      // Success state — hide form and preview, show only the message
+      form.style.display = 'none';
+      const preview = container.querySelector('.icf-form__preview');
+      if (preview) preview.style.display = 'none';
       resultContainer.innerHTML = `
         <div class="icf-form__success" role="status">
           <p data-i18n="regSuccess">${esc(t('regSuccess'))}</p>
         </div>`;
-      form.reset();
-      updatePreview();
-      updateWordCount();
     } catch (err) {
       // Error state with retry
       resultContainer.innerHTML = `
