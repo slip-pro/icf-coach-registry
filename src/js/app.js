@@ -280,23 +280,9 @@ async function handleFormSubmit(formData) {
     devMode: appConfig.devMode,
   });
 
-  // Redirect to a simple success page
-  document.title = t('regSuccess');
-  document.body.innerHTML = `
-    <div style="
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      max-width: 600px;
-      margin: 80px auto;
-      padding: 40px 20px;
-      text-align: center;
-      color: #155724;
-      background: #d4edda;
-      border-radius: 16px;
-    ">
-      <p style="font-size: 18px; font-weight: 600; margin: 0 0 12px;">
-        ${esc(t('regSuccess'))}
-      </p>
-    </div>`;
+  // Redirect to success page
+  const successUrl = appConfig.successUrl || 'success.html';
+  window.location.href = successUrl;
 }
 
 /**
