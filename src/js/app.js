@@ -275,21 +275,27 @@ function renderRegistration() {
  * @returns {Promise<void>}
  */
 async function handleFormSubmit(formData) {
-  const result = await submitRegistration(formData, {
+  await submitRegistration(formData, {
     scriptUrl: appConfig.scriptUrl,
     devMode: appConfig.devMode,
   });
 
-  if (!result.success) {
-    throw new Error('Submission failed');
-  }
-
-  // Replace entire widget with success message
-  containerEl.innerHTML = `
-    <div class="icf-registry" style="padding: 60px 20px; text-align: center;">
-      <div class="icf-form__success" role="status">
-        <p data-i18n="regSuccess">${esc(t('regSuccess'))}</p>
-      </div>
+  // Redirect to a simple success page
+  document.title = t('regSuccess');
+  document.body.innerHTML = `
+    <div style="
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      max-width: 600px;
+      margin: 80px auto;
+      padding: 40px 20px;
+      text-align: center;
+      color: #155724;
+      background: #d4edda;
+      border-radius: 16px;
+    ">
+      <p style="font-size: 18px; font-weight: 600; margin: 0 0 12px;">
+        ${esc(t('regSuccess'))}
+      </p>
     </div>`;
 }
 
