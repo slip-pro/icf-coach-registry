@@ -283,6 +283,14 @@ async function handleFormSubmit(formData) {
   if (!result.success) {
     throw new Error('Submission failed');
   }
+
+  // Replace entire widget with success message
+  containerEl.innerHTML = `
+    <div class="icf-registry" style="padding: 60px 20px; text-align: center;">
+      <div class="icf-form__success" role="status">
+        <p data-i18n="regSuccess">${esc(t('regSuccess'))}</p>
+      </div>
+    </div>`;
 }
 
 /**

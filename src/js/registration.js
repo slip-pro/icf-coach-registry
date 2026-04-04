@@ -963,12 +963,6 @@ export function renderRegistrationForm(container, onSubmit) {
     try {
       await onSubmit(data);
       submitted = true;
-
-      // Success — replace entire container with confirmation
-      container.innerHTML = `
-        <div class="icf-form__success" role="status">
-          <p data-i18n="regSuccess">${esc(t('regSuccess'))}</p>
-        </div>`;
     } catch (err) {
       // Error state with retry
       resultContainer.innerHTML = `
