@@ -945,6 +945,8 @@ export function renderRegistrationForm(container, onSubmit) {
   updatePreview();
 
   // --- Submit handler ---
+  let submitted = false;
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = collectFormData(form);
@@ -960,13 +962,13 @@ export function renderRegistrationForm(container, onSubmit) {
 
     try {
       await onSubmit(data);
+      submitted = true;
 
-      // Success state — replace entire form with the message
+      // Success — replace entire container with confirmation
       container.innerHTML = `
         <div class="icf-form__success" role="status">
           <p data-i18n="regSuccess">${esc(t('regSuccess'))}</p>
         </div>`;
-      return;
     } catch (err) {
       // Error state with retry
       resultContainer.innerHTML = `
@@ -984,7 +986,6 @@ export function renderRegistrationForm(container, onSubmit) {
       );
       if (retryBtn) {
         retryBtn.addEventListener('click', () => {
-          // Disable retry button to prevent double-submit race
           retryBtn.disabled = true;
           resultContainer.innerHTML = '';
           form.dispatchEvent(new Event('submit', {
@@ -993,10 +994,12 @@ export function renderRegistrationForm(container, onSubmit) {
         });
       }
     } finally {
-      submitBtn.disabled = false;
-      submitBtn.querySelector('span').textContent =
-        t('regSubmit');
-      submitBtn.classList.remove('icf-form__submit--loading');
+      if (!submitted) {
+        submitBtn.disabled = false;
+        submitBtn.querySelector('span').textContent =
+          t('regSubmit');
+        submitBtn.classList.remove('icf-form__submit--loading');
+      }
     }
   });
 }
