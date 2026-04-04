@@ -15,7 +15,8 @@
     "telegram": "yuriz_coach",
     "instagram": "",
     "linkedin": "https://linkedin.com/in/yuriz",
-    "facebook": "https://facebook.com/yuriz.coach"
+    "facebook": "https://facebook.com/yuriz.coach",
+    "status": "approved"
   },
   {
     "id": "2",
@@ -33,7 +34,8 @@
     "telegram": "olga_coach",
     "instagram": "https://instagram.com/olga.coach",
     "linkedin": "",
-    "facebook": "https://facebook.com/olga.coach"
+    "facebook": "https://facebook.com/olga.coach",
+    "status": "approved"
   },
   {
     "id": "3",
@@ -51,7 +53,8 @@
     "telegram": "",
     "instagram": "https://instagram.com/gintare.coaching",
     "linkedin": "",
-    "facebook": "https://facebook.com/gintare.sido"
+    "facebook": "https://facebook.com/gintare.sido",
+    "status": "approved"
   },
   {
     "id": "4",
@@ -69,7 +72,8 @@
     "telegram": "",
     "instagram": "",
     "linkedin": "https://linkedin.com/in/nikosp",
-    "facebook": ""
+    "facebook": "",
+    "status": "approved"
   },
   {
     "id": "5",
@@ -87,7 +91,8 @@
     "telegram": "maria_coach",
     "instagram": "https://instagram.com/maria.coaching",
     "linkedin": "https://linkedin.com/in/mariaschneider",
-    "facebook": ""
+    "facebook": "",
+    "status": "approved"
   },
   {
     "id": "6",
@@ -105,6 +110,45 @@
     "telegram": "eleni_coaching",
     "instagram": "",
     "linkedin": "",
-    "facebook": "https://facebook.com/eleni.georgiou.coaching"
+    "facebook": "https://facebook.com/eleni.georgiou.coaching",
+    "status": "approved"
+  },
+  {
+    "id": "7",
+    "name": "Dmitry Volkov",
+    "photo": "",
+    "specializations": ["Business", "Executive"],
+    "icfLevel": "ACC",
+    "languages": ["Russian", "English"],
+    "format": "online",
+    "priceMin": 80,
+    "priceMax": 100,
+    "bio": "Helping business owners and C-level executives unlock growth through strategic thinking and accountability coaching. Background in tech startups.",
+    "email": "dmitry.v@example.com",
+    "whatsapp": "+35799887766",
+    "telegram": "dmitryv_coach",
+    "instagram": "",
+    "linkedin": "https://linkedin.com/in/dmitryvolkov",
+    "facebook": "",
+    "status": "pending"
+  },
+  {
+    "id": "8",
+    "name": "Anna Konstantinou",
+    "photo": "",
+    "specializations": ["Life", "Career"],
+    "icfLevel": "Member",
+    "languages": ["Greek", "English"],
+    "format": "both",
+    "priceMin": 40,
+    "priceMax": 60,
+    "bio": "Passionate about helping young professionals find direction and purpose. Currently completing my ICF credential pathway with a focus on career transitions.",
+    "email": "anna.k@example.com",
+    "whatsapp": "+35796223344",
+    "telegram": "",
+    "instagram": "https://instagram.com/anna.coaching",
+    "linkedin": "",
+    "facebook": "",
+    "status": "pending"
   }
 ]

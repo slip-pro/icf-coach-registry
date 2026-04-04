@@ -234,6 +234,403 @@ const dictionary = {
     ru: '\u20ac150+',
     el: '\u20ac150+',
   },
+
+  // =========================================================
+  // Registration Form
+  // =========================================================
+
+  // Section titles
+  regSectionPersonal: {
+    en: 'Personal Info',
+    ru: '\u041B\u0438\u0447\u043D\u0430\u044F \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F',
+    el: '\u03A0\u03C1\u03BF\u03C3\u03C9\u03C0\u03B9\u03BA\u03AC \u03C3\u03C4\u03BF\u03B9\u03C7\u03B5\u03AF\u03B1',
+  },
+  regSectionProfessional: {
+    en: 'Professional Info',
+    ru: '\u041F\u0440\u043E\u0444\u0435\u0441\u0441\u0438\u043E\u043D\u0430\u043B\u044C\u043D\u0430\u044F \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F',
+    el: '\u0395\u03C0\u03B1\u03B3\u03B3\u03B5\u03BB\u03BC\u03B1\u03C4\u03B9\u03BA\u03AC \u03C3\u03C4\u03BF\u03B9\u03C7\u03B5\u03AF\u03B1',
+  },
+  regSectionPricing: {
+    en: 'Pricing',
+    ru: '\u0421\u0442\u043E\u0438\u043C\u043E\u0441\u0442\u044C',
+    el: '\u03A4\u03B9\u03BC\u03BF\u03BB\u03CC\u03B3\u03B7\u03C3\u03B7',
+  },
+  regSectionAbout: {
+    en: 'About You',
+    ru: '\u041E \u0432\u0430\u0441',
+    el: '\u03A3\u03C7\u03B5\u03C4\u03B9\u03BA\u03AC \u03BC\u03B5 \u03B5\u03C3\u03AC\u03C2',
+  },
+  regSectionContact: {
+    en: 'Contact Details',
+    ru: '\u041A\u043E\u043D\u0442\u0430\u043A\u0442\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435',
+    el: '\u03A3\u03C4\u03BF\u03B9\u03C7\u03B5\u03AF\u03B1 \u03B5\u03C0\u03B9\u03BA\u03BF\u03B9\u03BD\u03C9\u03BD\u03AF\u03B1\u03C2',
+  },
+  regSectionSocial: {
+    en: 'Social Media',
+    ru: '\u0421\u043E\u0446\u0438\u0430\u043B\u044C\u043D\u044B\u0435 \u0441\u0435\u0442\u0438',
+    el: '\u039A\u03BF\u03B9\u03BD\u03C9\u03BD\u03B9\u03BA\u03AC \u03B4\u03AF\u03BA\u03C4\u03C5\u03B1',
+  },
+  regSectionIcf: {
+    en: 'ICF Verification',
+    ru: '\u0412\u0435\u0440\u0438\u0444\u0438\u043A\u0430\u0446\u0438\u044F ICF',
+    el: '\u0395\u03C0\u03B1\u03BB\u03AE\u03B8\u03B5\u03C5\u03C3\u03B7 ICF',
+  },
+
+  // Field labels
+  regLabelName: {
+    en: 'Name',
+    ru: '\u0418\u043C\u044F',
+    el: '\u038C\u03BD\u03BF\u03BC\u03B1',
+  },
+  regLabelPhoto: {
+    en: 'Photo URL',
+    ru: '\u0421\u0441\u044B\u043B\u043A\u0430 \u043D\u0430 \u0444\u043E\u0442\u043E',
+    el: 'URL \u03C6\u03C9\u03C4\u03BF\u03B3\u03C1\u03B1\u03C6\u03AF\u03B1\u03C2',
+  },
+  regLabelSpecializations: {
+    en: 'Specializations',
+    ru: '\u0421\u043F\u0435\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u0438',
+    el: '\u0395\u03B9\u03B4\u03B9\u03BA\u03B5\u03CD\u03C3\u03B5\u03B9\u03C2',
+  },
+  regLabelIcfLevel: {
+    en: 'ICF Level',
+    ru: '\u0423\u0440\u043E\u0432\u0435\u043D\u044C ICF',
+    el: '\u0395\u03C0\u03AF\u03C0\u03B5\u03B4\u03BF ICF',
+  },
+  regLabelLanguages: {
+    en: 'Languages',
+    ru: '\u042F\u0437\u044B\u043A\u0438',
+    el: '\u0393\u03BB\u03CE\u03C3\u03C3\u03B5\u03C2',
+  },
+  regLabelFormat: {
+    en: 'Format',
+    ru: '\u0424\u043E\u0440\u043C\u0430\u0442',
+    el: '\u039C\u03BF\u03C1\u03C6\u03AE',
+  },
+  regLabelPriceMin: {
+    en: 'Price Min (\u20ac)',
+    ru: '\u0426\u0435\u043D\u0430 \u043E\u0442 (\u20ac)',
+    el: '\u0395\u03BB\u03AC\u03C7\u03B9\u03C3\u03C4\u03B7 \u03C4\u03B9\u03BC\u03AE (\u20ac)',
+  },
+  regLabelPriceMax: {
+    en: 'Price Max (\u20ac)',
+    ru: '\u0426\u0435\u043D\u0430 \u0434\u043E (\u20ac)',
+    el: '\u039C\u03AD\u03B3\u03B9\u03C3\u03C4\u03B7 \u03C4\u03B9\u03BC\u03AE (\u20ac)',
+  },
+  regLabelPriceByRequest: {
+    en: 'By request',
+    ru: '\u041F\u043E \u0437\u0430\u043F\u0440\u043E\u0441\u0443',
+    el: '\u039A\u03B1\u03C4\u03CC\u03C0\u03B9\u03BD \u03B1\u03B9\u03C4\u03AE\u03BC\u03B1\u03C4\u03BF\u03C2',
+  },
+  regLabelBio: {
+    en: 'Bio',
+    ru: '\u041E \u0441\u0435\u0431\u0435',
+    el: '\u0392\u03B9\u03BF\u03B3\u03C1\u03B1\u03C6\u03B9\u03BA\u03CC',
+  },
+  regLabelEmail: {
+    en: 'Email',
+    ru: 'Email',
+    el: 'Email',
+  },
+  regLabelWhatsApp: {
+    en: 'WhatsApp',
+    ru: 'WhatsApp',
+    el: 'WhatsApp',
+  },
+  regLabelTelegram: {
+    en: 'Telegram',
+    ru: 'Telegram',
+    el: 'Telegram',
+  },
+  regLabelInstagram: {
+    en: 'Instagram',
+    ru: 'Instagram',
+    el: 'Instagram',
+  },
+  regLabelLinkedIn: {
+    en: 'LinkedIn',
+    ru: 'LinkedIn',
+    el: 'LinkedIn',
+  },
+  regLabelFacebook: {
+    en: 'Facebook',
+    ru: 'Facebook',
+    el: 'Facebook',
+  },
+  regLabelIcfMembership: {
+    en: 'ICF Membership',
+    ru: '\u0427\u043B\u0435\u043D\u0441\u0442\u0432\u043E ICF',
+    el: '\u039C\u03AD\u03BB\u03BF\u03C2 ICF',
+  },
+
+  // Placeholders
+  regPlaceholderName: {
+    en: 'Your full name',
+    ru: '\u0412\u0430\u0448\u0435 \u043F\u043E\u043B\u043D\u043E\u0435 \u0438\u043C\u044F',
+    el: '\u03A4\u03BF \u03C0\u03BB\u03AE\u03C1\u03B5\u03C2 \u03CC\u03BD\u03BF\u03BC\u03AC \u03C3\u03B1\u03C2',
+  },
+  regPlaceholderPhoto: {
+    en: 'https://...',
+    ru: 'https://...',
+    el: 'https://...',
+  },
+  regPlaceholderBio: {
+    en: 'Tell potential clients about yourself, your experience, and approach...',
+    ru: '\u0420\u0430\u0441\u0441\u043A\u0430\u0436\u0438\u0442\u0435 \u043F\u043E\u0442\u0435\u043D\u0446\u0438\u0430\u043B\u044C\u043D\u044B\u043C \u043A\u043B\u0438\u0435\u043D\u0442\u0430\u043C \u043E \u0441\u0435\u0431\u0435, \u0441\u0432\u043E\u0451\u043C \u043E\u043F\u044B\u0442\u0435 \u0438 \u043F\u043E\u0434\u0445\u043E\u0434\u0435...',
+    el: '\u03A0\u03B5\u03AF\u03C4\u03B5 \u03C3\u03C4\u03BF\u03C5\u03C2 \u03C0\u03B9\u03B8\u03B1\u03BD\u03BF\u03CD\u03C2 \u03C0\u03B5\u03BB\u03AC\u03C4\u03B5\u03C2 \u03B3\u03B9\u03B1 \u03B5\u03C3\u03AC\u03C2, \u03C4\u03B7\u03BD \u03B5\u03BC\u03C0\u03B5\u03B9\u03C1\u03AF\u03B1 \u03BA\u03B1\u03B9 \u03C4\u03B7\u03BD \u03C0\u03C1\u03BF\u03C3\u03AD\u03B3\u03B3\u03B9\u03C3\u03AE \u03C3\u03B1\u03C2...',
+  },
+  regPlaceholderEmail: {
+    en: 'your@email.com',
+    ru: 'your@email.com',
+    el: 'your@email.com',
+  },
+  regPlaceholderWhatsApp: {
+    en: '+357...',
+    ru: '+357...',
+    el: '+357...',
+  },
+  regPlaceholderTelegram: {
+    en: '@username',
+    ru: '@username',
+    el: '@username',
+  },
+  regPlaceholderInstagram: {
+    en: '@handle or URL',
+    ru: '@handle \u0438\u043B\u0438 URL',
+    el: '@handle \u03AE URL',
+  },
+  regPlaceholderLinkedIn: {
+    en: 'Profile URL',
+    ru: '\u0421\u0441\u044B\u043B\u043A\u0430 \u043D\u0430 \u043F\u0440\u043E\u0444\u0438\u043B\u044C',
+    el: 'URL \u03C0\u03C1\u03BF\u03C6\u03AF\u03BB',
+  },
+  regPlaceholderFacebook: {
+    en: 'Profile URL',
+    ru: '\u0421\u0441\u044B\u043B\u043A\u0430 \u043D\u0430 \u043F\u0440\u043E\u0444\u0438\u043B\u044C',
+    el: 'URL \u03C0\u03C1\u03BF\u03C6\u03AF\u03BB',
+  },
+  regPlaceholderIcfMembership: {
+    en: 'Membership number or email',
+    ru: '\u041D\u043E\u043C\u0435\u0440 \u0447\u043B\u0435\u043D\u0441\u0442\u0432\u0430 \u0438\u043B\u0438 email',
+    el: '\u0391\u03C1\u03B9\u03B8\u03BC\u03CC\u03C2 \u03BC\u03AD\u03BB\u03BF\u03C5\u03C2 \u03AE email',
+  },
+
+  // Photo helper text
+  regPhotoHelp: {
+    en: 'Upload your photo to Google Drive or Imgur, then paste the link here',
+    ru: '\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u0435 \u0444\u043E\u0442\u043E \u043D\u0430 Google Drive \u0438\u043B\u0438 Imgur \u0438 \u0432\u0441\u0442\u0430\u0432\u044C\u0442\u0435 \u0441\u0441\u044B\u043B\u043A\u0443 \u0441\u044E\u0434\u0430',
+    el: '\u0391\u03BD\u03B5\u03B2\u03AC\u03C3\u03C4\u03B5 \u03C4\u03B7 \u03C6\u03C9\u03C4\u03BF\u03B3\u03C1\u03B1\u03C6\u03AF\u03B1 \u03C3\u03C4\u03BF Google Drive \u03AE Imgur \u03BA\u03B1\u03B9 \u03B5\u03C0\u03B9\u03BA\u03BF\u03BB\u03BB\u03AE\u03C3\u03C4\u03B5 \u03C4\u03BF\u03BD \u03C3\u03CD\u03BD\u03B4\u03B5\u03C3\u03BC\u03BF \u03B5\u03B4\u03CE',
+  },
+
+  // Validation errors
+  regErrorRequired: {
+    en: 'This field is required',
+    ru: '\u042D\u0442\u043E \u043F\u043E\u043B\u0435 \u043E\u0431\u044F\u0437\u0430\u0442\u0435\u043B\u044C\u043D\u043E',
+    el: '\u0391\u03C5\u03C4\u03CC \u03C4\u03BF \u03C0\u03B5\u03B4\u03AF\u03BF \u03B5\u03AF\u03BD\u03B1\u03B9 \u03C5\u03C0\u03BF\u03C7\u03C1\u03B5\u03C9\u03C4\u03B9\u03BA\u03CC',
+  },
+  regErrorEmail: {
+    en: 'Please enter a valid email address',
+    ru: '\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043A\u043E\u0440\u0440\u0435\u043A\u0442\u043D\u044B\u0439 email',
+    el: '\u0395\u03B9\u03C3\u03AC\u03B3\u03B5\u03C4\u03B5 \u03BC\u03B9\u03B1 \u03AD\u03B3\u03BA\u03C5\u03C1\u03B7 \u03B4\u03B9\u03B5\u03CD\u03B8\u03C5\u03BD\u03C3\u03B7 email',
+  },
+  regErrorUrl: {
+    en: 'Please enter a valid URL (https://...)',
+    ru: '\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043A\u043E\u0440\u0440\u0435\u043A\u0442\u043D\u044B\u0439 URL (https://...)',
+    el: '\u0395\u03B9\u03C3\u03AC\u03B3\u03B5\u03C4\u03B5 \u03AD\u03B3\u03BA\u03C5\u03C1\u03BF URL (https://...)',
+  },
+  regErrorSelectOne: {
+    en: 'Please select at least one option',
+    ru: '\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0445\u043E\u0442\u044F \u0431\u044B \u043E\u0434\u0438\u043D \u0432\u0430\u0440\u0438\u0430\u043D\u0442',
+    el: '\u0395\u03C0\u03B9\u03BB\u03AD\u03BE\u03C4\u03B5 \u03C4\u03BF\u03C5\u03BB\u03AC\u03C7\u03B9\u03C3\u03C4\u03BF\u03BD \u03BC\u03AF\u03B1 \u03B5\u03C0\u03B9\u03BB\u03BF\u03B3\u03AE',
+  },
+  regErrorBioTooLong: {
+    en: 'Bio must be 300 words or fewer',
+    ru: '\u041C\u0430\u043A\u0441\u0438\u043C\u0443\u043C 300 \u0441\u043B\u043E\u0432',
+    el: '\u039C\u03AD\u03B3\u03B9\u03C3\u03C4\u03BF 300 \u03BB\u03AD\u03BE\u03B5\u03B9\u03C2',
+  },
+
+  // Word counter (placeholder: {count}, {max})
+  regWordCount: {
+    en: '{count} of {max} words',
+    ru: '{count} \u0438\u0437 {max} \u0441\u043B\u043E\u0432',
+    el: '{count} \u03B1\u03C0\u03CC {max} \u03BB\u03AD\u03BE\u03B5\u03B9\u03C2',
+  },
+
+  // Specialization options
+  regSpecCareer: {
+    en: 'Career',
+    ru: '\u041A\u0430\u0440\u044C\u0435\u0440\u0430',
+    el: '\u039A\u03B1\u03C1\u03B9\u03AD\u03C1\u03B1',
+  },
+  regSpecLeadership: {
+    en: 'Leadership',
+    ru: '\u041B\u0438\u0434\u0435\u0440\u0441\u0442\u0432\u043E',
+    el: '\u0397\u03B3\u03B5\u03C3\u03AF\u03B1',
+  },
+  regSpecLife: {
+    en: 'Life Goals',
+    ru: '\u0416\u0438\u0437\u043D\u0435\u043D\u043D\u044B\u0435 \u0446\u0435\u043B\u0438',
+    el: '\u0396\u03C9\u03AE',
+  },
+  regSpecBusiness: {
+    en: 'Business',
+    ru: '\u0411\u0438\u0437\u043D\u0435\u0441',
+    el: '\u0395\u03C0\u03B9\u03C7\u03B5\u03AF\u03C1\u03B7\u03C3\u03B7',
+  },
+  regSpecRelationships: {
+    en: 'Relationships',
+    ru: '\u041E\u0442\u043D\u043E\u0448\u0435\u043D\u0438\u044F',
+    el: '\u03A3\u03C7\u03AD\u03C3\u03B5\u03B9\u03C2',
+  },
+  regSpecHealth: {
+    en: 'Health',
+    ru: '\u0417\u0434\u043E\u0440\u043E\u0432\u044C\u0435',
+    el: '\u03A5\u03B3\u03B5\u03AF\u03B1',
+  },
+  regSpecTeam: {
+    en: 'Team',
+    ru: '\u041A\u043E\u043C\u0430\u043D\u0434\u0430',
+    el: '\u039F\u03BC\u03AC\u03B4\u03B1',
+  },
+  regSpecExecutive: {
+    en: 'Executive',
+    ru: 'Executive',
+    el: 'Executive',
+  },
+
+  // Language options
+  regLangEnglish: {
+    en: 'English',
+    ru: 'English',
+    el: '\u0391\u03B3\u03B3\u03BB\u03B9\u03BA\u03AC',
+  },
+  regLangRussian: {
+    en: 'Russian',
+    ru: '\u0420\u0443\u0441\u0441\u043A\u0438\u0439',
+    el: '\u03A1\u03C9\u03C3\u03B9\u03BA\u03AC',
+  },
+  regLangGreek: {
+    en: 'Greek',
+    ru: '\u0413\u0440\u0435\u0447\u0435\u0441\u043A\u0438\u0439',
+    el: '\u0395\u03BB\u03BB\u03B7\u03BD\u03B9\u03BA\u03AC',
+  },
+  regLangGerman: {
+    en: 'German',
+    ru: '\u041D\u0435\u043C\u0435\u0446\u043A\u0438\u0439',
+    el: '\u0393\u03B5\u03C1\u03BC\u03B1\u03BD\u03B9\u03BA\u03AC',
+  },
+  regLangFrench: {
+    en: 'French',
+    ru: '\u0424\u0440\u0430\u043D\u0446\u0443\u0437\u0441\u043A\u0438\u0439',
+    el: '\u0393\u03B1\u03BB\u03BB\u03B9\u03BA\u03AC',
+  },
+  regLangArabic: {
+    en: 'Arabic',
+    ru: '\u0410\u0440\u0430\u0431\u0441\u043A\u0438\u0439',
+    el: '\u0391\u03C1\u03B1\u03B2\u03B9\u03BA\u03AC',
+  },
+  regLangHebrew: {
+    en: 'Hebrew',
+    ru: '\u0418\u0432\u0440\u0438\u0442',
+    el: '\u0395\u03B2\u03C1\u03B1\u03CA\u03BA\u03AC',
+  },
+  regLangUkrainian: {
+    en: 'Ukrainian',
+    ru: '\u0423\u043A\u0440\u0430\u0438\u043D\u0441\u043A\u0438\u0439',
+    el: '\u039F\u03C5\u03BA\u03C1\u03B1\u03BD\u03B9\u03BA\u03AC',
+  },
+  regLangOther: {
+    en: 'Other',
+    ru: '\u0414\u0440\u0443\u0433\u043E\u0439',
+    el: '\u0386\u03BB\u03BB\u03BF',
+  },
+
+  // Format options
+  regFormatOnline: {
+    en: 'Online',
+    ru: '\u041E\u043D\u043B\u0430\u0439\u043D',
+    el: 'Online',
+  },
+  regFormatOffline: {
+    en: 'Offline',
+    ru: '\u041E\u0444\u043B\u0430\u0439\u043D',
+    el: '\u0394\u03B9\u03B1 \u03B6\u03CE\u03C3\u03B7\u03C2',
+  },
+  regFormatBoth: {
+    en: 'Both',
+    ru: '\u041E\u0431\u0430',
+    el: '\u039A\u03B1\u03B9 \u03C4\u03B1 \u03B4\u03CD\u03BF',
+  },
+
+  // ICF Level options
+  regLevelACC: {
+    en: 'ACC (Associate Certified Coach)',
+    ru: 'ACC (Associate Certified Coach)',
+    el: 'ACC (Associate Certified Coach)',
+  },
+  regLevelPCC: {
+    en: 'PCC (Professional Certified Coach)',
+    ru: 'PCC (Professional Certified Coach)',
+    el: 'PCC (Professional Certified Coach)',
+  },
+  regLevelMCC: {
+    en: 'MCC (Master Certified Coach)',
+    ru: 'MCC (Master Certified Coach)',
+    el: 'MCC (Master Certified Coach)',
+  },
+  regLevelMember: {
+    en: 'ICF Member (no credential yet)',
+    ru: 'ICF Member (\u0431\u0435\u0437 \u0441\u0435\u0440\u0442\u0438\u0444\u0438\u043A\u0430\u0446\u0438\u0438)',
+    el: 'ICF Member (\u03C7\u03C9\u03C1\u03AF\u03C2 \u03C0\u03B9\u03C3\u03C4\u03BF\u03C0\u03BF\u03AF\u03B7\u03C3\u03B7)',
+  },
+
+  // Submit button
+  regSubmit: {
+    en: 'Submit for Review',
+    ru: '\u041E\u0442\u043F\u0440\u0430\u0432\u0438\u0442\u044C \u043D\u0430 \u0440\u0430\u0441\u0441\u043C\u043E\u0442\u0440\u0435\u043D\u0438\u0435',
+    el: '\u03A5\u03C0\u03BF\u03B2\u03BF\u03BB\u03AE \u03B3\u03B9\u03B1 \u03AD\u03BB\u03B5\u03B3\u03C7\u03BF',
+  },
+  regSubmitting: {
+    en: 'Submitting...',
+    ru: '\u041E\u0442\u043F\u0440\u0430\u0432\u043A\u0430...',
+    el: '\u03A5\u03C0\u03BF\u03B2\u03BF\u03BB\u03AE...',
+  },
+
+  // Success / error messages
+  regSuccess: {
+    en: 'Your profile has been submitted! The ICF Cyprus administrator will review it and you\u2019ll receive a confirmation by email.',
+    ru: '\u0412\u0430\u0448 \u043F\u0440\u043E\u0444\u0438\u043B\u044C \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D! \u0410\u0434\u043C\u0438\u043D\u0438\u0441\u0442\u0440\u0430\u0442\u043E\u0440 ICF Cyprus \u0440\u0430\u0441\u0441\u043C\u043E\u0442\u0440\u0438\u0442 \u0437\u0430\u044F\u0432\u043A\u0443, \u0438 \u0432\u044B \u043F\u043E\u043B\u0443\u0447\u0438\u0442\u0435 \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u0435 \u043F\u043E email.',
+    el: '\u03A4\u03BF \u03C0\u03C1\u03BF\u03C6\u03AF\u03BB \u03C3\u03B1\u03C2 \u03C5\u03C0\u03BF\u03B2\u03BB\u03AE\u03B8\u03B7\u03BA\u03B5! \u039F \u03B4\u03B9\u03B1\u03C7\u03B5\u03B9\u03C1\u03B9\u03C3\u03C4\u03AE\u03C2 \u03C4\u03BF\u03C5 ICF Cyprus \u03B8\u03B1 \u03C4\u03BF \u03B5\u03BE\u03B5\u03C4\u03AC\u03C3\u03B5\u03B9 \u03BA\u03B1\u03B9 \u03B8\u03B1 \u03BB\u03AC\u03B2\u03B5\u03C4\u03B5 \u03B5\u03C0\u03B9\u03B2\u03B5\u03B2\u03B1\u03AF\u03C9\u03C3\u03B7 \u03BC\u03AD\u03C3\u03C9 email.',
+  },
+  regErrorGeneral: {
+    en: 'Something went wrong. Please try again.',
+    ru: '\u041F\u0440\u043E\u0438\u0437\u043E\u0448\u043B\u0430 \u043E\u0448\u0438\u0431\u043A\u0430. \u041F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0435\u0449\u0451 \u0440\u0430\u0437.',
+    el: '\u039A\u03AC\u03C4\u03B9 \u03C0\u03AE\u03B3\u03B5 \u03C3\u03C4\u03C1\u03B1\u03B2\u03AC. \u0394\u03BF\u03BA\u03B9\u03BC\u03AC\u03C3\u03C4\u03B5 \u03BE\u03B1\u03BD\u03AC.',
+  },
+  regRetry: {
+    en: 'Try again',
+    ru: '\u041F\u043E\u043F\u0440\u043E\u0431\u043E\u0432\u0430\u0442\u044C \u0441\u043D\u043E\u0432\u0430',
+    el: '\u0394\u03BF\u03BA\u03B9\u03BC\u03AC\u03C3\u03C4\u03B5 \u03BE\u03B1\u03BD\u03AC',
+  },
+
+  // Navigation
+  joinRegistry: {
+    en: 'Join the Registry',
+    ru: '\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u0441\u0435\u0431\u044F \u0432 \u0440\u0435\u0435\u0441\u0442\u0440',
+    el: '\u0395\u03B3\u03B3\u03C1\u03B1\u03C6\u03AE \u03C3\u03C4\u03BF \u03BC\u03B7\u03C4\u03C1\u03CE\u03BF',
+  },
+  backToCatalog: {
+    en: '\u2190 Back to catalog',
+    ru: '\u2190 \u041D\u0430\u0437\u0430\u0434 \u043A \u043A\u0430\u0442\u0430\u043B\u043E\u0433\u0443',
+    el: '\u2190 \u03A0\u03AF\u03C3\u03C9 \u03C3\u03C4\u03BF\u03BD \u03BA\u03B1\u03C4\u03AC\u03BB\u03BF\u03B3\u03BF',
+  },
+
+  // Card preview
+  regPreviewTitle: {
+    en: 'Your card preview',
+    ru: '\u041F\u0440\u0435\u0434\u043F\u0440\u043E\u0441\u043C\u043E\u0442\u0440 \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u0438',
+    el: '\u03A0\u03C1\u03BF\u03B5\u03C0\u03B9\u03C3\u03BA\u03CC\u03C0\u03B7\u03C3\u03B7 \u03BA\u03AC\u03C1\u03C4\u03B1\u03C2',
+  },
 };
 
 /** @type {string} */

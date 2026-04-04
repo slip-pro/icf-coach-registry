@@ -1,5 +1,5 @@
 /**
- * ICF Registry — Main Application Entry Point
+ * ICF Registry -- Main Application Entry Point
  *
  * Initializes the coach registry widget:
  * 1. Finds or creates container element
@@ -9,11 +9,15 @@
  * 5. Renders filters and coach cards grid
  * 6. Wires up event listeners
  *
+ * Supports two views:
+ * - "catalog" (default) -- coach listing with filters
+ * - "registration" -- self-registration form
+ *
  * External usage:
  *   <div id="icf-coach-registry"></div>
  *   <script type="module">
  *     import { ICFRegistry } from './js/app.js';
- *     ICFRegistry.init();
+ *     ICFRegistry.init({ scriptUrl: '...' });
  *   </script>
  */
 
@@ -24,14 +28,19 @@ import {
   t,
   SUPPORTED_LANGS,
 } from './i18n.js';
+import { esc } from './utils.js';
 import { fetchCoaches } from './sheets.js';
 import { renderCards } from './cards.js';
 import { renderFilters } from './filters.js';
+import { renderRegistrationForm } from './registration.js';
+import { submitRegistration } from './submit.js';
 
 /**
  * @typedef {Object} RegistryConfig
- * @property {string} [sheetId] — Google Sheet ID (omit for mock data)
- * @property {string} [containerId] — custom container ID
+ * @property {string} [sheetId] -- Google Sheet ID (omit for mock data)
+ * @property {string} [containerId] -- custom container ID
+ * @property {string} [scriptUrl] -- Google Apps Script web app URL
+ * @property {boolean} [devMode] -- force dev mode for submissions
  */
 
 /** @type {import('./sheets.js').Coach[]} */
@@ -39,6 +48,15 @@ let coaches = [];
 
 /** @type {HTMLElement|null} */
 let containerEl = null;
+
+/** @type {RegistryConfig} */
+let appConfig = {};
+
+/**
+ * Current view: 'catalog' or 'registration'.
+ * @type {'catalog'|'registration'}
+ */
+let currentView = 'catalog';
 
 /**
  * Find the widget container element.
@@ -78,7 +96,7 @@ function renderHeader() {
   return `
     <header class="icf-page-header">
       <h1 class="icf-page-title" data-i18n="pageTitle">
-        ${t('pageTitle')}
+        ${esc(t('pageTitle'))}
       </h1>
       <nav class="icf-lang-switch" role="group"
            aria-label="Language">
@@ -89,19 +107,47 @@ function renderHeader() {
 }
 
 /**
- * Render the AI matching button (Phase 2 — visual placeholder).
+ * Render the AI matching button (Phase 2 -- visual placeholder).
  * @returns {string} HTML string
  */
 function renderAIButton() {
   return `
     <button class="icf-ai-button" disabled
-            aria-label="${t('aiButtonTitle')}">
+            aria-label="${esc(t('aiButtonTitle'))}">
       <span aria-hidden="true">&#10022;</span>
-      <span data-i18n="aiButtonTitle">${t('aiButtonTitle')}</span>
+      <span data-i18n="aiButtonTitle">${esc(t('aiButtonTitle'))}</span>
       <span class="icf-ai-button__sub"
             data-i18n="aiButtonSubtitle">
-        ${t('aiButtonSubtitle')}
+        ${esc(t('aiButtonSubtitle'))}
       </span>
+    </button>
+  `;
+}
+
+/**
+ * Render the "Join the Registry" button for the catalog view.
+ * @returns {string} HTML string
+ */
+function renderJoinButton() {
+  return `
+    <button class="icf-join-button"
+            aria-label="${esc(t('joinRegistry'))}"
+            data-action="show-registration">
+      <span data-i18n="joinRegistry">${esc(t('joinRegistry'))}</span>
+    </button>
+  `;
+}
+
+/**
+ * Render the "Back to catalog" button for the registration view.
+ * @returns {string} HTML string
+ */
+function renderBackButton() {
+  return `
+    <button class="icf-back-button"
+            aria-label="${esc(t('backToCatalog'))}"
+            data-action="show-catalog">
+      <span data-i18n="backToCatalog">${esc(t('backToCatalog'))}</span>
     </button>
   `;
 }
@@ -113,7 +159,7 @@ function renderAIButton() {
 function renderLoading() {
   return `
     <div class="icf-loading" role="status" aria-live="polite">
-      <p data-i18n="loading">${t('loading')}</p>
+      <p data-i18n="loading">${esc(t('loading'))}</p>
     </div>
   `;
 }
@@ -127,18 +173,19 @@ function renderError(message) {
   return `
     <div class="icf-error-state" role="alert">
       <p data-i18n="errorState">
-        ${message || t('errorState')}
+        ${esc(message || t('errorState'))}
       </p>
     </div>
   `;
 }
 
 /**
- * Full render of the widget. Called on init and language change.
+ * Full render of the catalog view.
+ * Called on init, language change, and when returning from registration.
  * @param {'loading'|'ready'|'error'} state
  * @param {string} [errorMessage]
  */
-function render(state, errorMessage) {
+function renderCatalog(state, errorMessage) {
   if (!containerEl) return;
 
   let bodyHTML = '';
@@ -148,7 +195,6 @@ function render(state, errorMessage) {
   } else if (state === 'error') {
     bodyHTML = renderError(errorMessage);
   } else {
-    // Filters container + Grid container
     bodyHTML = `
       <div id="icf-filters-container"></div>
       <div class="icf-grid" id="icf-grid-container"></div>
@@ -158,13 +204,13 @@ function render(state, errorMessage) {
   containerEl.innerHTML = `
     ${renderHeader()}
     ${renderAIButton()}
+    ${renderJoinButton()}
     ${bodyHTML}
   `;
 
-  // Wire up language switch buttons
   bindLanguageSwitch();
+  bindViewActions();
 
-  // If ready, render filters and cards into their containers
   if (state === 'ready') {
     const filtersContainer = containerEl.querySelector(
       '#icf-filters-container'
@@ -183,8 +229,62 @@ function render(state, errorMessage) {
 }
 
 /**
+ * Full render of the registration view.
+ */
+function renderRegistration() {
+  if (!containerEl) return;
+
+  containerEl.innerHTML = `
+    ${renderHeader()}
+    ${renderBackButton()}
+    <div id="icf-registration-container"></div>
+  `;
+
+  bindLanguageSwitch();
+  bindViewActions();
+
+  const regContainer = containerEl.querySelector(
+    '#icf-registration-container'
+  );
+
+  if (regContainer) {
+    renderRegistrationForm(regContainer, handleFormSubmit);
+  }
+}
+
+/**
+ * Handle form submission by delegating to the submit module.
+ * @param {Record<string, unknown>} formData
+ * @returns {Promise<void>}
+ */
+async function handleFormSubmit(formData) {
+  const result = await submitRegistration(formData, {
+    scriptUrl: appConfig.scriptUrl,
+    devMode: appConfig.devMode,
+  });
+
+  if (!result.success) {
+    throw new Error('Submission failed');
+  }
+}
+
+/**
+ * Switch between catalog and registration views.
+ * @param {'catalog'|'registration'} view
+ */
+function showView(view) {
+  currentView = view;
+
+  if (view === 'registration') {
+    renderRegistration();
+  } else {
+    renderCatalog('ready');
+  }
+}
+
+/**
  * Handle filter change callback.
- * Will re-render cards with filtered subset.
+ * Re-renders cards with the filtered subset.
  * @param {import('./sheets.js').Coach[]} filteredCoaches
  */
 function handleFilterChange(filteredCoaches) {
@@ -211,11 +311,33 @@ function bindLanguageSwitch() {
       const lang = btn.getAttribute('data-lang');
       if (lang && lang !== getCurrentLanguage()) {
         setLanguage(lang);
-        // Re-render entire widget with new language
-        render('ready');
+        // Re-render current view with new language
+        showView(currentView);
       }
     });
   });
+}
+
+/**
+ * Bind click listeners for view navigation buttons.
+ * Uses data-action attributes to identify buttons.
+ */
+function bindViewActions() {
+  if (!containerEl) return;
+
+  const regBtn = containerEl.querySelector(
+    '[data-action="show-registration"]'
+  );
+  const backBtn = containerEl.querySelector(
+    '[data-action="show-catalog"]'
+  );
+
+  if (regBtn) {
+    regBtn.addEventListener('click', () => showView('registration'));
+  }
+  if (backBtn) {
+    backBtn.addEventListener('click', () => showView('catalog'));
+  }
 }
 
 /**
@@ -223,6 +345,7 @@ function bindLanguageSwitch() {
  * @param {RegistryConfig} [config]
  */
 async function init(config = {}) {
+  appConfig = config;
   containerEl = findContainer(config.containerId);
 
   if (!containerEl) {
@@ -240,18 +363,18 @@ async function init(config = {}) {
   containerEl.setAttribute('lang', lang);
 
   // Show loading state
-  render('loading');
+  renderCatalog('loading');
 
   try {
     coaches = await fetchCoaches(config.sheetId);
-    render('ready');
+    renderCatalog('ready');
   } catch (err) {
-    render('error', t('errorState'));
+    renderCatalog('error', t('errorState'));
   }
 }
 
 /**
- * Public API — exposed as ICFRegistry global and as ES module export.
+ * Public API -- exposed as ICFRegistry global and as ES module export.
  */
 export const ICFRegistry = { init };
 

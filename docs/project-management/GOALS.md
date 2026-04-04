@@ -2,25 +2,26 @@
 
 ## Active Goals
 
-### _(next goal: G-002 — Coach Registration Flow)_
-
----
-
 ### G-002: Coach Registration Flow
-**Status**: Not started
+**Status**: In progress (Sprint 2)
 **Phase**: 1
-**Description**: Self-service registration form for new coaches with admin moderation.
+**Started**: 2026-04-04
 
-**Key Results**:
-- [ ] Registration form with all required fields
-- [ ] Photo upload
-- [ ] Form submission to admin (email or Google Sheets workflow)
-- [ ] Moderation process (admin approves -> coach appears in catalog)
+**Context**: Каталог (G-001) работает и показывает коучей из Google Sheets. Сейчас добавить коуча может только человек с доступом к таблице. Нужна публичная форма, чтобы коучи ICF Cyprus добавляли себя сами, а админ чаптера модерировал заявки.
 
 **Acceptance Criteria**:
-- Coach can fill and submit the form without WP access
-- Admin receives notification and can approve/reject
-- Approved coaches appear in the catalog
+- [ ] Коуч может заполнить и отправить форму без WP-доступа
+- [ ] Админ получает уведомление и может одобрить/отклонить
+- [ ] Одобренные коучи появляются в каталоге
+
+**Sprint Decomposition**:
+- [ ] T1: Google Sheet структура + sheets.js status-фильтрация
+- [ ] T2: Registration Form UI (F-008)
+- [ ] T3: Google Forms интеграция (POST submit)
+- [ ] T4: Admin workflow + инструкции (F-009)
+- [ ] T5: Навигация каталог ↔ форма
+
+**Notes**: `docs/notes/G-002.md`
 
 ---
 

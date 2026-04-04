@@ -28,6 +28,7 @@
  * @property {string} instagram
  * @property {string} linkedin
  * @property {string} facebook
+ * @property {string} status — 'approved' | 'pending' | 'rejected'
  */
 
 /**
@@ -171,6 +172,13 @@ const HEADER_MAP = {
   'instagram': 'instagram',
   'linkedin': 'linkedin',
   'facebook': 'facebook',
+  'status': 'status',
+  'icf membership': 'icfMembership',
+  'icfmembership': 'icfMembership',
+  'membership': 'icfMembership',
+  'submitted at': 'submittedAt',
+  'submittedat': 'submittedAt',
+  'timestamp': 'submittedAt',
 };
 
 /**
@@ -210,8 +218,33 @@ function csvToCoaches(rows) {
       instagram: raw.instagram || '',
       linkedin: raw.linkedin || '',
       facebook: raw.facebook || '',
+      status: normalizeStatus(raw.status),
     };
   }).filter((coach) => coach.name);
+}
+
+/**
+ * Normalize a status string to a known value.
+ * When the column is missing or empty, defaults to 'approved'
+ * for backward compatibility with sheets that lack a Status column.
+ * @param {string} value
+ * @returns {string}
+ */
+function normalizeStatus(value) {
+  const lower = (value || '').toLowerCase().trim();
+  if (lower === 'pending') return 'pending';
+  if (lower === 'rejected') return 'rejected';
+  // Default: approved (backward compatible — no Status column = approved)
+  return 'approved';
+}
+
+/**
+ * Filter coaches to only include approved entries.
+ * @param {Coach[]} coaches
+ * @returns {Coach[]}
+ */
+function filterApproved(coaches) {
+  return coaches.filter((coach) => coach.status === 'approved');
 }
 
 /**
@@ -224,10 +257,43 @@ function csvToCoaches(rows) {
  */
 export async function fetchCoaches(sheetId) {
   if (!sheetId) {
-    return loadMockData();
+    const allCoaches = await loadMockData();
+    return filterApproved(allCoaches);
   }
 
-  const url = buildSheetURL(sheetId);
+  const allCoaches = await fetchSheetTab(sheetId);
+  return filterApproved(allCoaches);
+}
+
+/**
+ * Fetch all submissions from a specific Google Sheet tab.
+ * Returns ALL coaches regardless of status (for admin view).
+ *
+ * @param {string} sheetId — Google Sheet ID
+ * @param {string} [tabName='Submissions'] — Sheet tab name
+ * @returns {Promise<Coach[]>}
+ * @throws {Error} if fetch or parse fails
+ */
+export async function fetchSubmissions(sheetId, tabName = 'Submissions') {
+  if (!sheetId) {
+    throw new Error('Sheet ID is required for fetchSubmissions');
+  }
+  return fetchSheetTab(sheetId, tabName);
+}
+
+/**
+ * Fetch and parse coach data from a specific Google Sheet tab.
+ * @param {string} sheetId
+ * @param {string} [tabName] — tab/sheet name (omit for default first tab)
+ * @returns {Promise<Coach[]>}
+ * @throws {Error} if fetch or parse fails
+ */
+async function fetchSheetTab(sheetId, tabName) {
+  let url = buildSheetURL(sheetId);
+  if (tabName) {
+    url += `&sheet=${encodeURIComponent(tabName)}`;
+  }
+
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 10000);
   let response;
