@@ -1,8 +1,8 @@
 # Google Apps Script -- Form Submission Backend
 
 This guide explains how to set up a Google Apps Script web app that receives
-coach registration submissions and writes them to the "Submissions" tab of
-the Google Sheet.
+coach registration submissions, writes them to the "Submissions" tab, and
+provides automatic color coding and status dropdowns.
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ the Google Sheet.
 
 ### 1. Create the Submissions tab
 
-Open the Google Sheet and add a new tab named **Submissions**.
+Open the Google Sheet and add a tab named **Submissions** (if it does not exist).
 
 Add these column headers in the first row:
 
@@ -29,9 +29,19 @@ Add these column headers in the first row:
 
 ### 3. Paste the script
 
-Copy and paste the following code:
+Copy and paste the following code. It contains **4 functions**:
+
+- `doPost` -- receives form submissions from the website
+- `colorByStatus` -- automatically colors rows when you change the Status (onEdit trigger)
+- `colorAllRows` -- recolors all rows at once (run manually if colors get out of sync)
+- `addStatusDropdown` -- adds a dropdown list to the Status column (run once during setup)
 
 ```javascript
+/**
+ * Receives form submissions from the website.
+ * Writes a new row to the Submissions tab with status "pending".
+ * Sends email notification to admin if ADMIN_EMAIL is configured.
+ */
 function doPost(e) {
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet()
@@ -66,6 +76,18 @@ function doPost(e) {
       new Date().toISOString(),
     ]);
 
+    // Color the new row yellow (pending)
+    var lastRow = sheet.getLastRow();
+    sheet.getRange(lastRow, 1, 1, sheet.getLastColumn())
+      .setBackground('#fff2cc');
+
+    // Add dropdown to the new row's Status cell
+    var statusCell = sheet.getRange(lastRow, 16);
+    var rule = SpreadsheetApp.newDataValidation()
+      .requireValueInList(['pending', 'approved', 'rejected'], true)
+      .build();
+    statusCell.setDataValidation(rule);
+
     // Optional: send email notification to admin
     var adminEmail = PropertiesService
       .getScriptProperties()
@@ -95,9 +117,126 @@ function doPost(e) {
     ).setMimeType(ContentService.MimeType.JSON);
   }
 }
+
+/**
+ * Automatically colors a row when the Status cell is changed.
+ * Set this up as an onEdit trigger (see instructions below).
+ *
+ * Colors:
+ *   pending  = yellow (#fff2cc)
+ *   approved = green  (#d9ead3)
+ *   rejected = red    (#f4cccc)
+ */
+function colorByStatus(e) {
+  var sheet = e.source.getActiveSheet();
+  if (sheet.getName() !== 'Submissions') return;
+
+  var range = e.range;
+  var col = range.getColumn();
+  var row = range.getRow();
+
+  // Column 16 = P = Status
+  if (col !== 16 || row === 1) return;
+
+  var status = range.getValue().toString().toLowerCase().trim();
+  var rowRange = sheet.getRange(row, 1, 1, sheet.getLastColumn());
+
+  if (status === 'approved') {
+    rowRange.setBackground('#d9ead3');
+  } else if (status === 'rejected') {
+    rowRange.setBackground('#f4cccc');
+  } else if (status === 'pending') {
+    rowRange.setBackground('#fff2cc');
+  }
+}
+
+/**
+ * Recolors ALL rows based on their current Status value.
+ * Run this manually if colors get out of sync.
+ *
+ * How to run: In Apps Script, select "colorAllRows" from the function
+ * dropdown at the top, then click the Run button (play icon).
+ */
+function colorAllRows() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet()
+    .getSheetByName('Submissions');
+  if (!sheet) return;
+
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2) return;
+
+  for (var row = 2; row <= lastRow; row++) {
+    var status = sheet.getRange(row, 16).getValue()
+      .toString().toLowerCase().trim();
+    var rowRange = sheet.getRange(row, 1, 1, sheet.getLastColumn());
+
+    if (status === 'approved') {
+      rowRange.setBackground('#d9ead3');
+    } else if (status === 'rejected') {
+      rowRange.setBackground('#f4cccc');
+    } else if (status === 'pending') {
+      rowRange.setBackground('#fff2cc');
+    }
+  }
+}
+
+/**
+ * Adds a dropdown list (pending / approved / rejected) to every
+ * Status cell in the Submissions tab.
+ * Run this once during initial setup, or after adding many rows manually.
+ *
+ * How to run: In Apps Script, select "addStatusDropdown" from the function
+ * dropdown at the top, then click the Run button (play icon).
+ */
+function addStatusDropdown() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet()
+    .getSheetByName('Submissions');
+  if (!sheet) return;
+
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2) return;
+
+  var range = sheet.getRange(2, 16, lastRow - 1, 1);
+  var rule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['pending', 'approved', 'rejected'], true)
+    .build();
+  range.setDataValidation(rule);
+}
 ```
 
-### 4. (Optional) Set admin email for notifications
+### 4. Set up the onEdit trigger for automatic color coding
+
+The `colorByStatus` function needs an **onEdit trigger** so it runs
+automatically every time you change the Status dropdown.
+
+1. In Apps Script, click the **clock icon** in the left sidebar (Triggers)
+2. Click **+ Add Trigger** (bottom right)
+3. Set the following:
+   - **Choose which function to run**: `colorByStatus`
+   - **Choose which deployment should run**: Head
+   - **Select event source**: From spreadsheet
+   - **Select event type**: On edit
+4. Click **Save**
+5. Authorize the app when prompted
+
+After this, whenever you change a Status cell in the Submissions tab, the row
+will automatically change color.
+
+### 5. Run the initial setup functions
+
+After pasting the script and setting up the trigger:
+
+1. Select **addStatusDropdown** from the function dropdown at the top
+2. Click the **Run** button (play icon)
+3. This adds the dropdown to all existing Status cells
+
+Then:
+
+1. Select **colorAllRows** from the function dropdown
+2. Click **Run**
+3. This colors all existing rows based on their Status
+
+### 6. (Optional) Set admin email for notifications
 
 1. In Apps Script, go to **Project Settings** (gear icon in the left sidebar)
 2. Scroll down to **Script Properties**
@@ -105,7 +244,7 @@ function doPost(e) {
 4. Key: `ADMIN_EMAIL`, Value: your email address
 5. Click **Save**
 
-### 5. Deploy as web app
+### 7. Deploy as web app
 
 1. Click **Deploy > New deployment**
 2. Click the gear icon next to "Select type" and choose **Web app**
@@ -117,7 +256,7 @@ function doPost(e) {
 5. Authorize the app when prompted (review permissions and allow)
 6. Copy the **Web app URL** -- you will need it for the widget configuration
 
-### 6. Configure the widget
+### 8. Configure the widget
 
 Pass the web app URL when initializing the widget:
 
@@ -136,21 +275,32 @@ Pass the web app URL when initializing the widget:
 1. Coach fills out the registration form in the widget
 2. Form data is sent as a JSON POST to the Apps Script web app
 3. The script writes a new row to the "Submissions" tab with status "pending"
-4. If ADMIN_EMAIL is configured, the admin receives an email notification
-5. The admin reviews the submission in the sheet and changes status to "approved"
-6. The approved coach appears in the public catalog on next page load
+4. The new row is automatically colored **yellow** (pending)
+5. If ADMIN_EMAIL is configured, the admin receives an email notification
+6. The admin reviews the submission in the sheet and selects `approved` from the dropdown
+7. The row turns **green** automatically
+8. The approved coach appears in the public catalog on next page load
+
+## Functions reference
+
+| Function | Purpose | How to run |
+|----------|---------|-----------|
+| `doPost` | Receives form submissions from the website | Runs automatically (web app) |
+| `colorByStatus` | Colors a row when Status changes | Runs automatically (onEdit trigger) |
+| `colorAllRows` | Recolors all rows based on Status | Run manually from Apps Script |
+| `addStatusDropdown` | Adds dropdown to Status column | Run manually from Apps Script (once) |
 
 ## Approval workflow
 
 The "Status" column (P) controls visibility:
 
-| Status | Meaning |
-|--------|---------|
-| `pending` | New submission, not yet visible in catalog |
-| `approved` | Visible in the public catalog |
-| `rejected` | Removed, not visible |
+| Status | Row color | Meaning |
+|--------|-----------|---------|
+| `pending` | Yellow | New submission, not yet visible in catalog |
+| `approved` | Green | Visible in the public catalog |
+| `rejected` | Red | Removed, not visible |
 
-To approve a coach: change the Status cell from `pending` to `approved`.
+To approve a coach: click the Status cell and select `approved` from the dropdown.
 
 ## Updating the deployment
 
@@ -172,3 +322,7 @@ The URL stays the same after updating.
 - **CORS errors in console** -- Expected. The widget uses `mode: 'no-cors'`
   which means the browser cannot read the response, but the request still
   goes through. Check the Submissions tab to confirm data arrived.
+- **Colors not updating automatically** -- Check that the onEdit trigger is set
+  up (Step 4). Go to Triggers in the left sidebar to verify.
+- **Dropdown missing on new rows** -- Run `addStatusDropdown` again, or it will
+  be added automatically for rows created via form submission.

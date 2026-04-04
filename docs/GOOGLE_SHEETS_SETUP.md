@@ -1,19 +1,20 @@
 # Google Sheets Setup Guide
 
 This guide explains how to set up a Google Sheet as the data source for the
-ICF Cyprus Coach Registry. No coding is required — just follow the steps.
+ICF Cyprus Coach Registry. No coding is required -- just follow the steps.
 
 ---
 
 ## Overview
 
 The Coach Registry reads coach data from a publicly published Google Sheet.
-The sheet has two tabs:
+The sheet has one tab:
 
-- **Coaches** — the main directory (shown on the website)
-- **Submissions** — new registrations waiting for review
+- **Submissions** -- all coach data (registrations, approved coaches, rejected coaches)
 
 Only coaches with `Status = approved` appear in the public catalog.
+
+Rows are color-coded automatically: yellow = pending, green = approved, red = rejected.
 
 ---
 
@@ -25,19 +26,19 @@ Only coaches with `Status = approved` appear in the public catalog.
 
 ---
 
-## Step 2: Set Up the "Coaches" Tab
+## Step 2: Set Up the "Submissions" Tab
 
-The first tab is named **Coaches** by default (rename the existing "Sheet1").
+Rename the default "Sheet1" tab to **Submissions**.
 Right-click the tab name at the bottom and select **Rename**.
 
 ### Column Headers
 
-Add these headers in **Row 1**, one per column (A through Q):
+Add these headers in **Row 1**, one per column (A through R):
 
 | Column | Header | Required | Description |
 |--------|--------|----------|-------------|
 | A | Name | Yes | Coach's full name |
-| B | Photo | No | URL to a profile photo (hosted online) |
+| B | Photo | No | URL to a profile photo (Google Drive link or web URL) |
 | C | Specializations | Yes | Comma-separated list (e.g. `Leadership, Business, Executive`) |
 | D | ICF Level | Yes | One of: `ACC`, `PCC`, `MCC`, `Member` |
 | E | Languages | Yes | Comma-separated list (e.g. `English, Russian, Greek`) |
@@ -51,38 +52,28 @@ Add these headers in **Row 1**, one per column (A through Q):
 | M | Instagram | No | Profile URL or handle |
 | N | LinkedIn | No | Full profile URL |
 | O | Facebook | No | Full profile URL |
-| P | Status | Yes | `approved`, `pending`, or `rejected` |
+| P | Status | Yes | `approved`, `pending`, or `rejected` (dropdown) |
+| Q | ICF Membership | No | ICF membership number or registered email |
+| R | Submitted At | Auto | Date/time of submission (filled automatically) |
 
 **Important notes:**
 - The header names must match exactly (not case-sensitive, but spelling matters)
 - Only coaches with **Status = approved** will appear on the website
-- If you leave the Status column empty for a coach, they will appear as approved
+- The Status column has a **dropdown** -- you select a value, not type it
+- Rows are **color-coded automatically**: yellow = pending, green = approved, red = rejected
+- Google Drive photo URLs are automatically converted to thumbnails by the widget
 
 ---
 
-## Step 3: Set Up the "Submissions" Tab
+## Step 3: Set Up the Status Dropdown and Color Coding
 
-1. Click the **+** button at the bottom-left (next to existing tabs) to add a
-   new tab
-2. Name it **Submissions**
+After setting up the columns, run the Apps Script functions to enable the
+dropdown and color coding. See the [Apps Script guide](GOOGLE_APPS_SCRIPT.md)
+for instructions on:
 
-This tab uses the same columns as **Coaches**, plus two additional columns:
-
-| Column | Header | Required | Description |
-|--------|--------|----------|-------------|
-| A-P | *(same as Coaches tab)* | | |
-| Q | ICF Membership | No | ICF membership number or registered email |
-| R | Submitted At | Auto | Date/time of submission |
-
-### Workflow
-
-1. New coach applications go into the **Submissions** tab (via a form or
-   manual entry)
-2. An administrator reviews each submission
-3. When approved, copy the row to the **Coaches** tab and set Status to
-   `approved`
-4. Or set Status directly in Submissions — the website reads from the
-   **Coaches** tab only
+- `addStatusDropdown` -- adds the dropdown list to the Status column
+- `colorAllRows` -- colors all existing rows based on their Status
+- `colorByStatus` (onEdit trigger) -- automatically colors rows when you change the Status
 
 ---
 
@@ -143,10 +134,10 @@ Replace `YOUR_SHEET_ID_HERE` with the actual Sheet ID from Step 5.
 
 ### Coaches are not appearing
 
-1. **Check the Status column** — only `approved` coaches are shown
-2. **Check that the sheet is published** — File > Share > Publish to web
-3. **Check column headers** — they must match the names listed above
-4. **Check the Sheet ID** — make sure you copied it correctly
+1. **Check the Status column** -- only `approved` coaches are shown
+2. **Check that the sheet is published** -- File > Share > Publish to web
+3. **Check column headers** -- they must match the names listed above
+4. **Check the Sheet ID** -- make sure you copied it correctly
 
 ### Changes in the sheet are not reflected
 
@@ -159,30 +150,36 @@ Replace `YOUR_SHEET_ID_HERE` with the actual Sheet ID from Step 5.
 - Check that the Google Sheet has not been deleted or unpublished
 - Open your browser console (F12) for detailed error messages
 
+### Colors are wrong or missing
+
+- Open Extensions > Apps Script and run `colorAllRows` to recolor all rows
+- Make sure the `colorByStatus` trigger is set up (see Apps Script guide)
+
 ---
 
 ## Managing Coach Data
 
-### Adding a new coach
+### Adding a coach manually
 
 1. Open the Google Sheet
-2. Go to the **Coaches** tab
+2. Go to the **Submissions** tab
 3. Add a new row with all required fields
-4. Set Status to `approved`
-5. The coach will appear on the website within a few minutes
+4. Set Status to `approved` (select from dropdown)
+5. The row turns green and the coach appears on the website within a few minutes
 
 ### Hiding a coach temporarily
 
 1. Change their Status from `approved` to `pending`
-2. They will disappear from the website but their data is preserved
+2. The row turns yellow and the coach disappears from the website
 
 ### Removing a coach
 
-1. Change their Status to `rejected`, or
-2. Delete the entire row from the sheet
+1. Change their Status to `rejected`
+2. The row turns red and the coach disappears from the website
+3. Don't delete the row -- keep it for records
 
 ### Editing coach information
 
-1. Find the coach's row in the **Coaches** tab
+1. Find the coach's row in the **Submissions** tab
 2. Edit the relevant cells
 3. Changes appear on the website within a few minutes

@@ -4,38 +4,83 @@
 
 1. A coach fills out the registration form on the website
 2. The data goes to the **"Submissions"** tab in your Google Sheet
-3. You get an **email notification** with the coach's name and details
-4. You review the submission in the Google Sheet
-5. You **approve or reject** by changing the Status column
-6. Approved coaches automatically appear in the catalog
+3. The new row is highlighted in **yellow** (pending review)
+4. You get an **email notification** with the coach's name and details
+5. You review the submission in the Google Sheet
+6. You **approve or reject** by selecting a value from the Status dropdown
+7. The row color changes automatically: **green** = approved, **red** = rejected
+8. Approved coaches automatically appear in the catalog
+
+## Single tab: everything in Submissions
+
+All coach data lives in **one tab** called **Submissions**. There is no separate "Coaches" tab. The website catalog reads directly from Submissions and shows only coaches with Status = `approved`.
+
+This means:
+- New registrations appear here
+- Approved coaches stay here
+- Rejected coaches stay here too (for your records)
+- You never need to copy rows between tabs
+
+## Color coding
+
+Rows in the Submissions tab are color-coded automatically based on the Status column:
+
+| Status | Row color | Meaning |
+|--------|-----------|---------|
+| `pending` | Yellow | New submission, needs your review |
+| `approved` | Green | Visible in the public catalog |
+| `rejected` | Red | Not visible, kept for records |
+
+The colors update automatically when you change the Status. This makes it easy to scan the sheet and see what needs attention -- just look for yellow rows.
+
+## Status dropdown
+
+The Status column has a **dropdown list** -- you do not need to type the values manually. Just click the cell and select one of:
+- `pending`
+- `approved`
+- `rejected`
+
+This prevents typos and ensures the catalog works correctly.
 
 ## Step-by-step: Approve a coach
 
 1. Open your Google Sheet
 2. Go to the **"Submissions"** tab
-3. Find the new row (it will have Status = `pending`)
+3. Find the yellow row (Status = `pending`)
 4. Review the coach's information
-5. **To approve**: Change the Status cell from `pending` to `approved`
-6. **To reject**: Change the Status cell from `pending` to `rejected`
-7. The catalog refreshes on next page load — the approved coach will appear
+5. Click the **Status cell** and select `approved` from the dropdown
+6. The row turns **green** automatically
+7. The catalog refreshes on next page load -- the approved coach will appear
+
+## Step-by-step: Reject a coach
+
+1. Open your Google Sheet
+2. Find the coach's row in the **"Submissions"** tab
+3. Click the **Status cell** and select `rejected` from the dropdown
+4. The row turns **red** automatically
+5. The coach will not appear in the catalog
 
 ## Step-by-step: Remove a coach
 
 If a coach leaves ICF Cyprus or asks to be removed:
 
 1. Open your Google Sheet
-2. Find the coach's row (in "Coaches" or "Submissions" tab)
+2. Find the coach's row in the **"Submissions"** tab
 3. Change the Status cell to `rejected`
 4. The coach will disappear from the catalog on next page load
 
-**Note**: Don't delete the row — just change the status. This keeps a record.
+**Note**: Don't delete the row -- just change the status. This keeps a record.
 
 ## Step-by-step: Edit a coach's profile
 
 1. Open your Google Sheet
-2. Find the coach's row
+2. Find the coach's row in the **"Submissions"** tab
 3. Edit any cell directly (name, bio, specializations, etc.)
 4. Changes appear in the catalog on next page load
+
+## Photos
+
+Coaches upload photos via a Google Drive link in the registration form. The system automatically converts Google Drive URLs to thumbnail images for the catalog. You do not need to do anything special with photos.
 
 ## Email notifications
 
@@ -43,7 +88,7 @@ Email notifications are sent automatically when a coach submits a registration.
 To change the admin email:
 
 1. Open the Google Sheet
-2. Go to Extensions → Apps Script
+2. Go to Extensions > Apps Script
 3. Click the gear icon (Project Settings)
 4. Under Script Properties, find `ADMIN_EMAIL`
 5. Change the value to the new email address
@@ -54,10 +99,16 @@ To change the admin email:
 A: Changes appear the next time someone loads the page (usually within seconds).
 
 **Q: Can I approve multiple coaches at once?**
-A: Yes! Just change the Status column to `approved` for each coach you want to approve.
+A: Yes! Just select `approved` from the Status dropdown for each coach you want to approve.
 
 **Q: What if I accidentally reject a coach?**
-A: Just change the Status back to `approved`. No data is lost.
+A: Just change the Status back to `approved`. No data is lost. The row will turn green again.
 
 **Q: Can coaches edit their own profiles?**
 A: Not yet. For now, coaches contact you and you make the changes in the sheet. Self-editing is planned for a future version.
+
+**Q: Why are some rows yellow/green/red?**
+A: The colors show the status at a glance. Yellow = pending review, green = approved (visible on website), red = rejected. The colors update automatically when you change the Status.
+
+**Q: What if the colors are wrong or missing?**
+A: Open Extensions > Apps Script and run the `colorAllRows` function. This recolors all rows based on their current Status. See the Apps Script guide for details.
