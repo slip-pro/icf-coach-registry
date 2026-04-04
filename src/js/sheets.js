@@ -204,7 +204,7 @@ function csvToCoaches(rows) {
     return {
       id: raw.id || String(index + 1),
       name: raw.name || '',
-      photo: raw.photo || '',
+      photo: normalizePhotoUrl(raw.photo || ''),
       specializations: splitList(raw.specializations),
       icfLevel: normalizeLevel(raw.icfLevel),
       languages: splitList(raw.languages),
@@ -230,6 +230,34 @@ function csvToCoaches(rows) {
  * @param {string} value
  * @returns {string}
  */
+/**
+ * Convert Google Drive share links to direct thumbnail URLs.
+ * @param {string} url
+ * @returns {string}
+ */
+function normalizePhotoUrl(url) {
+  if (!url) return '';
+  const trimmed = url.trim();
+
+  // Google Drive file link: drive.google.com/file/d/{ID}/...
+  const driveMatch = trimmed.match(
+    /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/
+  );
+  if (driveMatch) {
+    return `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w256`;
+  }
+
+  // Google Drive open link: drive.google.com/open?id={ID}
+  const openMatch = trimmed.match(
+    /drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/
+  );
+  if (openMatch) {
+    return `https://drive.google.com/thumbnail?id=${openMatch[1]}&sz=w256`;
+  }
+
+  return trimmed;
+}
+
 function normalizeStatus(value) {
   const lower = (value || '').toLowerCase().trim();
   if (lower === 'pending') return 'pending';

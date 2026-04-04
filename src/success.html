@@ -35,14 +35,26 @@
     .success-box p {
       font-size: 16px;
       line-height: 1.6;
-      margin: 0;
+      margin: 0 0 24px;
     }
+    .success-box a {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #1a1a1a;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 15px;
+    }
+    .success-box a:hover { opacity: 0.9; }
   </style>
 </head>
 <body>
   <div class="success-box">
     <h1 id="title">Your profile has been submitted!</h1>
     <p id="text">The ICF Cyprus administrator will review your application and you'll receive a confirmation by email.</p>
+    <a id="link" href="../public/embed-example.html">View Coach Registry</a>
   </div>
   <script>
     // Detect language from localStorage or URL param
@@ -61,9 +73,15 @@
         text: 'Ο διαχειριστής του ICF Cyprus θα εξετάσει την αίτησή σας και θα λάβετε επιβεβαίωση μέσω email.'
       }
     };
+    var links = {
+      en: 'View Coach Registry',
+      ru: 'Перейти в каталог коучей',
+      el: 'Προβολή μητρώου coaches',
+    };
     var m = msgs[lang] || msgs.en;
     document.getElementById('title').textContent = m.title;
     document.getElementById('text').textContent = m.text;
+    document.getElementById('link').textContent = links[lang] || links.en;
   </script>
 </body>
 </html>
