@@ -41,6 +41,9 @@ import { submitRegistration } from './submit.js';
  * @property {string} [containerId] -- custom container ID
  * @property {string} [scriptUrl] -- Google Apps Script web app URL
  * @property {boolean} [devMode] -- force dev mode for submissions
+ * @property {string} [view] -- initial view: 'catalog' (default) or 'registration'
+ * @property {string} [registerUrl] -- URL to registration page (if separate page)
+ * @property {string} [catalogUrl] -- URL to catalog page (for back link from registration)
  */
 
 /** @type {import('./sheets.js').Coach[]} */
@@ -70,6 +73,7 @@ function findContainer(containerId) {
   }
   return (
     document.getElementById('icf-coach-registry') ||
+    document.getElementById('icf-coach-registration') ||
     document.querySelector('[data-icf-registry]')
   );
 }
@@ -129,6 +133,13 @@ function renderAIButton() {
  * @returns {string} HTML string
  */
 function renderJoinButton() {
+  if (appConfig.registerUrl) {
+    return `
+      <a class="icf-join-button" href="${esc(appConfig.registerUrl)}">
+        <span data-i18n="joinRegistry">${esc(t('joinRegistry'))}</span>
+      </a>
+    `;
+  }
   return `
     <button class="icf-join-button"
             aria-label="${esc(t('joinRegistry'))}"
@@ -143,6 +154,13 @@ function renderJoinButton() {
  * @returns {string} HTML string
  */
 function renderBackButton() {
+  if (appConfig.catalogUrl) {
+    return `
+      <a class="icf-back-button" href="${esc(appConfig.catalogUrl)}">
+        <span data-i18n="backToCatalog">${esc(t('backToCatalog'))}</span>
+      </a>
+    `;
+  }
   return `
     <button class="icf-back-button"
             aria-label="${esc(t('backToCatalog'))}"
@@ -362,14 +380,22 @@ async function init(config = {}) {
   const lang = initLanguage();
   containerEl.setAttribute('lang', lang);
 
-  // Show loading state
-  renderCatalog('loading');
+  // Start with the configured view or default to catalog
+  const startView = config.view || 'catalog';
 
-  try {
-    coaches = await fetchCoaches(config.sheetId);
-    renderCatalog('ready');
-  } catch (err) {
-    renderCatalog('error', t('errorState'));
+  if (startView === 'registration') {
+    // Registration-only page — no need to fetch coaches
+    showView('registration');
+  } else {
+    // Catalog view — fetch coaches first
+    renderCatalog('loading');
+
+    try {
+      coaches = await fetchCoaches(config.sheetId);
+      renderCatalog('ready');
+    } catch (err) {
+      renderCatalog('error', esc(t('errorState')));
+    }
   }
 }
 

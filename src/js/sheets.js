@@ -316,11 +316,14 @@ async function fetchSheetTab(sheetId, tabName) {
 
 /**
  * Load mock coach data from local JSON file.
- * Uses a path relative to the HTML entry point.
+ * Uses import.meta.url to resolve path relative to this JS module,
+ * so it works regardless of which HTML page loads the widget.
  * @returns {Promise<Coach[]>}
  */
 async function loadMockData() {
-  const response = await fetch('./data/mock-coaches.json');
+  const baseUrl = new URL('.', import.meta.url).href;
+  const mockUrl = new URL('../data/mock-coaches.json', baseUrl).href;
+  const response = await fetch(mockUrl);
 
   if (!response.ok) {
     throw new Error('Failed to load mock data');

@@ -157,10 +157,14 @@
     import { ICFRegistry } from '../src/js/app.js';
 
     ICFRegistry.init({
-      // For production: provide your Google Sheet ID
+      // For production: uncomment and provide your Google Sheet ID
       // sheetId: 'YOUR_GOOGLE_SHEET_ID',
 
-      // Omit sheetId to use mock data (development only)
+      // Link to separate registration page
+      registerUrl: '../src/register.html',
+
+      // Dev mode: mock data + simulated form submission
+      devMode: true,
     });
   </script>
 
