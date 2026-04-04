@@ -289,7 +289,7 @@ export async function fetchCoaches(sheetId) {
     return filterApproved(allCoaches);
   }
 
-  const allCoaches = await fetchSheetTab(sheetId);
+  const allCoaches = await fetchSheetTab(sheetId, 'Submissions');
   return filterApproved(allCoaches);
 }
 
