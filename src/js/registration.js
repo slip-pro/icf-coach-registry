@@ -945,9 +945,7 @@ export function renderRegistrationForm(container, onSubmit) {
   updatePreview();
 
   // --- Submit handler ---
-  let submitted = false;
-
-  form.addEventListener('submit', async (e) => {
+  submitBtn.addEventListener('click', (e) => {
     e.preventDefault();
     const data = collectFormData(form);
 
@@ -958,42 +956,15 @@ export function renderRegistrationForm(container, onSubmit) {
     submitBtn.querySelector('span').textContent =
       t('regSubmitting');
     submitBtn.classList.add('icf-form__submit--loading');
-    resultContainer.innerHTML = '';
 
-    try {
-      await onSubmit(data);
-      submitted = true;
-    } catch (err) {
-      // Error state with retry
-      resultContainer.innerHTML = `
-        <div class="icf-form__error-message" role="alert">
-          <p data-i18n="regErrorGeneral">
-            ${esc(t('regErrorGeneral'))}
-          </p>
-          <button type="button"
-            class="icf-form__retry"
-            data-i18n="regRetry">${esc(t('regRetry'))}</button>
-        </div>`;
-
-      const retryBtn = resultContainer.querySelector(
-        '.icf-form__retry'
-      );
-      if (retryBtn) {
-        retryBtn.addEventListener('click', () => {
-          retryBtn.disabled = true;
-          resultContainer.innerHTML = '';
-          form.dispatchEvent(new Event('submit', {
-            cancelable: true,
-          }));
-        });
-      }
-    } finally {
-      if (!submitted) {
-        submitBtn.disabled = false;
-        submitBtn.querySelector('span').textContent =
-          t('regSubmit');
-        submitBtn.classList.remove('icf-form__submit--loading');
-      }
-    }
+    // Call onSubmit and handle result
+    onSubmit(data).then(() => {
+      // onSubmit handles redirect
+    }).catch(() => {
+      submitBtn.disabled = false;
+      submitBtn.querySelector('span').textContent =
+        t('regSubmit');
+      submitBtn.classList.remove('icf-form__submit--loading');
+    });
   });
 }
