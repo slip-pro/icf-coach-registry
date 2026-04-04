@@ -6,15 +6,32 @@
 
 ---
 
-## Future Goals (Phase 2)
+## Future Goals
+
+### G-005: Deploy to WordPress
+**Status**: Blocked (waiting for WP access)
+**Phase**: 1.5
+**Description**: Embed the coach catalog and registration form into the live ICF Cyprus website.
+**Depends on**: WP admin access
+
+### G-006: Conference Landing Workflow
+**Status**: Planned
+**Phase**: 1.5
+**Description**: Workflow for potential clients from conference to access the registry. Details TBD.
+
+### G-007: Photo Storage in WordPress
+**Status**: Planned (after G-005)
+**Phase**: 2
+**Description**: Upload coach photos to WP Media Library instead of relying on external URLs. Photos become stable and backed up with the site. Currently coaches provide a URL which can break if they delete the source.
+**Depends on**: G-005
 
 ### G-003: AI Coach Matching Assistant
-**Status**: Planned
+**Status**: Deferred
 **Phase**: 2
 **Description**: AI chatbot widget that helps clients find the right coach through a short conversation.
 
 ### G-004: Analytics & Optimization
-**Status**: Planned
+**Status**: Deferred
 **Phase**: 2
 **Description**: Track page views, filter usage, contact clicks, and AI conversation conversion.
 
