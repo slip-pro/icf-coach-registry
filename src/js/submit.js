@@ -36,11 +36,16 @@ export async function submitRegistration(formData, config = {}) {
   const body = new URLSearchParams();
   body.append('payload', JSON.stringify(formData));
 
-  await fetch(scriptUrl, {
+  // Fire-and-forget: don't await — no-cors opaque response
+  // can hang in some browsers. Data is sent regardless.
+  fetch(scriptUrl, {
     method: 'POST',
     mode: 'no-cors',
     body: body,
   });
+
+  // Small delay to let the request start before page navigates
+  await new Promise((resolve) => setTimeout(resolve, 500));
 
   return { success: true };
 }
