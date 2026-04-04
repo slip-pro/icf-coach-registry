@@ -2,26 +2,7 @@
 
 ## Active Goals
 
-### G-002: Coach Registration Flow
-**Status**: In progress (Sprint 2)
-**Phase**: 1
-**Started**: 2026-04-04
-
-**Context**: Каталог (G-001) работает и показывает коучей из Google Sheets. Сейчас добавить коуча может только человек с доступом к таблице. Нужна публичная форма, чтобы коучи ICF Cyprus добавляли себя сами, а админ чаптера модерировал заявки.
-
-**Acceptance Criteria**:
-- [ ] Коуч может заполнить и отправить форму без WP-доступа
-- [ ] Админ получает уведомление и может одобрить/отклонить
-- [ ] Одобренные коучи появляются в каталоге
-
-**Sprint Decomposition**:
-- [ ] T1: Google Sheet структура + sheets.js status-фильтрация
-- [ ] T2: Registration Form UI (F-008)
-- [ ] T3: Google Forms интеграция (POST submit)
-- [ ] T4: Admin workflow + инструкции (F-009)
-- [ ] T5: Навигация каталог ↔ форма
-
-**Notes**: `docs/notes/G-002.md`
+### _(Phase 1 complete. Next: Phase 2 — G-003 AI Assistant or G-004 Analytics)_
 
 ---
 
@@ -40,6 +21,21 @@
 ---
 
 ## Achieved Goals
+
+### G-002: Coach Registration Flow
+**Status**: Achieved
+**Phase**: 1
+**Completed**: 2026-04-04
+**Commit**: 5579d2a
+
+**Acceptance Criteria**:
+- [x] Коуч может заполнить и отправить форму без WP-доступа
+- [x] Админ получает уведомление и может одобрить/отклонить
+- [x] Одобренные коучи появляются в каталоге
+
+**Notes**: `docs/notes/G-002.md`
+
+---
 
 ### G-001: MVP Coach Catalog
 **Status**: Achieved

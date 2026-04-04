@@ -1,9 +1,10 @@
 # Roadmap: ICF Cyprus Coach Registry
 
-## Current Stage: Phase 1 — MVP in progress
+## Current Stage: Phase 1 — Complete
 
-G-001 (Coach Catalog) delivered. G-002 (Registration Flow) next.
-WordPress access still pending for final deployment.
+G-001 (Coach Catalog) and G-002 (Registration Flow) delivered.
+Phase 1 MVP is functionally complete. Ready for deployment once WordPress access obtained.
+Next: Phase 2 — AI Assistant and Analytics.
 
 ---
 
