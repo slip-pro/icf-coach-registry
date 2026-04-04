@@ -222,7 +222,6 @@ function renderCatalog(state, errorMessage) {
   containerEl.innerHTML = `
     ${renderHeader()}
     ${renderAIButton()}
-    ${renderJoinButton()}
     ${bodyHTML}
   `;
 
