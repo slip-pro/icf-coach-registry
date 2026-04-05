@@ -44,6 +44,7 @@ import { submitRegistration } from './submit.js';
  * @property {string} [view] -- initial view: 'catalog' (default) or 'registration'
  * @property {string} [registerUrl] -- URL to registration page (if separate page)
  * @property {string} [catalogUrl] -- URL to catalog page (for back link from registration)
+ * @property {string} [logoUrl] -- path to ICF Cyprus logo image (relative to HTML file)
  */
 
 /** @type {import('./sheets.js').Coach[]} */
@@ -79,7 +80,10 @@ function findContainer(containerId) {
 }
 
 /**
- * Render the page header with title and language switcher.
+ * Render the page header with logo (or title fallback) and
+ * language switcher.
+ * Logo is shown when `logoUrl` is provided in config; otherwise
+ * the translated text title is rendered as a fallback.
  * @returns {string} HTML string
  */
 function renderHeader() {
@@ -97,11 +101,19 @@ function renderHeader() {
     })
     .join('');
 
+  const brandHTML = appConfig.logoUrl
+    ? `<div class="icf-header__brand">
+        <img src="${esc(appConfig.logoUrl)}"
+             alt="ICF Cyprus Chapter"
+             class="icf-header__logo">
+      </div>`
+    : `<h1 class="icf-page-title" data-i18n="pageTitle">
+        ${esc(t('pageTitle'))}
+      </h1>`;
+
   return `
     <header class="icf-page-header">
-      <h1 class="icf-page-title" data-i18n="pageTitle">
-        ${esc(t('pageTitle'))}
-      </h1>
+      ${brandHTML}
       <nav class="icf-lang-switch" role="group"
            aria-label="Language">
         ${langButtons}
