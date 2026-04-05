@@ -82,9 +82,11 @@ function findContainer(containerId) {
 /**
  * Render the page header: logo (left) + title (center) +
  * language switcher (right) on one line, white background.
+ * @param {string} [titleKey='pageTitle'] — i18n key for title
+ * @param {string} [highlightKey='pageTitleHighlight'] — i18n key for highlight
  * @returns {string} HTML string
  */
-function renderHeader() {
+function renderHeader(titleKey = 'pageTitle', highlightKey = 'pageTitleHighlight') {
   const lang = getCurrentLanguage();
   const langButtons = SUPPORTED_LANGS
     .map((code) => {
@@ -111,8 +113,8 @@ function renderHeader() {
         ${logoHTML}
       </div>
       <h1 class="icf-page-title">
-        <span data-i18n="pageTitle">${esc(t('pageTitle'))}</span>
-        <span class="icf-page-title__highlight" data-i18n="pageTitleHighlight">${esc(t('pageTitleHighlight'))}</span>
+        <span data-i18n="${titleKey}">${esc(t(titleKey))}</span>
+        <span class="icf-page-title__highlight" data-i18n="${highlightKey}">${esc(t(highlightKey))}</span>
       </h1>
       <nav class="icf-lang-switch" role="group"
            aria-label="Language">
@@ -301,7 +303,7 @@ function renderRegistration() {
   if (!containerEl) return;
 
   containerEl.innerHTML = `
-    ${renderHeader()}
+    ${renderHeader('regPageTitle', 'regPageTitleHighlight')}
     ${renderBackButton()}
     <div id="icf-registration-container"></div>
   `;

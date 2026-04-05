@@ -27,6 +27,16 @@ const dictionary = {
     ru: 'ICF Cyprus',
     el: 'ICF Cyprus',
   },
+  regPageTitle: {
+    en: 'Coach Registration',
+    ru: 'Регистрация коуча',
+    el: 'Εγγραφή Coach',
+  },
+  regPageTitleHighlight: {
+    en: 'ICF Cyprus',
+    ru: 'ICF Cyprus',
+    el: 'ICF Cyprus',
+  },
 
   // Filter labels
   filterSpecialization: {
