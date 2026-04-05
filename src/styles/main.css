@@ -347,6 +347,11 @@
   z-index: 2;
 }
 
+.icf-filters__break {
+  flex-basis: 100%;
+  height: 0;
+}
+
 .icf-filter-chip {
   background: var(--icf-chip-bg);
   border: 1px solid var(--icf-border-input);

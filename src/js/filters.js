@@ -343,7 +343,11 @@ export function renderFilters(coaches, container, onFilterChange) {
     wrapper.appendChild(chip);
   }
 
-  // 5. Price range chips
+  // 5. Price range chips (on new line)
+  const priceBreak = document.createElement('div');
+  priceBreak.className = 'icf-filters__break';
+  wrapper.appendChild(priceBreak);
+
   for (const range of PRICE_RANGES) {
     const chip = buildToggleChip(
       t(range.labelKey),
