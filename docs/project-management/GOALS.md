@@ -8,22 +8,32 @@
 
 ## Future Goals
 
-### G-005: Embed Widget in WordPress (properly)
-**Status**: Blocked
+### G-008: Custom Domain + Hosting
+**Status**: Planned
 **Phase**: 1.5
-**Description**: Embed the widget directly into the WP page (not via external link). Requires ability to insert `<script>` tags — need to ask WP admin how to do this on the ICF Chapters platform.
-**Depends on**: WP admin guidance on custom scripts
+**Description**: Deploy to Vercel or Netlify with a professional URL (e.g. coaches.icf-cyprus.org or icf-cyprus-coaches.vercel.app). Replace GitHub Pages link. Optionally connect a custom domain later.
+
+### G-009: Redesign by ICF Brandbook
+**Status**: Planned
+**Phase**: 1.5
+**Description**: Redesign the catalog UI to match the official ICF Brand Guidelines 2025 (PDF in temp/). Current design is based on the HTML mockup, not the brandbook. Need to read the PDF, extract colors/fonts/rules, update DESIGN.md and all CSS.
+**Source**: `temp/ICF Brand Guidelines 2025-09-08.pdf`
+
+### G-010: Photo Storage Solution
+**Status**: Planned
+**Phase**: 1.5
+**Description**: Reliable photo hosting independent of coaches' personal storage. Options: Cloudflare R2 (free tier), Vercel Blob, or auto-copy to chapter's Google Drive via Apps Script. Currently coaches provide a URL which can break if deleted.
 
 ### G-006: Conference Landing Workflow
 **Status**: Planned
 **Phase**: 1.5
 **Description**: Workflow for potential clients from conference to access the registry. Details TBD.
 
-### G-007: Photo Storage in WordPress
-**Status**: Planned (after G-005)
+### G-005: Embed Widget in WordPress (properly)
+**Status**: Blocked
 **Phase**: 2
-**Description**: Upload coach photos to WP Media Library instead of relying on external URLs. Photos become stable and backed up with the site. Currently coaches provide a URL which can break if they delete the source.
-**Depends on**: G-005
+**Description**: Embed the widget directly into the WP page (not via external link). Requires ability to insert `<script>` tags — need to ask WP admin how to do this on the ICF Chapters platform.
+**Depends on**: WP admin guidance on custom scripts
 
 ### G-003: AI Coach Matching Assistant
 **Status**: Deferred
