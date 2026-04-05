@@ -100,7 +100,7 @@ const dictionary = {
   },
   specExecutive: {
     en: 'Executive',
-    ru: 'Руководство',
+    ru: 'Executive',
     el: 'Executive',
   },
   specHealth: {
