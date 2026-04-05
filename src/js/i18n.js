@@ -190,12 +190,12 @@ const dictionary = {
   },
   langEnglish: {
     en: 'English',
-    ru: 'English',
+    ru: 'Английский',
     el: 'Αγγλικά',
   },
   langGreek: {
     en: 'Greek',
-    ru: 'Ελληνικά',
+    ru: 'Греческий',
     el: 'Ελληνικά',
   },
   langGerman: {

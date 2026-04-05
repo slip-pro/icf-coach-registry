@@ -53,15 +53,16 @@ const ICF_LEVELS = ['ACC', 'PCC', 'MCC'];
 const FORMAT_OPTIONS = [
   { value: 'online', labelKey: 'formatOnline' },
   { value: 'offline', labelKey: 'formatOffline' },
-  { value: 'both', labelKey: 'formatBoth' },
 ];
+
+/** Fixed language filter options (only 3 main languages) */
+const LANG_FILTER_OPTIONS = ['English', 'Russian', 'Greek'];
 
 /** Language display names mapped to i18n keys */
 const LANG_I18N_MAP = {
   'Russian': 'langRussian',
   'English': 'langEnglish',
   'Greek': 'langGreek',
-  'German': 'langGerman',
 };
 
 /**
@@ -229,7 +230,7 @@ export function renderFilters(coaches, container, onFilterChange) {
   container.innerHTML = '';
 
   const allSpecializations = extractSpecializations(coaches);
-  const allLanguages = extractLanguages(coaches);
+  const allLanguages = LANG_FILTER_OPTIONS;
   const state = createEmptyState();
 
   /** Re-apply filters and notify parent */
