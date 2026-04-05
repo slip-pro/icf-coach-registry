@@ -166,6 +166,10 @@
   font-weight: 800;
   color: var(--icf-text-primary);
   line-height: 1.2;
+  background: var(--icf-cta);
+  display: inline-block;
+  padding: 8px 28px;
+  border-radius: 100px;
 }
 
 
@@ -903,7 +907,8 @@
   }
 
   .icf-page-title {
-    font-size: 28px;
+    font-size: 24px;
+    padding: 6px 20px;
   }
 
   .icf-header__logo {
