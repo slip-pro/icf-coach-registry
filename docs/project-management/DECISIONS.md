@@ -44,3 +44,21 @@
 **Decision**: AI writes all code, owner reviews and deploys
 **Rationale**: No developer hired. Owner is not a developer but can follow instructions for deployment.
 **Trade-offs**: Need extra attention to code quality and testing. Deployment instructions must be clear and step-by-step.
+
+### D-004: Google Apps Script for form submission
+**Date**: 2026-04-04
+**Decision**: Use Google Apps Script as serverless backend for form submissions
+**Rationale**: Zero backend infrastructure needed, no hosting costs, writes directly to Google Sheet. Coach registration form submits data via Apps Script web app endpoint.
+**Trade-offs**: No-cors mode means the client cannot verify submission success from the HTTP response. Success is assumed on send; errors are silent on the client side.
+
+### D-005: GitHub Pages for hosting
+**Date**: 2026-04-05
+**Decision**: Deploy widget on GitHub Pages instead of embedding in WordPress
+**Rationale**: ICF Chapters WordPress platform strips script tags, making it impossible to embed custom JS widgets directly. GitHub Pages provides free, reliable static hosting.
+**Trade-offs**: External URL (slip-pro.github.io) instead of icf-chapters.org. WordPress page links to the external registry URL.
+
+### D-006: Single Submissions tab
+**Date**: 2026-04-05
+**Decision**: Use one Google Sheet tab (Submissions) for all coach data
+**Rationale**: Simpler than maintaining two separate tabs (Coaches + Submissions). Registration and catalog share the same data source, reducing sync complexity.
+**Trade-offs**: All data in one place -- requires status column discipline to distinguish approved coaches from pending submissions.

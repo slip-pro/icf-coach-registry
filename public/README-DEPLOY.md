@@ -1,6 +1,22 @@
 # ICF Cyprus Coach Registry — Deployment Guide
 
-This guide explains how to set up the coach registry widget
+## Current Deployment: GitHub Pages
+
+The registry is live at: **https://slip-pro.github.io/icf-coach-registry/**
+
+GitHub Pages is the primary deployment method. The site auto-deploys
+from the `main` branch. No manual deployment steps needed -- push to
+main and the site updates.
+
+WordPress embedding (see instructions below) is tracked as G-005 and
+is currently blocked, waiting for WP admin guidance on script embedding.
+The WordPress page links to the GitHub Pages URL in the meantime.
+
+---
+
+## WordPress Deployment (for future reference)
+
+This section explains how to set up the coach registry widget
 on the ICF Cyprus WordPress website. No coding experience required.
 
 ---
