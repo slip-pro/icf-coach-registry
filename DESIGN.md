@@ -2,47 +2,56 @@
 
 ## Visual Theme & Atmosphere
 
-**Mood**: Warm, professional, trustworthy. The interface conveys competence and approachability — qualities essential for coaching professionals. It should feel like a curated directory, not a marketplace.
+**Mood**: Human, warm, empowering. The interface conveys the ICF philosophy: a human approach to coaching. It should feel professional yet approachable — like a curated directory of trusted professionals, not a marketplace.
 
 **Density**: Medium. Cards provide enough information for quick scanning while maintaining breathing room. Content-to-whitespace ratio leans toward openness.
 
-**Design philosophy**: Quiet confidence. Minimal decoration, strong typography hierarchy, warm neutral palette. The coaches themselves (their photos, bios, credentials) are the visual focus — the UI recedes.
+**Design philosophy**: Warm confidence. Deep blue grounds the visual hierarchy with authority. Bone warmth prevents clinical coldness. Yellow accents draw the eye to actions. The coaches themselves (their photos, bios, credentials) are the visual focus — the UI recedes.
 
-**Brand alignment**: ICF (International Coaching Federation) — global professional body. The design must feel institutional-grade yet human. No startup energy, no corporate coldness.
+**Brand alignment**: ICF (International Coaching Federation) — global professional body. Color priority: Deep Blue > Blue > Bone > Light Blue > Yellow > White. The palette communicates institutional trust through depth (deep blue) and human warmth through texture (bone, yellow).
+
+**Chapter identity**: ICF Cyprus uses light blue (#5778fa) as its chapter accent, distinguishing it within the ICF family while maintaining brand coherence.
 
 **CSS scoping**: All classes use `icf-` BEM prefix to avoid WordPress theme conflicts. The widget renders inside a single container element and must not leak styles.
 
-**Font**: [Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans) (400, 500, 600, 700) — geometric sans-serif with warm, rounded terminals. Loaded via Google Fonts.
+**Fonts**:
+- Headlines: [Nunito](https://fonts.google.com/specimen/Nunito) (700, 800) — rounded sans-serif, warm and approachable. Google Fonts fallback for Hoss Round (ICF brand headline font).
+- Body: [Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans) (400, 500, 600, 700) — geometric sans-serif with warm, rounded terminals.
+- Both loaded via Google Fonts.
 
 ---
 
 ## Color Palette & Roles
 
-### Core
+### Core — ICF Brand Palette
 
-| Token | Hex | Role |
-|-------|-----|------|
-| `--icf-bg` | `#f5f5f0` | Page background (warm off-white) |
-| `--icf-surface` | `#ffffff` | Card / elevated surface |
-| `--icf-text-primary` | `#1a1a1a` | Headings, names, primary text |
-| `--icf-text-secondary` | `#555555` | Bio text, contact labels |
-| `--icf-text-tertiary` | `#666666` | Meta items (price, format, languages) |
-| `--icf-text-muted` | `#999999` | Placeholder text |
-| `--icf-text-faint` | `#aaaaaa` | Social labels ("Profiles:") |
-| `--icf-border` | `#ebebeb` | Card border |
-| `--icf-border-input` | `#e0e0e0` | Input / chip / contact button border |
-| `--icf-divider` | `#f0f0f0` | In-card horizontal divider |
+| Token | Hex | Role | Brand name |
+|-------|-----|------|------------|
+| `--icf-bg` | `#f8f0e4` | Page background (warm bone) | Bone |
+| `--icf-surface` | `#ffffff` | Card / elevated surface | White |
+| `--icf-text-primary` | `#212251` | Headings, names, primary text | Deep Blue |
+| `--icf-text-secondary` | `#2b379b` | Bio text, section labels | Blue |
+| `--icf-text-tertiary` | `#666666` | Meta items (price, format, languages) | — |
+| `--icf-text-muted` | `#999999` | Placeholder text | — |
+| `--icf-text-faint` | `#aaaaaa` | Social labels ("Profiles:") | — |
+| `--icf-accent` | `#5778fa` | Chapter accent, decorative, large text | Light Blue |
+| `--icf-accent-text` | `#4662e0` | Links, interactive text (WCAG AA safe) | Light Blue (dark) |
+| `--icf-cta` | `#efcb30` | CTA buttons, highlights | Yellow |
+| `--icf-cta-hover` | `#e0bc20` | CTA hover state | Yellow (dark) |
+| `--icf-border` | `#e0dcd4` | Card border (warm neutral) | — |
+| `--icf-border-input` | `#d8d2c8` | Input / chip / contact button border | — |
+| `--icf-divider` | `#ede5d8` | In-card horizontal divider | — |
 
 ### Surfaces & Backgrounds
 
 | Token | Hex | Role |
 |-------|-----|------|
-| `--icf-tag-bg` | `#f0f0ee` | Tag background, social icon background |
-| `--icf-tag-bg-hover` | `#e4e4e0` | Social icon hover |
+| `--icf-tag-bg` | `#ede5d8` | Tag background, social icon background |
+| `--icf-tag-bg-hover` | `#e0d8ca` | Social icon hover |
 | `--icf-chip-bg` | `#ffffff` | Filter chip default |
-| `--icf-chip-active-bg` | `#1a1a1a` | Filter chip active / lang switch active |
+| `--icf-chip-active-bg` | `#212251` | Filter chip active / lang switch active |
 | `--icf-chip-active-text` | `#ffffff` | Filter chip active text |
-| `--icf-avatar-fallback` | `#e8e8e8` | Avatar placeholder (when image fails to load) |
+| `--icf-avatar-fallback` | `#e8e0d4` | Avatar placeholder (when image fails to load) |
 
 ### ICF Credential Badges
 
@@ -58,14 +67,14 @@
 |---------|--------|------|----------|
 | WhatsApp | `#25D366` | `#128C7E` | `#f0fff4` |
 | Telegram | `#29ABE2` | `#0088cc` | `#f0f8ff` |
-| Email | `#e0e0e0` | `#444444` | `#f8f8f8` |
+| Email | `#d8d2c8` | `#212251` | `#f8f0e4` |
 
 ### AI Feature (Phase 2)
 
 | Token | Value | Role |
 |-------|-------|------|
-| `--icf-ai-gradient-start` | `#1a1a1a` | AI button gradient start |
-| `--icf-ai-gradient-end` | `#3a3a3a` | AI button gradient end |
+| `--icf-ai-gradient-start` | `#212251` | AI button gradient start (Deep Blue) |
+| `--icf-ai-gradient-end` | `#2b379b` | AI button gradient end (Blue) |
 | `--icf-ai-text` | `#ffffff` | AI button text |
 | `--icf-ai-sub-opacity` | `0.7` | AI button subtitle opacity |
 
@@ -86,27 +95,30 @@
 
 ## Typography Rules
 
-**Font family**: `'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`
+**Headline font family**: `'Nunito', 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`
+
+**Body font family**: `'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`
 
 ### Hierarchy
 
-| Element | Size | Weight | Line-height | Letter-spacing | Color |
-|---------|------|--------|-------------|----------------|-------|
-| Page title (H1) | 28px | 700 | 1.2 | 0 | `#1a1a1a` |
-| Section heading (H2) | 22px | 700 | 1.3 | 0 | `#1a1a1a` |
-| Card subheading (H3) | 17px | 700 | 1.3 | 0 | `#1a1a1a` |
-| Body / Bio | 14px | 400 | 1.6 | 0 | `#555555` |
-| AI button text | 16px | 600 | 1.4 | 0 | `#ffffff` |
-| Filter chip | 14px | 400 | 1.4 | 0 | `#444444` |
-| Meta item | 13px | 400 | 1.4 | 0 | `#666666` |
-| Contact link | 13px | 600 | 1.4 | 0 | `#1a1a1a` |
-| Contact label | 13px | 400 | 1.6 | 0 | `#555555` |
-| Tag | 12px | 500 | 1.4 | 0 | `#444444` |
-| ICF Badge | 11px | 600 | 1.2 | 0.5px | varies (see badges) |
-| Social label | 12px | 400 | 1.4 | 0 | `#aaaaaa` |
-| AI button subtitle | 13px | 400 | 1.4 | 0 | `#ffffff` (70% opacity) |
-| Lang switch button | 13px | 500 | 1.4 | 0 | `#666666` |
-| Overline / caption | 11px | 600 | 1.3 | 0.5px | `#666666` |
+| Element | Font | Size | Weight | Line-height | Letter-spacing | Color |
+|---------|------|------|--------|-------------|----------------|-------|
+| Page title (H1) | Nunito | 28px | 800 | 1.2 | 0 | `#212251` |
+| Section heading (H2) | Nunito | 22px | 700 | 1.3 | 0 | `#212251` |
+| Card name (H3) | Nunito | 17px | 700 | 1.3 | 0 | `#212251` |
+| Body / Bio | Plus Jakarta Sans | 14px | 400 | 1.6 | 0 | `#2b379b` |
+| AI button text | Plus Jakarta Sans | 16px | 600 | 1.4 | 0 | `#ffffff` |
+| Filter chip | Plus Jakarta Sans | 14px | 400 | 1.4 | 0 | `#212251` |
+| Meta item | Plus Jakarta Sans | 13px | 400 | 1.4 | 0 | `#666666` |
+| Contact link | Plus Jakarta Sans | 13px | 600 | 1.4 | 0 | `#212251` |
+| Contact label | Plus Jakarta Sans | 13px | 400 | 1.6 | 0 | `#2b379b` |
+| Tag | Plus Jakarta Sans | 12px | 500 | 1.4 | 0 | `#212251` |
+| ICF Badge | Plus Jakarta Sans | 11px | 600 | 1.2 | 0.5px | varies (see badges) |
+| Social label | Plus Jakarta Sans | 12px | 400 | 1.4 | 0 | `#aaaaaa` |
+| AI button subtitle | Plus Jakarta Sans | 13px | 400 | 1.4 | 0 | `#ffffff` (70% opacity) |
+| Lang switch button | Plus Jakarta Sans | 13px | 500 | 1.4 | 0 | `#666666` |
+| Overline / caption | Plus Jakarta Sans | 11px | 600 | 1.3 | 0.5px | `#666666` |
+| Link text | Plus Jakarta Sans | inherit | 500 | inherit | 0 | `#4662e0` |
 
 ### Text truncation
 
@@ -122,7 +134,7 @@
 | Property | Value |
 |----------|-------|
 | Background | `#ffffff` |
-| Border | 1px solid `#ebebeb` |
+| Border | 1px solid `#e0dcd4` |
 | Border-radius | 16px |
 | Padding | 24px |
 | Gap (internal) | 16px |
@@ -130,7 +142,7 @@
 
 **States:**
 - Default: no shadow
-- Hover: `box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08)`
+- Hover: `box-shadow: 0 4px 20px rgba(33, 34, 81, 0.08)`
 - Transition: `box-shadow 0.2s ease`
 
 ### Avatar (`icf-avatar`)
@@ -144,7 +156,7 @@
 
 **Placeholder variant** (`icf-avatar-placeholder`):
 - Same dimensions
-- Background: per-coach generated color (e.g. `#2d6a4f`, `#5e548e`, `#c77dff`)
+- Background: per-coach generated color (e.g. `#2b379b`, `#5778fa`, `#212251`)
 - Text: initials, 22px, weight 700, color `#ffffff`
 - Centered (flex align + justify)
 
@@ -171,25 +183,25 @@ Badge icons: MCC uses `✦`, PCC uses `▲`, ACC uses `●`.
 | Property | Value |
 |----------|-------|
 | Background | `#ffffff` |
-| Border | 1px solid `#e0e0e0` |
+| Border | 1px solid `#d8d2c8` |
 | Border-radius | 20px (pill) |
 | Padding | 8px 16px |
 | Font-size | 14px |
-| Color | `#444444` |
+| Color | `#212251` |
 | Gap (icon + text) | 6px |
 | Icon size | 14px x 14px |
 
 **States:**
-- Default: white bg, `#e0e0e0` border
-- Hover: border-color `#999999`
-- Active: bg `#1a1a1a`, color `#ffffff`, border-color `#1a1a1a`
+- Default: white bg, `#d8d2c8` border
+- Hover: border-color `#2b379b`
+- Active: bg `#212251`, color `#ffffff`, border-color `#212251`
 
 ### Language Switch (`icf-lang-switch`)
 
 | Property | Value |
 |----------|-------|
 | Container bg | `#ffffff` |
-| Container border | 1px solid `#e0e0e0` |
+| Container border | 1px solid `#d8d2c8` |
 | Container border-radius | 8px |
 | Container padding | 4px |
 | Gap between buttons | 4px |
@@ -200,7 +212,7 @@ Badge icons: MCC uses `✦`, PCC uses `▲`, ACC uses `●`.
 
 **States:**
 - Default: no bg, color `#666666`
-- Active: bg `#1a1a1a`, color `#ffffff`
+- Active: bg `#212251`, color `#ffffff`
 
 ### Contact Link (`icf-contact-link`)
 
@@ -213,7 +225,7 @@ Badge icons: MCC uses `✦`, PCC uses `▲`, ACC uses `●`.
 | Font-weight | 600 |
 | Padding | 6px 12px |
 | Border-radius | 8px |
-| Border | 1px solid `#e0e0e0` |
+| Border | 1px solid `#d8d2c8` |
 | Icon size | 15px x 15px |
 | Transition | `all 0.15s ease` |
 
@@ -225,21 +237,21 @@ Variants: `.icf-contact-link--whatsapp`, `.icf-contact-link--telegram`, `.icf-co
 |----------|-------|
 | Size | 30px x 30px |
 | Border-radius | 8px |
-| Background | `#f0f0ee` |
+| Background | `#ede5d8` |
 | Icon size | 16px x 16px |
-| Icon color | `#555555` |
+| Icon color | `#2b379b` |
 | Transition | `background 0.15s ease` |
 
 **States:**
-- Default: bg `#f0f0ee`
-- Hover: bg `#e4e4e0`
+- Default: bg `#ede5d8`
+- Hover: bg `#e0d8ca`
 
 ### Tag (`icf-tag`)
 
 | Property | Value |
 |----------|-------|
-| Background | `#f0f0ee` |
-| Color | `#444444` |
+| Background | `#ede5d8` |
+| Color | `#212251` |
 | Font-size | 12px |
 | Font-weight | 500 |
 | Padding | 4px 10px |
@@ -250,14 +262,50 @@ Variants: `.icf-contact-link--whatsapp`, `.icf-contact-link--telegram`, `.icf-co
 | Property | Value |
 |----------|-------|
 | Border | none |
-| Border-top | 1px solid `#f0f0f0` |
+| Border-top | 1px solid `#ede5d8` |
 | Margin | 0 (gap handled by card flex) |
+
+### Primary Button / CTA (`icf-btn-primary`)
+
+| Property | Value |
+|----------|-------|
+| Background | `#efcb30` |
+| Color | `#212251` |
+| Border | none |
+| Border-radius | 14px |
+| Padding | 14px 24px |
+| Font-size | 15px |
+| Font-weight | 700 |
+| Font-family | Nunito |
+| Transition | `background 0.2s ease` |
+
+**States:**
+- Default: bg `#efcb30`, color `#212251`
+- Hover: bg `#e0bc20`
+- Focus: `outline: 2px solid #5778fa; outline-offset: 2px`
+
+### Secondary Button (`icf-btn-secondary`)
+
+| Property | Value |
+|----------|-------|
+| Background | transparent |
+| Color | `#212251` |
+| Border | 2px solid `#212251` |
+| Border-radius | 14px |
+| Padding | 12px 22px |
+| Font-size | 15px |
+| Font-weight | 600 |
+| Font-family | Nunito |
+
+**States:**
+- Default: transparent bg, Deep Blue border + text
+- Hover: bg `#212251`, color `#ffffff`
 
 ### AI Button (`icf-ai-button`) (Phase 2)
 
 | Property | Value |
 |----------|-------|
-| Background | `linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%)` |
+| Background | `linear-gradient(135deg, #212251 0%, #2b379b 100%)` |
 | Color | `#ffffff` |
 | Border | none |
 | Border-radius | 14px |
@@ -280,15 +328,15 @@ Subtitle span: 13px, weight 400, opacity 0.7.
 | Property | Value |
 |----------|-------|
 | Background | `#ffffff` |
-| Border | 1px solid `#e0e0e0` |
+| Border | 1px solid `#d8d2c8` |
 | Border-radius | 10px |
 | Padding | 10px 16px |
 | Font-size | 14px |
-| Color | `#1a1a1a` |
+| Color | `#212251` |
 | Placeholder color | `#999999` |
 
 **States:**
-- Focus: border-color `#1a1a1a`, outline none
+- Focus: border-color `#5778fa`, outline none, `box-shadow: 0 0 0 3px rgba(87, 120, 250, 0.15)`
 - Error: border-color `#721c24`
 
 ---
@@ -336,6 +384,7 @@ Subtitle span: 13px, weight 400, opacity 0.7.
 - Section spacing (32px) creates clear visual separation
 - 20px grid gap is tight enough for scanning but open enough to avoid crowding
 - Body has 40px top/bottom, 20px left/right padding
+- Bone background provides inherent visual warmth — whitespace feels inviting, not empty
 
 ---
 
@@ -346,15 +395,15 @@ Subtitle span: 13px, weight 400, opacity 0.7.
 | Level | Value | Usage |
 |-------|-------|-------|
 | `--icf-shadow-none` | `none` | Card default |
-| `--icf-shadow-sm` | `0 1px 3px rgba(0, 0, 0, 0.04)` | Subtle elevation (future: dropdowns) |
-| `--icf-shadow-md` | `0 4px 20px rgba(0, 0, 0, 0.08)` | Card hover |
-| `--icf-shadow-lg` | `0 8px 30px rgba(0, 0, 0, 0.12)` | Modal / overlay (future: AI chat panel) |
-| `--icf-shadow-xl` | `0 12px 40px rgba(0, 0, 0, 0.16)` | Full-screen overlay |
+| `--icf-shadow-sm` | `0 1px 3px rgba(33, 34, 81, 0.04)` | Subtle elevation (future: dropdowns) |
+| `--icf-shadow-md` | `0 4px 20px rgba(33, 34, 81, 0.08)` | Card hover |
+| `--icf-shadow-lg` | `0 8px 30px rgba(33, 34, 81, 0.12)` | Modal / overlay (future: AI chat panel) |
+| `--icf-shadow-xl` | `0 12px 40px rgba(33, 34, 81, 0.16)` | Full-screen overlay |
 
 ### Surface Hierarchy
 
-1. **Page background** (`#f5f5f0`) — base layer
-2. **Card surface** (`#ffffff` + border) — content layer
+1. **Page background** (`#f8f0e4` Bone) — base layer
+2. **Card surface** (`#ffffff` + warm border) — content layer
 3. **Elevated surface** (`#ffffff` + shadow-md) — hover / interactive layer
 4. **Overlay** (`#ffffff` + shadow-lg) — modal / panel layer
 
@@ -375,19 +424,24 @@ Subtitle span: 13px, weight 400, opacity 0.7.
 
 ### Do
 
-- Use warm off-white (`#f5f5f0`) as page background — it softens the screen and feels approachable
+- Use Bone (`#f8f0e4`) as page background — it provides the warm, human feel central to the ICF brand
+- Use Deep Blue (`#212251`) as the primary text and UI weight color — it anchors the visual hierarchy
+- Use Yellow (`#efcb30`) exclusively for CTAs and highlights — it draws the eye without overwhelming
 - Keep cards visually equal — no card should draw more attention than another by default
 - Use ICF badge colors consistently (MCC=gold, PCC=green, ACC=teal) — these are industry-standard
 - Maintain 3-line bio clamp — enough to inform, not enough to overwhelm
 - Scope all CSS with `icf-` prefix — this widget lives inside WordPress
-- Use the same font (Plus Jakarta Sans) everywhere — no mixing typefaces
+- Use Nunito for headlines and Plus Jakarta Sans for body — two complementary warm sans-serifs
 - Respect coach data language — display names, bios, and tags as the coach wrote them (no auto-translation)
 - Make contact buttons clearly tappable with sufficient padding
+- Use Light Blue (`#5778fa`) as the chapter accent for decorative elements and large text
+- Use the accessible link color (`#4662e0`) for inline text links on white/bone backgrounds
 
 ### Don't
 
-- Don't use pure white (`#ffffff`) as page background — it looks clinical and harsh
-- Don't use pure black (`#000000`) for text — `#1a1a1a` is softer
+- Don't use pure white (`#ffffff`) as page background — Bone is the ICF brand surface
+- Don't use pure black (`#000000`) for text — Deep Blue (`#212251`) is the brand text color
+- Don't use Light Blue (`#5778fa`) for small body text — it fails WCAG AA. Use `#4662e0` instead
 - Don't add decorative gradients, patterns, or illustrations to cards — let content speak
 - Don't rank or highlight individual coaches above others — this is a peer directory, not a marketplace
 - Don't use red for non-error purposes — reserve it for validation states
@@ -396,6 +450,7 @@ Subtitle span: 13px, weight 400, opacity 0.7.
 - Don't break the 1100px max-width — it maintains comfortable reading width
 - Don't use icon-only contact buttons — always include text labels for accessibility
 - Don't auto-play any media or animation in cards
+- Don't mix font families within a single element — Nunito for headlines only, Plus Jakarta Sans for everything else
 
 ---
 
@@ -448,20 +503,25 @@ The grid uses `auto-fill, minmax(320px, 1fr)` which handles responsiveness nativ
 When building UI for ICF Cyprus, use these values:
 
 ```
-Page background:     #f5f5f0  (warm off-white, NOT pure white)
+Page background:     #f8f0e4  (Bone — warm off-white, NOT pure white)
 Card surface:        #ffffff  (white cards on warm background)
-Card border:         #ebebeb  (subtle, low-contrast border)
-Primary text:        #1a1a1a  (near-black, NOT pure black)
-Secondary text:      #555555  (bios, descriptions)
+Card border:         #e0dcd4  (warm neutral border)
+Primary text:        #212251  (Deep Blue — NOT pure black)
+Secondary text:      #2b379b  (Blue — bios, descriptions)
 Tertiary text:       #666666  (meta info, prices)
 Muted text:          #aaaaaa  (labels, hints)
-Input border:        #e0e0e0  (interactive element borders)
-Tag background:      #f0f0ee  (warm neutral chip fill)
-Active state:        #1a1a1a bg + #ffffff text (inverted)
-Divider:             #f0f0f0  (barely visible separator)
+Input border:        #d8d2c8  (warm neutral, interactive element borders)
+Tag background:      #ede5d8  (warm neutral chip fill)
+Active state:        #212251 bg + #ffffff text (Deep Blue inverted)
+Divider:             #ede5d8  (warm, subtle separator)
+Accent:              #5778fa  (Light Blue — decorative, large text only)
+Link text:           #4662e0  (accessible link color on white/bone)
+CTA button:          #efcb30 bg + #212251 text (Yellow + Deep Blue)
+CTA hover:           #e0bc20  (darker yellow)
+AI gradient:         #212251 → #2b379b (Deep Blue → Blue)
 ```
 
-### Badge colors (NEVER change — ICF credential standard)
+### Badge colors (NEVER change -- ICF credential standard)
 
 ```
 MCC (Master):       bg #fff3cd, text #7a5c00  (gold)
@@ -474,22 +534,45 @@ ACC (Associate):    bg #d1ecf1, text #0c5460  (teal)
 ```
 WhatsApp:  border #25D366, text #128C7E, hover bg #f0fff4
 Telegram:  border #29ABE2, text #0088cc, hover bg #f0f8ff
-Email:     border #e0e0e0, text #444444, hover bg #f8f8f8
+Email:     border #d8d2c8, text #212251, hover bg #f8f0e4
+```
+
+### WCAG AA contrast verification
+
+```
+Deep Blue #212251 on Bone #f8f0e4:   13.15:1  PASS
+Deep Blue #212251 on White #ffffff:  14.87:1  PASS
+Blue #2b379b on Bone #f8f0e4:        8.75:1  PASS
+Blue #2b379b on White #ffffff:        9.89:1  PASS
+Deep Blue #212251 on Yellow #efcb30:  9.39:1  PASS
+Link #4662e0 on White #ffffff:        5.14:1  PASS
+Link #4662e0 on Bone #f8f0e4:         4.55:1  PASS
+Light Blue #5778fa on White:          3.84:1  FAIL (use for large text / decorative only)
+Light Blue #5778fa on Bone:           3.39:1  FAIL (use for large text / decorative only)
 ```
 
 ### Ready-to-use prompts
 
 **"Create a new card-style component"**
-Use white background, 1px #ebebeb border, 16px border-radius, 24px padding. Hover: 0 4px 20px rgba(0,0,0,0.08). Internal layout: flex column with 16px gap. Font: Plus Jakarta Sans.
+Use white background, 1px #e0dcd4 border, 16px border-radius, 24px padding. Hover: 0 4px 20px rgba(33,34,81,0.08). Internal layout: flex column with 16px gap. Headlines: Nunito. Body: Plus Jakarta Sans. Text color: #212251.
 
 **"Create a filter/chip element"**
-White background, 1px #e0e0e0 border, 20px border-radius (pill), 8px 16px padding, 14px font-size. Active: #1a1a1a bg, white text. Hover: border-color #999.
+White background, 1px #d8d2c8 border, 20px border-radius (pill), 8px 16px padding, 14px font-size, #212251 text. Active: #212251 bg, white text. Hover: border-color #2b379b.
 
-**"Create an action button"**
-For primary: linear-gradient(135deg, #1a1a1a, #3a3a3a), white text, 14px border-radius, 18px 28px padding, 16px font-size weight 600. Hover: opacity 0.9.
+**"Create a CTA button"**
+Background #efcb30 (Yellow), color #212251 (Deep Blue), 14px border-radius, 14px 24px padding, 15px Nunito weight 700. Hover: bg #e0bc20. Focus: 2px solid #5778fa outline.
+
+**"Create a secondary button"**
+Transparent bg, 2px solid #212251 border, #212251 text, 14px border-radius, 12px 22px padding, 15px Nunito weight 600. Hover: bg #212251, color #ffffff.
+
+**"Create an AI action button"**
+linear-gradient(135deg, #212251, #2b379b), white text, 14px border-radius, 18px 28px padding, 16px Plus Jakarta Sans weight 600. Hover: opacity 0.9.
 
 **"Add a credential badge"**
-11px uppercase, 600 weight, 0.5px letter-spacing, 3px 8px padding, 6px border-radius. Use MCC/PCC/ACC color pairs from badge table.
+11px uppercase Plus Jakarta Sans, 600 weight, 0.5px letter-spacing, 3px 8px padding, 6px border-radius. Use MCC/PCC/ACC color pairs from badge table.
 
 **"Style a tag/label"**
-12px, 500 weight, #f0f0ee background, #444 text, 4px 10px padding, 6px border-radius.
+12px, 500 weight, #ede5d8 background, #212251 text, 4px 10px padding, 6px border-radius.
+
+**"Style a text link"**
+Color #4662e0, weight 500, text-decoration underline on hover. NEVER use #5778fa for inline body text links.
