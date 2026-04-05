@@ -80,3 +80,15 @@
 **Decision**: Design changes go through owner review with screenshots, not autonomous agent decisions
 **Rationale**: First autonomous redesign attempt (dark hero banner) was rejected. Owner has specific visual preferences that require iterative feedback.
 **Trade-offs**: Slower than autonomous, but results match owner expectations.
+
+### D-010: Bilingual bio (coach chooses 2 languages)
+**Date**: 2026-04-05
+**Decision**: Coaches write bio in two languages of their choice. Catalog shows bio matching UI language, falls back to English, then first bio.
+**Rationale**: Auto-translation is unreliable for coaching terminology. Letting coaches write in their working languages ensures quality.
+**Trade-offs**: More work for coaches (two bios instead of one). Optional — Bio 2 not required.
+
+### D-011: Google Sheet column reorder (Status first)
+**Date**: 2026-04-05
+**Decision**: Moved Status column to A (first) for admin convenience. New column order: Status, Name, Email, ICF Level, Photo, Specializations, Languages, Format, Prices, Bios, Contacts, Meta.
+**Rationale**: Admin primarily needs Status + Name + Email for moderation. All other columns are secondary.
+**Trade-offs**: Required full Apps Script rewrite and Sheet data migration.

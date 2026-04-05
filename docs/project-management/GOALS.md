@@ -14,11 +14,6 @@
 **Description**: Register a .org domain (e.g. coaches.icf-cyprus.org or icf-cyprus-coaches.org) and connect it to Vercel. Replace vercel.app URL with a professional branded domain. Update WP link and all references.
 **Action**: Choose and register domain, configure DNS, connect to Vercel.
 
-### G-013: Registration Form Redesign
-**Status**: Planned
-**Phase**: 1.5
-**Description**: Redesign the coach registration form page to match the new ICF brandbook design (cream cards, blue accents, yellow highlights). Currently uses old neutral style.
-
 ### G-006: Conference Landing Workflow
 **Status**: Planned
 **Phase**: 1.5
@@ -65,6 +60,15 @@
 ---
 
 ## Achieved Goals
+
+### G-013: Registration Form Redesign + Bilingual Bio
+**Status**: Achieved
+**Phase**: 1.5
+**Completed**: 2026-04-05
+
+Bilingual bio support: coaches write bio in 2 languages, catalog shows bio matching UI language (fallback: English → first bio). New Google Sheet column structure with Status as column A. Form updated with two bio fields + language selectors. Apps Script rewritten for new column order.
+
+---
 
 ### G-014: Filter Cleanup + Translation
 **Status**: Achieved

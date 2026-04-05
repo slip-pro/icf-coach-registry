@@ -18,9 +18,9 @@ Open the Google Sheet and add a tab named **Submissions** (if it does not exist)
 
 Add these column headers in the first row:
 
-| A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Name | Photo | Specializations | ICF Level | Languages | Format | Price Min | Price Max | Bio | Email | WhatsApp | Telegram | Instagram | LinkedIn | Facebook | Status | ICF Membership | Submitted At |
+| A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Status | Name | Email | ICF Level | Photo | Specializations | Languages | Format | Price Min | Price Max | Bio 1 | Bio 1 Language | Bio 2 | Bio 2 Language | WhatsApp | Telegram | Instagram | LinkedIn | Facebook | ICF Membership | Submitted At |
 
 ### 2. Open Apps Script
 
@@ -55,23 +55,31 @@ function doPost(e) {
 
     var data = JSON.parse(e.postData.contents);
 
+    // Column order: A=Status, B=Name, C=Email, D=ICF Level, E=Photo,
+    // F=Specializations, G=Languages, H=Format, I=Price Min, J=Price Max,
+    // K=Bio 1, L=Bio 1 Language, M=Bio 2, N=Bio 2 Language,
+    // O=WhatsApp, P=Telegram, Q=Instagram, R=LinkedIn, S=Facebook,
+    // T=ICF Membership, U=Submitted At
     sheet.appendRow([
+      'pending',
       data.name || '',
+      data.email || '',
+      data.icfLevel || '',
       data.photo || '',
       (data.specializations || []).join(', '),
-      data.icfLevel || '',
       (data.languages || []).join(', '),
       data.format || '',
       data.priceMin || '',
       data.priceMax || '',
-      data.bio || '',
-      data.email || '',
+      data.bio1 || data.bio || '',
+      data.bio1Language || '',
+      data.bio2 || '',
+      data.bio2Language || '',
       data.whatsapp || '',
       data.telegram || '',
       data.instagram || '',
       data.linkedin || '',
       data.facebook || '',
-      'pending',
       data.icfMembership || '',
       new Date().toISOString(),
     ]);
@@ -81,8 +89,8 @@ function doPost(e) {
     sheet.getRange(lastRow, 1, 1, sheet.getLastColumn())
       .setBackground('#fff2cc');
 
-    // Add dropdown to the new row's Status cell
-    var statusCell = sheet.getRange(lastRow, 16);
+    // Add dropdown to the new row's Status cell (column 1 = A)
+    var statusCell = sheet.getRange(lastRow, 1);
     var rule = SpreadsheetApp.newDataValidation()
       .requireValueInList(['pending', 'approved', 'rejected'], true)
       .build();
@@ -135,8 +143,8 @@ function colorByStatus(e) {
   var col = range.getColumn();
   var row = range.getRow();
 
-  // Column 16 = P = Status
-  if (col !== 16 || row === 1) return;
+  // Column 1 = A = Status
+  if (col !== 1 || row === 1) return;
 
   var status = range.getValue().toString().toLowerCase().trim();
   var rowRange = sheet.getRange(row, 1, 1, sheet.getLastColumn());
@@ -166,7 +174,7 @@ function colorAllRows() {
   if (lastRow < 2) return;
 
   for (var row = 2; row <= lastRow; row++) {
-    var status = sheet.getRange(row, 16).getValue()
+    var status = sheet.getRange(row, 1).getValue()
       .toString().toLowerCase().trim();
     var rowRange = sheet.getRange(row, 1, 1, sheet.getLastColumn());
 
@@ -196,7 +204,7 @@ function addStatusDropdown() {
   var lastRow = sheet.getLastRow();
   if (lastRow < 2) return;
 
-  var range = sheet.getRange(2, 16, lastRow - 1, 1);
+  var range = sheet.getRange(2, 1, lastRow - 1, 1);
   var rule = SpreadsheetApp.newDataValidation()
     .requireValueInList(['pending', 'approved', 'rejected'], true)
     .build();
@@ -341,7 +349,7 @@ execution log for the returned thumbnail URL.
 
 ## Approval workflow
 
-The "Status" column (P) controls visibility:
+The "Status" column (A) controls visibility:
 
 | Status | Row color | Meaning |
 |--------|-----------|---------|

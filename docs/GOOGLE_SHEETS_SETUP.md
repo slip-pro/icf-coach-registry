@@ -33,35 +33,40 @@ Right-click the tab name at the bottom and select **Rename**.
 
 ### Column Headers
 
-Add these headers in **Row 1**, one per column (A through R):
+Add these headers in **Row 1**, one per column (A through U):
 
 | Column | Header | Required | Description |
 |--------|--------|----------|-------------|
-| A | Name | Yes | Coach's full name |
-| B | Photo | No | URL to a profile photo (Google Drive link or web URL) |
-| C | Specializations | Yes | Comma-separated list (e.g. `Leadership, Business, Executive`) |
+| A | Status | Yes | `approved`, `pending`, or `rejected` (dropdown) |
+| B | Name | Yes | Coach's full name |
+| C | Email | Yes | Primary contact email |
 | D | ICF Level | Yes | One of: `ACC`, `PCC`, `MCC`, `Member` |
-| E | Languages | Yes | Comma-separated list (e.g. `English, Russian, Greek`) |
-| F | Format | Yes | `Online`, `Offline`, or `Both` |
-| G | Price Min | No | Minimum session price in EUR (number only, e.g. `80`) |
-| H | Price Max | No | Maximum session price in EUR (number only, e.g. `120`) |
-| I | Bio | Yes | Short biography, up to 300 words |
-| J | Email | Yes | Primary contact email |
-| K | WhatsApp | No | Phone number with country code (e.g. `+35799123456`) |
-| L | Telegram | No | Username without @ (e.g. `coach_username`) |
-| M | Instagram | No | Profile URL or handle |
-| N | LinkedIn | No | Full profile URL |
-| O | Facebook | No | Full profile URL |
-| P | Status | Yes | `approved`, `pending`, or `rejected` (dropdown) |
-| Q | ICF Membership | No | ICF membership number or registered email |
-| R | Submitted At | Auto | Date/time of submission (filled automatically) |
+| E | Photo | No | URL to a profile photo (Google Drive link or web URL) |
+| F | Specializations | Yes | Comma-separated list (e.g. `Leadership, Business, Executive`) |
+| G | Languages | Yes | Comma-separated list (e.g. `English, Russian, Greek`) |
+| H | Format | Yes | `Online`, `Offline`, or `Both` |
+| I | Price Min | No | Minimum session price in EUR (number only, e.g. `80`) |
+| J | Price Max | No | Maximum session price in EUR (number only, e.g. `120`) |
+| K | Bio 1 | Yes | Short biography, up to 300 words |
+| L | Bio 1 Language | Yes | Language code of Bio 1 (e.g. `en`, `ru`, `el`) |
+| M | Bio 2 | No | Second biography in another language |
+| N | Bio 2 Language | No | Language code of Bio 2 |
+| O | WhatsApp | No | Phone number with country code (e.g. `+35799123456`) |
+| P | Telegram | No | Username without @ (e.g. `coach_username`) |
+| Q | Instagram | No | Profile URL or handle |
+| R | LinkedIn | No | Full profile URL |
+| S | Facebook | No | Full profile URL |
+| T | ICF Membership | No | ICF membership number or registered email |
+| U | Submitted At | Auto | Date/time of submission (filled automatically) |
 
 **Important notes:**
 - The header names must match exactly (not case-sensitive, but spelling matters)
+- **Status is the first column (A)** -- this makes it easy to scan and moderate
 - Only coaches with **Status = approved** will appear on the website
 - The Status column has a **dropdown** -- you select a value, not type it
 - Rows are **color-coded automatically**: yellow = pending, green = approved, red = rejected
 - Google Drive photo URLs are automatically converted to thumbnails by the widget
+- Bio 1 / Bio 2 allow coaches to provide bios in two languages
 
 ---
 

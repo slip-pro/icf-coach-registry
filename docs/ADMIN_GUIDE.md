@@ -15,6 +15,10 @@
 
 All coach data lives in **one tab** called **Submissions**. There is no separate "Coaches" tab. The website catalog reads directly from Submissions and shows only coaches with Status = `approved`.
 
+**Status is the first column (A)** -- this makes it the easiest column to scan when moderating submissions.
+
+The sheet also has columns for two bios: **Bio 1** (with Bio 1 Language) and **Bio 2** (with Bio 2 Language). This lets coaches provide their biography in two languages.
+
 This means:
 - New registrations appear here
 - Approved coaches stay here
