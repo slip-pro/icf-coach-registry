@@ -2,17 +2,17 @@
 
 ## Active Goals
 
-### _(Phase 1 complete. Next: Phase 2 — G-003 AI Assistant or G-004 Analytics)_
+### _(no active goal)_
 
 ---
 
 ## Future Goals
 
-### G-005: Deploy to WordPress
-**Status**: Blocked (waiting for WP access)
+### G-005: Embed Widget in WordPress (properly)
+**Status**: Blocked
 **Phase**: 1.5
-**Description**: Embed the coach catalog and registration form into the live ICF Cyprus website.
-**Depends on**: WP admin access
+**Description**: Embed the widget directly into the WP page (not via external link). Requires ability to insert `<script>` tags — need to ask WP admin how to do this on the ICF Chapters platform.
+**Depends on**: WP admin guidance on custom scripts
 
 ### G-006: Conference Landing Workflow
 **Status**: Planned
@@ -38,6 +38,16 @@
 ---
 
 ## Achieved Goals
+
+### G-005a: Deploy to GitHub Pages
+**Status**: Achieved
+**Phase**: 1.5
+**Completed**: 2026-04-05
+
+Catalog deployed at https://slip-pro.github.io/icf-coach-registry/
+Linked from WP page Find a Coach. Full WP embed blocked by platform restrictions.
+
+---
 
 ### G-002: Coach Registration Flow
 **Status**: Achieved
