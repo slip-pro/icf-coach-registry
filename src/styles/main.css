@@ -135,11 +135,11 @@
 .icf-registry {
   font-family: var(--icf-font);
   background-color: var(--icf-bg);
-  /* Subtle geometric dot pattern using Deep Blue at 4% opacity.
-     Inspired by ICF visual identity dot motif. */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Ccircle cx='10' cy='10' r='1.5' fill='%23212251' fill-opacity='0.04'/%3E%3Ccircle cx='40' cy='10' r='1' fill='%23212251' fill-opacity='0.03'/%3E%3Ccircle cx='70' cy='10' r='1.5' fill='%23212251' fill-opacity='0.04'/%3E%3Ccircle cx='100' cy='10' r='1' fill='%23212251' fill-opacity='0.03'/%3E%3Ccircle cx='25' cy='30' r='1' fill='%23212251' fill-opacity='0.03'/%3E%3Ccircle cx='55' cy='30' r='2' fill='%23212251' fill-opacity='0.035'/%3E%3Ccircle cx='85' cy='30' r='1' fill='%23212251' fill-opacity='0.03'/%3E%3Ccircle cx='10' cy='50' r='1' fill='%23212251' fill-opacity='0.03'/%3E%3Ccircle cx='40' cy='50' r='1.5' fill='%23212251' fill-opacity='0.04'/%3E%3Ccircle cx='70' cy='50' r='1' fill='%23212251' fill-opacity='0.03'/%3E%3Ccircle cx='100' cy='50' r='1.5' fill='%23212251' fill-opacity='0.04'/%3E%3Ccircle cx='25' cy='70' r='1.5' fill='%23212251' fill-opacity='0.04'/%3E%3Ccircle cx='55' cy='70' r='1' fill='%23212251' fill-opacity='0.03'/%3E%3Ccircle cx='85' cy='70' r='2' fill='%23212251' fill-opacity='0.035'/%3E%3Ccircle cx='10' cy='90' r='1' fill='%23212251' fill-opacity='0.03'/%3E%3Ccircle cx='40' cy='90' r='1.5' fill='%23212251' fill-opacity='0.04'/%3E%3Ccircle cx='70' cy='90' r='1' fill='%23212251' fill-opacity='0.03'/%3E%3Ccircle cx='100' cy='90' r='1.5' fill='%23212251' fill-opacity='0.04'/%3E%3Ccircle cx='25' cy='110' r='1' fill='%23212251' fill-opacity='0.03'/%3E%3Ccircle cx='55' cy='110' r='1.5' fill='%23212251' fill-opacity='0.04'/%3E%3Ccircle cx='85' cy='110' r='1' fill='%23212251' fill-opacity='0.03'/%3E%3C/svg%3E");
+  /* Subtle brush stroke pattern inspired by ICF brand visual identity.
+     Curved strokes and star/asterisk motifs at very low opacity. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%23212251' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M30 40 Q50 25 70 40' stroke-width='2.5' opacity='0.025'/%3E%3Cpath d='M140 30 Q160 15 180 32' stroke-width='2' opacity='0.02'/%3E%3Cpath d='M20 130 Q45 115 65 130' stroke-width='2.5' opacity='0.025'/%3E%3Cpath d='M150 140 Q170 125 190 138' stroke-width='2' opacity='0.02'/%3E%3C%2Fg%3E%3Cg fill='%23efcb30'%3E%3Ccircle cx='105' cy='85' r='1.2' opacity='0.04'/%3E%3Ccircle cx='15' cy='175' r='1' opacity='0.03'/%3E%3C%2Fg%3E%3Cg fill='%23212251'%3E%3Ccircle cx='100' cy='10' r='1' opacity='0.03'/%3E%3Ccircle cx='50' cy='90' r='0.8' opacity='0.025'/%3E%3Ccircle cx='170' cy='180' r='1' opacity='0.03'/%3E%3C%2Fg%3E%3C/svg%3E");
   background-repeat: repeat;
-  background-size: 120px 120px;
+  background-size: 200px 200px;
   color: var(--icf-text-primary);
   padding: var(--icf-space-12) var(--icf-space-8);
   line-height: 1.4;
@@ -178,7 +178,7 @@
 }
 
 .icf-header__logo {
-  height: 40px;
+  height: 64px;
   width: auto;
   display: block;
 }
@@ -883,7 +883,7 @@
   }
 
   .icf-header__logo {
-    height: 32px;
+    height: 48px;
   }
 
   .icf-filters {
