@@ -1,16 +1,19 @@
 # ICF Cyprus Coach Registry — Deployment Guide
 
-## Current Deployment: GitHub Pages
+## Current Deployment: Vercel
 
-The registry is live at: **https://slip-pro.github.io/icf-coach-registry/**
+The registry is live at: **https://icf-coach-registry.vercel.app/**
 
-GitHub Pages is the primary deployment method. The site auto-deploys
+Vercel is the primary deployment method. The site auto-deploys
 from the `main` branch. No manual deployment steps needed -- push to
 main and the site updates.
 
+GitHub Pages (https://slip-pro.github.io/icf-coach-registry/) is
+kept as a secondary/legacy deployment.
+
 WordPress embedding (see instructions below) is tracked as G-005 and
 is currently blocked, waiting for WP admin guidance on script embedding.
-The WordPress page links to the GitHub Pages URL in the meantime.
+The WordPress page links to the Vercel URL in the meantime.
 
 ---
 

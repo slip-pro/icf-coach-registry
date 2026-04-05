@@ -14,12 +14,6 @@
 **Description**: Register a .org domain (e.g. coaches.icf-cyprus.org or icf-cyprus-coaches.org) and connect it to Vercel. Replace vercel.app URL with a professional branded domain. Update WP link and all references.
 **Action**: Choose and register domain, configure DNS, connect to Vercel.
 
-### G-010: Photo Storage Solution
-**Status**: Achieved
-**Phase**: 1.5
-**Completed**: 2026-04-05
-**Description**: Coach photos auto-copied to chapter's Google Drive via Apps Script. URL in Sheet replaced with stable Drive thumbnail link. Coaches can delete their originals — photos persist.
-
 ### G-013: Registration Form Redesign
 **Status**: Planned
 **Phase**: 1.5

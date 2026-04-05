@@ -12,7 +12,7 @@ Interactive directory of certified ICF coaches in Cyprus. Phase 1 MVP is complet
 - Trilingual UI: English / Russian / Greek
 - Google Sheets as data backend
 - Coach registration form with Google Apps Script backend
-- Deployed on GitHub Pages
+- Deployed on Vercel
 
 ## Tech Stack
 
