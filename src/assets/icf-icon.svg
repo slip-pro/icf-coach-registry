@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120" fill="#212251">
+  <!-- i dot -->
+  <circle cx="28" cy="12" r="12"/>
+  <!-- i stem -->
+  <rect x="16" y="36" width="24" height="84" rx="2"/>
+  <!-- c -->
+  <path d="M100 36c-26 0-46 19-46 42s20 42 46 42c16 0 30-8 38-20l-14-12c-5 8-14 13-24 13-16 0-28-11-28-23s12-23 28-23c10 0 19 5 24 13l14-12c-8-12-22-20-38-20z"/>
+  <!-- f stem -->
+  <rect x="148" y="36" width="24" height="84" rx="2"/>
+  <!-- f hook -->
+  <path d="M172 36V28c0-18-10-28-28-28h-8v20h8c6 0 8 3 8 8v8h-16v19h16"/>
+  <!-- f crossbar -->
+  <rect x="140" y="55" width="44" height="18" rx="2"/>
+</svg>
