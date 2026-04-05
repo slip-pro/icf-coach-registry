@@ -35,6 +35,17 @@
 **Description**: Embed the widget directly into the WP page (not via external link). Requires ability to insert `<script>` tags — need to ask WP admin how to do this on the ICF Chapters platform.
 **Depends on**: WP admin guidance on custom scripts
 
+### G-011: Coach Profile Editing Workflow
+**Status**: Planned
+**Phase**: 2
+**Description**: Process for coaches to update their profile (new photo, ICF level upgrade, bio changes). Define who does it (coach self-service vs admin) and how. Currently admin edits Google Sheet manually — need a scalable approach as registry grows.
+
+### G-012: ICF Membership Expiration Tracking
+**Status**: Backlog (needs input from chapter admin)
+**Phase**: 2+
+**Description**: Track when a coach's ICF chapter membership expires and auto-hide or flag them in the registry. Need to understand from the responsible colleague: how membership data is tracked, is there an API/export, what's the renewal cycle.
+**Action**: Ask responsible colleague about membership tracking process before designing solution.
+
 ### G-003: AI Coach Matching Assistant
 **Status**: Deferred
 **Phase**: 2
