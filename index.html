@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Find a Coach — ICF Cyprus</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="./src/styles/main.css">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: #f5f5f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="icf-coach-registry"></div>
+
+  <script type="module">
+    import { ICFRegistry } from './src/js/app.js';
+
+    ICFRegistry.init({
+      sheetId: '1eloH2qMpKIDypcrbuA4L0Sav7qmGNKkRsLJJQHpUojM',
+    });
+  </script>
+
+</body>
+</html>
