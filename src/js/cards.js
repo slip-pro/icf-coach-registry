@@ -148,11 +148,9 @@ function renderAvatar(coach) {
   }
 
   const initials = getInitials(coach.name);
-  const color = nameToColor(coach.name);
 
   return `<div
     class="icf-avatar-placeholder"
-    style="background: ${color}"
     role="img"
     aria-label="${esc(coach.name)}"
   >${esc(initials)}</div>`;
