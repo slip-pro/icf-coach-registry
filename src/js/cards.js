@@ -142,9 +142,13 @@ function esc(str) {
  * @returns {string}
  */
 export function getBioForLanguage(coach, lang) {
+  // 1. Exact match for requested language
   if (coach.bio1Lang === lang) return coach.bio1 || '';
   if (coach.bio2Lang === lang) return coach.bio2 || '';
-  // Fallback: first bio (backward compat with plain `bio` field)
+  // 2. Fallback to English
+  if (coach.bio1Lang === 'en') return coach.bio1 || '';
+  if (coach.bio2Lang === 'en') return coach.bio2 || '';
+  // 3. Fallback to first bio
   return coach.bio1 || coach.bio || '';
 }
 
