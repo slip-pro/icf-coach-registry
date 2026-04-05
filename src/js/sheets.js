@@ -21,7 +21,11 @@
  * @property {string} format — 'online' | 'offline' | 'both'
  * @property {number} priceMin
  * @property {number} priceMax
- * @property {string} bio
+ * @property {string} bio1
+ * @property {string} bio1Lang — 'en', 'ru', 'el' or empty
+ * @property {string} bio2
+ * @property {string} bio2Lang — 'en', 'ru', 'el' or empty
+ * @property {string} bio — alias for bio1 (backward compat)
  * @property {string} email
  * @property {string} whatsapp
  * @property {string} telegram
@@ -163,9 +167,19 @@ const HEADER_MAP = {
   'pricemax': 'priceMax',
   'price_max': 'priceMax',
   'price': 'priceMin',
-  'bio': 'bio',
-  'description': 'bio',
-  'about': 'bio',
+  'bio': 'bio1',
+  'bio 1': 'bio1',
+  'bio1': 'bio1',
+  'bio 1 language': 'bio1Lang',
+  'bio1language': 'bio1Lang',
+  'bio1lang': 'bio1Lang',
+  'bio 2': 'bio2',
+  'bio2': 'bio2',
+  'bio 2 language': 'bio2Lang',
+  'bio2language': 'bio2Lang',
+  'bio2lang': 'bio2Lang',
+  'description': 'bio1',
+  'about': 'bio1',
   'email': 'email',
   'whatsapp': 'whatsapp',
   'telegram': 'telegram',
@@ -211,7 +225,11 @@ function csvToCoaches(rows) {
       format: normalizeFormat(raw.format),
       priceMin: parseInt(raw.priceMin, 10) || 0,
       priceMax: parseInt(raw.priceMax, 10) || 0,
-      bio: raw.bio || '',
+      bio1: raw.bio1 || '',
+      bio1Lang: (raw.bio1Lang || '').toLowerCase().trim(),
+      bio2: raw.bio2 || '',
+      bio2Lang: (raw.bio2Lang || '').toLowerCase().trim(),
+      get bio() { return this.bio1; },
       email: raw.email || '',
       whatsapp: raw.whatsapp || '',
       telegram: raw.telegram || '',

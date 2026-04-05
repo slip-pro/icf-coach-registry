@@ -305,30 +305,75 @@ function renderRadioGroup(opts) {
     </div>`;
 }
 
+/** Bio language options for dropdowns */
+const BIO_LANG_OPTIONS = [
+  { value: 'en', i18nKey: 'regBioLangEN' },
+  { value: 'ru', i18nKey: 'regBioLangRU' },
+  { value: 'el', i18nKey: 'regBioLangEL' },
+];
+
 /**
- * Render the textarea field for bio with word counter.
+ * Render a bio language select dropdown.
+ * @param {string} id — element id
+ * @param {string} labelKey — i18n key for label
+ * @param {Array<{value: string, i18nKey: string}>} options
+ * @param {boolean} [required]
  * @returns {string}
  */
-function renderBioField() {
-  const id = uid('bio');
-  const errorId = `${id}-error`;
-  const countId = `${id}-count`;
+function renderBioLangSelect(id, labelKey, options, required) {
+  const req = required
+    ? ' <span class="icf-form__required" aria-hidden="true">*</span>'
+    : '';
+  const reqAttr = required ? ' required' : '';
+  const optionsHtml = options.map((opt) =>
+    `<option value="${esc(opt.value)}">${esc(t(opt.i18nKey))}</option>`
+  ).join('');
 
   return `
     <div class="icf-form__group">
       <label class="icf-form__label" for="${id}">
-        <span data-i18n="regLabelBio">${esc(t('regLabelBio'))}</span>
-        <span class="icf-form__required" aria-hidden="true">*</span>
+        <span data-i18n="${labelKey}">${esc(t(labelKey))}</span>${req}
+      </label>
+      <select
+        class="icf-form__input icf-form__select"
+        id="${id}"
+        name="${id}"${reqAttr}
+      >
+        ${optionsHtml}
+      </select>
+    </div>`;
+}
+
+/**
+ * Render a single bio textarea with word counter.
+ * @param {Object} opts
+ * @param {string} opts.id
+ * @param {string} opts.labelKey
+ * @param {string} opts.placeholderKey
+ * @param {boolean} [opts.required]
+ * @returns {string}
+ */
+function renderBioTextarea(opts) {
+  const req = opts.required
+    ? ' <span class="icf-form__required" aria-hidden="true">*</span>'
+    : '';
+  const errorId = `${opts.id}-error`;
+  const countId = `${opts.id}-count`;
+  const reqAttr = opts.required ? ' required' : '';
+
+  return `
+    <div class="icf-form__group">
+      <label class="icf-form__label" for="${opts.id}">
+        <span data-i18n="${opts.labelKey}">${esc(t(opts.labelKey))}</span>${req}
       </label>
       <textarea
         class="icf-form__textarea"
-        id="${id}"
-        name="${id}"
+        id="${opts.id}"
+        name="${opts.id}"
         rows="5"
-        placeholder="${esc(t('regPlaceholderBio'))}"
-        data-i18n-placeholder="regPlaceholderBio"
-        aria-describedby="${countId} ${errorId}"
-        required
+        placeholder="${esc(t(opts.placeholderKey))}"
+        data-i18n-placeholder="${opts.placeholderKey}"
+        aria-describedby="${countId} ${errorId}"${reqAttr}
       ></textarea>
       <span class="icf-form__word-count" id="${countId}">
         0 / ${BIO_MAX_WORDS}
@@ -336,6 +381,38 @@ function renderBioField() {
       <span class="icf-form__error" id="${errorId}"
         role="alert" aria-live="polite"></span>
     </div>`;
+}
+
+/**
+ * Render the dual bio fields (Bio 1 required + Bio 2 optional).
+ * Each has a language selector and textarea with word counter.
+ * @returns {string}
+ */
+function renderBioFields() {
+  const bio1LangId = uid('bio1-lang');
+  const bio1Id = uid('bio1');
+  const bio2LangId = uid('bio2-lang');
+  const bio2Id = uid('bio2');
+
+  return `
+    ${renderBioLangSelect(
+      bio1LangId, 'regLabelBio1Lang', BIO_LANG_OPTIONS, true
+    )}
+    ${renderBioTextarea({
+      id: bio1Id,
+      labelKey: 'regLabelBio',
+      placeholderKey: 'regPlaceholderBio1',
+      required: true,
+    })}
+    ${renderBioLangSelect(
+      bio2LangId, 'regLabelBio2', BIO_LANG_OPTIONS, false
+    )}
+    ${renderBioTextarea({
+      id: bio2Id,
+      labelKey: 'regLabelBio2',
+      placeholderKey: 'regPlaceholderBio1',
+      required: false,
+    })}`;
 }
 
 /**
@@ -417,9 +494,10 @@ function buildPreviewCard(data) {
   const badge = `<span class="icf-badge ${bc.cssClass}"
     >${badgeIcon}${esc(badgeLabel)}</span>`;
 
-  // Bio
-  const bio = data.bio
-    ? `<p class="icf-card__bio">${esc(data.bio)}</p>` : '';
+  // Bio — show bio1 in preview (primary bio)
+  const bioText = data.bio1 || data.bio || '';
+  const bio = bioText
+    ? `<p class="icf-card__bio">${esc(bioText)}</p>` : '';
 
   // Tags
   const specs = data.specializations || [];
@@ -543,7 +621,7 @@ function buildFormHTML() {
       <div class="icf-form__section">
         <h3 class="icf-form__section-title"
           data-i18n="regSectionAbout">${esc(t('regSectionAbout'))}</h3>
-        ${renderBioField()}
+        ${renderBioFields()}
       </div>
 
       <!-- Section 5: Contact Details -->
@@ -684,7 +762,11 @@ function collectFormData(form) {
     priceMin: parseInt(val(uid('price-min')), 10) || 0,
     priceMax: parseInt(val(uid('price-max')), 10) || 0,
     byRequest,
-    bio: val(uid('bio')),
+    bio1: val(uid('bio1')),
+    bio1Lang: val(uid('bio1-lang')),
+    bio2: val(uid('bio2')),
+    bio2Lang: val(uid('bio2-lang')),
+    bio: val(uid('bio1')),
     email: val(uid('email')),
     whatsapp: val(uid('whatsapp')),
     telegram: val(uid('telegram')),
@@ -811,15 +893,22 @@ function validateForm(form, data) {
     firstError = firstError || uid('format');
   }
 
-  // Bio — required, max 300 words
-  if (!data.bio) {
-    showError(form, uid('bio'), 'regErrorRequired');
+  // Bio 1 — required, max 300 words
+  if (!data.bio1) {
+    showError(form, uid('bio1'), 'regErrorRequired');
     valid = false;
-    firstError = firstError || uid('bio');
-  } else if (countWords(data.bio) > BIO_MAX_WORDS) {
-    showError(form, uid('bio'), 'regErrorBioTooLong');
+    firstError = firstError || uid('bio1');
+  } else if (countWords(data.bio1) > BIO_MAX_WORDS) {
+    showError(form, uid('bio1'), 'regErrorBioTooLong');
     valid = false;
-    firstError = firstError || uid('bio');
+    firstError = firstError || uid('bio1');
+  }
+
+  // Bio 2 — optional, but if provided max 300 words
+  if (data.bio2 && countWords(data.bio2) > BIO_MAX_WORDS) {
+    showError(form, uid('bio2'), 'regErrorBioTooLong');
+    valid = false;
+    firstError = firstError || uid('bio2');
   }
 
   // Email — required, valid format
@@ -895,31 +984,69 @@ export function renderRegistrationForm(container, onSubmit) {
     });
   }
 
-  // --- Bio word counter ---
-  const bioTextarea = form.querySelector(`#${uid('bio')}`);
-  const wordCountEl = form.querySelector(
-    `#${uid('bio')}-count`
-  );
+  // --- Bio word counters (Bio 1 + Bio 2) ---
+  /**
+   * Wire up word counter for a bio textarea.
+   * @param {string} textareaId
+   */
+  function wireWordCounter(textareaId) {
+    const textarea = form.querySelector(`#${textareaId}`);
+    const countEl = form.querySelector(`#${textareaId}-count`);
+    if (!textarea || !countEl) return;
 
-  function updateWordCount() {
-    if (!bioTextarea || !wordCountEl) return;
-    const count = countWords(bioTextarea.value);
-    const text = t('regWordCount')
-      .replace('{count}', String(count))
-      .replace('{max}', String(BIO_MAX_WORDS));
-    wordCountEl.textContent = text;
-    const isOver = count > BIO_MAX_WORDS;
-    wordCountEl.classList.toggle(
-      'icf-form__word-count--over', isOver
-    );
-  }
+    function update() {
+      const count = countWords(textarea.value);
+      const text = t('regWordCount')
+        .replace('{count}', String(count))
+        .replace('{max}', String(BIO_MAX_WORDS));
+      countEl.textContent = text;
+      countEl.classList.toggle(
+        'icf-form__word-count--over', count > BIO_MAX_WORDS
+      );
+    }
 
-  if (bioTextarea) {
-    bioTextarea.addEventListener('input', () => {
-      updateWordCount();
+    textarea.addEventListener('input', () => {
+      update();
       debouncedPreview();
     });
-    updateWordCount();
+    update();
+  }
+
+  wireWordCounter(uid('bio1'));
+  wireWordCounter(uid('bio2'));
+
+  // --- Bio 2 language dropdown: exclude Bio 1's language ---
+  const bio1LangSelect = form.querySelector(
+    `#${uid('bio1-lang')}`
+  );
+  const bio2LangSelect = form.querySelector(
+    `#${uid('bio2-lang')}`
+  );
+
+  /**
+   * Update Bio 2 language options to exclude the language
+   * selected in Bio 1.
+   */
+  function syncBio2LangOptions() {
+    if (!bio1LangSelect || !bio2LangSelect) return;
+    const excluded = bio1LangSelect.value;
+    const prev = bio2LangSelect.value;
+    bio2LangSelect.innerHTML = BIO_LANG_OPTIONS
+      .filter((opt) => opt.value !== excluded)
+      .map((opt) => {
+        const sel = opt.value === prev ? ' selected' : '';
+        return `<option value="${esc(opt.value)}"${sel}>${esc(t(opt.i18nKey))}</option>`;
+      })
+      .join('');
+  }
+
+  if (bio1LangSelect) {
+    bio1LangSelect.addEventListener('change', () => {
+      syncBio2LangOptions();
+      debouncedPreview();
+    });
+    // Initial sync
+    syncBio2LangOptions();
   }
 
   // --- Live card preview (debounced) ---
@@ -934,8 +1061,11 @@ export function renderRegistrationForm(container, onSubmit) {
   );
 
   // Listen to all input/change events for preview
+  // Bio textareas handled by wireWordCounter which calls debouncedPreview
+  const bio1Textarea = form.querySelector(`#${uid('bio1')}`);
+  const bio2Textarea = form.querySelector(`#${uid('bio2')}`);
   form.addEventListener('input', (e) => {
-    if (e.target !== bioTextarea) {
+    if (e.target !== bio1Textarea && e.target !== bio2Textarea) {
       debouncedPreview();
     }
   });

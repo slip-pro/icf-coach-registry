@@ -13,7 +13,7 @@
  * @module cards
  */
 
-import { t } from './i18n.js';
+import { t, getCurrentLanguage } from './i18n.js';
 import { renderContactBlock, isSafeUrl } from './contacts.js';
 
 /* ---------------------------------------------------------------
@@ -125,6 +125,27 @@ function esc(str) {
   const div = document.createElement('div');
   div.appendChild(document.createTextNode(str));
   return div.innerHTML;
+}
+
+
+/* ---------------------------------------------------------------
+   Bio language selection
+   --------------------------------------------------------------- */
+
+/**
+ * Get the best bio text for a given UI language.
+ * Priority:
+ *   1. bio whose language matches the UI language
+ *   2. bio1 as fallback
+ * @param {import('./sheets.js').Coach} coach
+ * @param {string} lang — current UI language ('en', 'ru', 'el')
+ * @returns {string}
+ */
+export function getBioForLanguage(coach, lang) {
+  if (coach.bio1Lang === lang) return coach.bio1 || '';
+  if (coach.bio2Lang === lang) return coach.bio2 || '';
+  // Fallback: first bio (backward compat with plain `bio` field)
+  return coach.bio1 || coach.bio || '';
 }
 
 
@@ -291,11 +312,12 @@ function renderMeta(coach) {
 function renderCard(coach) {
   const contact = renderContactBlock(coach);
   const divider = contact ? '<hr class="icf-divider">' : '';
+  const bio = getBioForLanguage(coach, getCurrentLanguage());
 
   return `
     <article class="icf-card" aria-label="${esc(coach.name)}">
       ${renderCardTop(coach)}
-      ${renderBio(coach.bio)}
+      ${renderBio(bio)}
       ${renderTags(coach.specializations)}
       ${renderMeta(coach)}
       ${divider}
