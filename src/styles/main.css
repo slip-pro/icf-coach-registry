@@ -535,20 +535,63 @@
 /* --- Card --- */
 
 .icf-card {
-  background: rgba(248, 240, 228, 0.88);
+  background: #ffffff;
   border-radius: var(--icf-radius-card);
   padding: var(--icf-space-9);
   border: 1px solid var(--icf-border);
   display: flex;
   flex-direction: column;
   gap: var(--icf-space-7);
-  transition: box-shadow 0.2s ease;
+  transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   position: relative;
   z-index: 1;
 }
 
 .icf-card:hover {
+  background: var(--icf-text-secondary);
+  border-color: var(--icf-text-secondary);
   box-shadow: var(--icf-shadow-md);
+}
+
+.icf-card:hover .icf-card__name,
+.icf-card:hover .icf-card__bio,
+.icf-card:hover .icf-meta__item,
+.icf-card:hover .icf-contact-label,
+.icf-card:hover .icf-socials__label {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.icf-card:hover .icf-tag {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.icf-card:hover .icf-contact-link {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+}
+
+.icf-card:hover .icf-contact-link--whatsapp {
+  border-color: #25D366;
+  color: #25D366;
+}
+
+.icf-card:hover .icf-contact-link--telegram {
+  border-color: #29ABE2;
+  color: #29ABE2;
+}
+
+.icf-card:hover .icf-social-icon {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.icf-card:hover .icf-meta__item svg {
+  opacity: 0.8;
+}
+
+.icf-card:hover .icf-divider {
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 
