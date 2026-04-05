@@ -652,24 +652,20 @@
   white-space: nowrap;
 }
 
-.icf-badge--mcc {
-  background: var(--icf-badge-mcc-bg);
-  color: var(--icf-badge-mcc-text);
-}
-
-.icf-badge--pcc {
-  background: var(--icf-badge-pcc-bg);
-  color: var(--icf-badge-pcc-text);
-}
-
-.icf-badge--acc {
-  background: var(--icf-badge-acc-bg);
-  color: var(--icf-badge-acc-text);
-}
-
+.icf-badge--mcc,
+.icf-badge--pcc,
+.icf-badge--acc,
 .icf-badge--member {
-  background: var(--icf-tag-bg);
-  color: var(--icf-text-tertiary);
+  background: var(--icf-cta);
+  color: var(--icf-text-primary);
+}
+
+.icf-card:hover .icf-badge--mcc,
+.icf-card:hover .icf-badge--pcc,
+.icf-card:hover .icf-badge--acc,
+.icf-card:hover .icf-badge--member {
+  background: #ffffff;
+  color: var(--icf-text-primary);
 }
 
 
