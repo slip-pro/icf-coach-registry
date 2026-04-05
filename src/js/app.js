@@ -101,23 +101,26 @@ function renderHeader() {
     })
     .join('');
 
-  const brandHTML = appConfig.logoUrl
-    ? `<div class="icf-header__brand">
-        <img src="${esc(appConfig.logoUrl)}"
-             alt="ICF Cyprus Chapter"
-             class="icf-header__logo">
-      </div>`
-    : `<h1 class="icf-page-title" data-i18n="pageTitle">
-        ${esc(t('pageTitle'))}
-      </h1>`;
+  const logoHTML = appConfig.logoUrl
+    ? `<img src="${esc(appConfig.logoUrl)}"
+            alt="ICF Cyprus Chapter"
+            class="icf-hero__logo">`
+    : '';
 
   return `
-    <header class="icf-page-header">
-      ${brandHTML}
-      <nav class="icf-lang-switch" role="group"
+    <div class="icf-hero">
+      <div class="icf-hero__content">
+        ${logoHTML}
+        <h1 class="icf-hero__title" data-i18n="pageTitle">
+          ${esc(t('pageTitle'))}
+        </h1>
+      </div>
+      <nav class="icf-lang-switch icf-lang-switch--hero" role="group"
            aria-label="Language">
         ${langButtons}
       </nav>
+    </div>
+    <header class="icf-page-header">
     </header>
   `;
 }

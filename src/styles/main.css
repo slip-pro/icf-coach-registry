@@ -148,7 +148,78 @@
 }
 
 
-/* --- Page Header --- */
+/* --- Hero Banner --- */
+
+.icf-hero {
+  background: var(--icf-text-primary);
+  color: #ffffff;
+  padding: var(--icf-space-10) var(--icf-space-8);
+  margin: calc(-1 * var(--icf-space-12)) calc(-1 * var(--icf-space-8)) var(--icf-space-10);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--icf-space-7);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative brush stroke asterisk (ICF brand element) */
+.icf-hero::after {
+  content: '';
+  position: absolute;
+  right: -40px;
+  top: -40px;
+  width: 240px;
+  height: 240px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cg fill='none' stroke='%232b379b' stroke-width='8' stroke-linecap='round' opacity='0.3'%3E%3Cpath d='M120 20 L120 220'/%3E%3Cpath d='M20 120 L220 120'/%3E%3Cpath d='M50 50 L190 190'/%3E%3Cpath d='M190 50 L50 190'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+.icf-hero__content {
+  display: flex;
+  align-items: center;
+  gap: var(--icf-space-8);
+  position: relative;
+  z-index: 1;
+}
+
+.icf-hero__logo {
+  height: 72px;
+  width: auto;
+  display: block;
+  filter: brightness(0) invert(1);
+}
+
+.icf-hero__title {
+  font-family: var(--icf-font-heading);
+  font-size: 42px;
+  font-weight: 800;
+  color: var(--icf-cta);
+  margin: 0;
+  line-height: 1.1;
+}
+
+.icf-lang-switch--hero {
+  position: relative;
+  z-index: 1;
+}
+
+.icf-lang-switch--hero .icf-lang-switch__btn {
+  color: rgba(255, 255, 255, 0.6);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.icf-lang-switch--hero .icf-lang-switch__btn--active {
+  background: var(--icf-cta);
+  color: var(--icf-text-primary);
+  border-color: var(--icf-cta);
+}
+
+
+/* --- Page Header (below hero) --- */
 
 .icf-page-header {
   max-width: var(--icf-max-width);
@@ -876,6 +947,30 @@
 @media (max-width: 639px) {
   .icf-registry {
     padding: var(--icf-space-8) var(--icf-space-7);
+  }
+
+  .icf-hero {
+    padding: var(--icf-space-8) var(--icf-space-7);
+    margin: calc(-1 * var(--icf-space-8)) calc(-1 * var(--icf-space-7)) var(--icf-space-8);
+  }
+
+  .icf-hero__content {
+    gap: var(--icf-space-6);
+  }
+
+  .icf-hero__logo {
+    height: 48px;
+  }
+
+  .icf-hero__title {
+    font-size: 28px;
+  }
+
+  .icf-hero::after {
+    width: 140px;
+    height: 140px;
+    right: -30px;
+    top: -30px;
   }
 
   .icf-page-title {
