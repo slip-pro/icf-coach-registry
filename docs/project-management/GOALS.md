@@ -13,6 +13,16 @@
 **Phase**: 1.5
 **Description**: Reliable photo hosting independent of coaches' personal storage. Options: Cloudflare R2 (free tier), Vercel Blob, or auto-copy to chapter's Google Drive via Apps Script. Currently coaches provide a URL which can break if deleted.
 
+### G-013: Registration Form Redesign
+**Status**: Planned
+**Phase**: 1.5
+**Description**: Redesign the coach registration form page to match the new ICF brandbook design (cream cards, blue accents, yellow highlights). Currently uses old neutral style.
+
+### G-014: Filter Cleanup + Translation
+**Status**: Planned
+**Phase**: 1.5
+**Description**: Remove unnecessary filter parameters and fix missing translations in filter chips. Specific filters to remove TBD by owner.
+
 ### G-006: Conference Landing Workflow
 **Status**: Planned
 **Phase**: 1.5
