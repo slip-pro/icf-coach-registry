@@ -65,6 +65,18 @@ const LANG_I18N_MAP = {
   'Greek': 'langGreek',
 };
 
+/** Specialization display names mapped to i18n keys */
+const SPEC_I18N_MAP = {
+  'Career': 'specCareer',
+  'Leadership': 'specLeadership',
+  'Business': 'specBusiness',
+  'Life': 'specLife',
+  'Relationships': 'specRelationships',
+  'Executive': 'specExecutive',
+  'Health': 'specHealth',
+  'Team': 'specTeam',
+};
+
 /**
  * Create a fresh filter state with all selections empty.
  * @returns {FilterState}
@@ -455,7 +467,7 @@ function buildSpecDropdown(specializations, state, triggerBtn, onChange) {
 
     const text = document.createElement('span');
     text.className = 'icf-filter-dropdown__text';
-    text.textContent = spec;
+    text.textContent = getSpecLabel(spec);
 
     option.appendChild(checkbox);
     option.appendChild(checkMark);
@@ -563,4 +575,15 @@ function getLanguageLabel(langName) {
   const key = LANG_I18N_MAP[langName];
   if (key) return t(key);
   return langName;
+}
+
+/**
+ * Get the translated label for a specialization name.
+ * @param {string} specName — e.g. "Career", "Leadership"
+ * @returns {string}
+ */
+function getSpecLabel(specName) {
+  const key = SPEC_I18N_MAP[specName];
+  if (key) return t(key);
+  return specName;
 }

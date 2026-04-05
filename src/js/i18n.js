@@ -100,8 +100,18 @@ const dictionary = {
   },
   specExecutive: {
     en: 'Executive',
-    ru: 'Executive',
+    ru: 'Руководство',
     el: 'Executive',
+  },
+  specHealth: {
+    en: 'Health',
+    ru: 'Здоровье',
+    el: 'Υγεία',
+  },
+  specTeam: {
+    en: 'Team',
+    ru: 'Команда',
+    el: 'Ομάδα',
   },
 
   // Contact
