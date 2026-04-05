@@ -55,6 +55,12 @@
 **Phase**: 2
 **Description**: Track page views, filter usage, contact clicks, and AI conversation conversion.
 
+### G-015: Migrate Infrastructure to ICF Cyprus Account
+**Status**: Backlog
+**Phase**: 2+
+**Description**: Move all infrastructure from personal account to official ICF Cyprus account: Google Sheet, Google Drive (photos), Apps Script, Vercel project, GitHub repo. Currently everything runs under the personal account of the board member who set it up.
+**Action**: Coordinate with ICF Cyprus admin to create/transfer ownership.
+
 ---
 
 ## Achieved Goals
