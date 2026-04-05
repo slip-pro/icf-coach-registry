@@ -163,12 +163,15 @@
 .icf-page-title {
   font-family: var(--icf-font-heading);
   font-size: 44px;
-  font-weight: 800;
+  font-weight: 400;
   color: var(--icf-text-primary);
-  line-height: 1.2;
+  line-height: 1.4;
+}
+
+.icf-page-title__highlight {
   background: var(--icf-cta);
-  display: inline-block;
-  padding: 8px 28px;
+  display: inline;
+  padding: 4px 20px;
   border-radius: 100px;
 }
 
@@ -908,7 +911,10 @@
 
   .icf-page-title {
     font-size: 24px;
-    padding: 6px 20px;
+  }
+
+  .icf-page-title__highlight {
+    padding: 3px 14px;
   }
 
   .icf-header__logo {

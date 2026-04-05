@@ -110,8 +110,9 @@ function renderHeader() {
       <div class="icf-header__brand">
         ${logoHTML}
       </div>
-      <h1 class="icf-page-title" data-i18n="pageTitle">
-        ${esc(t('pageTitle'))}
+      <h1 class="icf-page-title">
+        <span data-i18n="pageTitle">${esc(t('pageTitle'))}</span>
+        <span class="icf-page-title__highlight" data-i18n="pageTitleHighlight">${esc(t('pageTitleHighlight'))}</span>
       </h1>
       <nav class="icf-lang-switch" role="group"
            aria-label="Language">
