@@ -57,6 +57,11 @@
 **Description**: Move all infrastructure from personal account to official ICF Cyprus account: Google Sheet, Google Drive (photos), Apps Script, Vercel project, GitHub repo. Currently everything runs under the personal account of the board member who set it up.
 **Action**: Coordinate with ICF Cyprus admin to create/transfer ownership.
 
+### G-017: Unit + Integration Tests
+**Status**: Backlog
+**Phase**: 2+
+**Description**: Add test coverage for the widget. Unit tests for pure logic (CSV parsing, filters, i18n, URL validation, HTML escaping). Integration tests for DOM rendering (cards, filters, language switch, form validation). Simple HTML test runner — no npm/Node required.
+
 ---
 
 ## Achieved Goals
