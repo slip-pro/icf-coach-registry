@@ -1,9 +1,10 @@
 # Roadmap: ICF Cyprus Coach Registry
 
-## Current Stage: Phase 1 — Complete
+## Current Stage: Phase 1.5 — Deployed + Branded
 
-G-001 (Coach Catalog) and G-002 (Registration Flow) delivered.
-Phase 1 MVP is functionally complete. Ready for deployment once WordPress access obtained.
+G-001 (Catalog) + G-002 (Registration) + G-008 (Vercel) + G-009 (Brandbook Redesign) delivered.
+Live at: https://icf-coach-registry.vercel.app/
+Linked from ICF Cyprus WordPress site. Design matches ICF Brand Guidelines 2025.
 Next: Phase 2 — AI Assistant and Analytics.
 
 ---

@@ -62,3 +62,21 @@
 **Decision**: Use one Google Sheet tab (Submissions) for all coach data
 **Rationale**: Simpler than maintaining two separate tabs (Coaches + Submissions). Registration and catalog share the same data source, reducing sync complexity.
 **Trade-offs**: All data in one place -- requires status column discipline to distinguish approved coaches from pending submissions.
+
+### D-007: Vercel for production hosting
+**Date**: 2026-04-05
+**Decision**: Deploy on Vercel instead of GitHub Pages
+**Rationale**: Professional URL (icf-coach-registry.vercel.app), auto-deploy on git push, custom domain support for later. GitHub Pages remains as fallback.
+**Trade-offs**: Another service dependency, but free tier is sufficient.
+
+### D-008: ICF Brand Guidelines 2025 as design source
+**Date**: 2026-04-05
+**Decision**: Redesign UI from official ICF Brand Guidelines PDF, not from the original HTML mockup
+**Rationale**: Owner provided brandbook and mockup with specific requirements. Official brand alignment is important for ICF chapter credibility.
+**Trade-offs**: Hoss Round (official headline font) is commercial — using Nunito as Google Fonts fallback.
+
+### D-009: Owner-driven design iteration
+**Date**: 2026-04-05
+**Decision**: Design changes go through owner review with screenshots, not autonomous agent decisions
+**Rationale**: First autonomous redesign attempt (dark hero banner) was rejected. Owner has specific visual preferences that require iterative feedback.
+**Trade-offs**: Slower than autonomous, but results match owner expectations.

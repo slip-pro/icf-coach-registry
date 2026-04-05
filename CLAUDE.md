@@ -10,7 +10,7 @@ Replaces the current static HTML list with a filterable catalog + AI matching as
 - **Frontend**: Vanilla JavaScript / HTML / CSS (embeddable widget for WordPress page)
 - **Data**: Google Sheets as backend (via Google Sheets API or CSV export)
 - **AI (Phase 2)**: TBD — chatbot for coach matching
-- **Hosting**: GitHub Pages (https://slip-pro.github.io/icf-coach-registry/)
+- **Hosting**: Vercel (https://icf-coach-registry.vercel.app/) — auto-deploys from main
 - **Languages**: 3 UI languages — EN / RU / EL
 
 ## Project Structure
@@ -63,8 +63,8 @@ python3 server.py
 # Alternative — open directly in browser (some features may not work without server)
 open src/index.html
 
-# Production is deployed on GitHub Pages (auto-deploys from main branch)
-# https://slip-pro.github.io/icf-coach-registry/
+# Production is deployed on Vercel (auto-deploys from main branch)
+# https://icf-coach-registry.vercel.app/
 
 # No lint/test/build commands yet — vanilla JS, no tooling
 ```

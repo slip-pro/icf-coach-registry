@@ -8,17 +8,6 @@
 
 ## Future Goals
 
-### G-008: Custom Domain + Hosting
-**Status**: Planned
-**Phase**: 1.5
-**Description**: Deploy to Vercel or Netlify with a professional URL (e.g. coaches.icf-cyprus.org or icf-cyprus-coaches.vercel.app). Replace GitHub Pages link. Optionally connect a custom domain later.
-
-### G-009: Redesign by ICF Brandbook
-**Status**: Planned
-**Phase**: 1.5
-**Description**: Redesign the catalog UI to match the official ICF Brand Guidelines 2025 (PDF in temp/). Current design is based on the HTML mockup, not the brandbook. Need to read the PDF, extract colors/fonts/rules, update DESIGN.md and all CSS.
-**Source**: `temp/ICF Brand Guidelines 2025-09-08.pdf`
-
 ### G-010: Photo Storage Solution
 **Status**: Planned
 **Phase**: 1.5
@@ -59,6 +48,25 @@
 ---
 
 ## Achieved Goals
+
+### G-008+G-009: Vercel Deploy + ICF Brandbook Redesign
+**Status**: Achieved
+**Phase**: 1.5
+**Completed**: 2026-04-05
+
+- Deployed to Vercel: https://icf-coach-registry.vercel.app/
+- Full redesign per ICF Brand Guidelines 2025
+- Colors: Deep Blue #212251, Blue #2b379b, Yellow #efcb30, Bone #f8f0e4
+- Typography: Nunito headlines + Plus Jakarta Sans body
+- Card hover: Blue bg with white text + yellow tags
+- ICF badges: yellow bg default, white bg on hover
+- Decorative brush stroke SVGs on background
+- ICF logo in header (PNG placeholder, awaiting SVG from designer)
+- Title: "Найти коуча" + "ICF Cyprus" in yellow pill badge
+
+**Notes**: `docs/notes/G-008-009.md`
+
+---
 
 ### G-005a: Deploy to GitHub Pages
 **Status**: Achieved
