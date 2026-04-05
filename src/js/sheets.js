@@ -119,6 +119,20 @@ function splitList(value) {
  * @param {string} value
  * @returns {string}
  */
+/**
+ * Normalize language name to 2-letter code.
+ * Accepts: 'Russian', 'ru', 'RU', 'english', 'EN', 'Greek', 'el', etc.
+ * @param {string} value
+ * @returns {string} 'en', 'ru', 'el', or ''
+ */
+function normalizeLangCode(value) {
+  const lower = (value || '').toLowerCase().trim();
+  if (lower === 'en' || lower === 'english') return 'en';
+  if (lower === 'ru' || lower === 'russian') return 'ru';
+  if (lower === 'el' || lower === 'greek' || lower === 'ελληνικά') return 'el';
+  return lower;
+}
+
 function normalizeFormat(value) {
   const lower = (value || '').toLowerCase();
   if (lower.includes('both') || (lower.includes('online') && lower.includes('offline'))) {
@@ -226,9 +240,9 @@ function csvToCoaches(rows) {
       priceMin: parseInt(raw.priceMin, 10) || 0,
       priceMax: parseInt(raw.priceMax, 10) || 0,
       bio1: raw.bio1 || '',
-      bio1Lang: (raw.bio1Lang || '').toLowerCase().trim(),
+      bio1Lang: normalizeLangCode(raw.bio1Lang),
       bio2: raw.bio2 || '',
-      bio2Lang: (raw.bio2Lang || '').toLowerCase().trim(),
+      bio2Lang: normalizeLangCode(raw.bio2Lang),
       get bio() { return this.bio1; },
       email: raw.email || '',
       whatsapp: raw.whatsapp || '',
