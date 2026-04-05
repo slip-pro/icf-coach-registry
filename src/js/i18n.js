@@ -347,15 +347,15 @@ const dictionary = {
     ru: '\u042F\u0437\u044B\u043A \u043E\u043F\u0438\u0441\u0430\u043D\u0438\u044F',
     el: '\u0393\u03BB\u03CE\u03C3\u03C3\u03B1 \u03B2\u03B9\u03BF\u03B3\u03C1\u03B1\u03C6\u03B9\u03BA\u03BF\u03CD',
   },
-  regLabelBio2: {
-    en: 'Additional language (optional)',
-    ru: '\u0414\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C\u043D\u044B\u0439 \u044F\u0437\u044B\u043A (\u043D\u0435\u043E\u0431\u044F\u0437\u0430\u0442\u0435\u043B\u044C\u043D\u043E)',
-    el: '\u0395\u03C0\u03B9\u03C0\u03BB\u03AD\u03BF\u03BD \u03B3\u03BB\u03CE\u03C3\u03C3\u03B1 (\u03C0\u03C1\u03BF\u03B1\u03B9\u03C1\u03B5\u03C4\u03B9\u03BA\u03AC)',
-  },
   regLabelBio2Lang: {
-    en: 'Second bio language',
-    ru: '\u042F\u0437\u044B\u043A \u0432\u0442\u043E\u0440\u043E\u0433\u043E \u043E\u043F\u0438\u0441\u0430\u043D\u0438\u044F',
-    el: '\u0393\u03BB\u03CE\u03C3\u03C3\u03B1 \u03B4\u03B5\u03CD\u03C4\u03B5\u03C1\u03BF\u03C5 \u03B2\u03B9\u03BF\u03B3\u03C1\u03B1\u03C6\u03B9\u03BA\u03BF\u03CD',
+    en: 'Additional language (optional)',
+    ru: 'Дополнительный язык (необязательно)',
+    el: 'Επιπλέον γλώσσα (προαιρετικά)',
+  },
+  regLabelBio2: {
+    en: 'About yourself (additional language)',
+    ru: 'О себе (дополнительный язык)',
+    el: 'Σχετικά με εσάς (επιπλέον γλώσσα)',
   },
   regBioLangEN: {
     en: 'English',
