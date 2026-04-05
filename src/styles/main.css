@@ -238,11 +238,7 @@
   margin: 0 auto var(--icf-space-11);
   position: relative;
   z-index: 2;
-  background: linear-gradient(
-    135deg,
-    var(--icf-ai-gradient-start) 0%,
-    var(--icf-ai-gradient-end) 100%
-  );
+  background: #2b379b;
   color: var(--icf-ai-text);
   border: none;
   border-radius: var(--icf-radius-ai);
