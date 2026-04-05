@@ -135,16 +135,14 @@
 .icf-registry {
   font-family: var(--icf-font);
   background-color: var(--icf-bg);
-  /* Subtle brush stroke pattern inspired by ICF brand visual identity.
-     Curved strokes and star/asterisk motifs at very low opacity. */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%23212251' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M30 40 Q50 25 70 40' stroke-width='2.5' opacity='0.025'/%3E%3Cpath d='M140 30 Q160 15 180 32' stroke-width='2' opacity='0.02'/%3E%3Cpath d='M20 130 Q45 115 65 130' stroke-width='2.5' opacity='0.025'/%3E%3Cpath d='M150 140 Q170 125 190 138' stroke-width='2' opacity='0.02'/%3E%3C%2Fg%3E%3Cg fill='%23efcb30'%3E%3Ccircle cx='105' cy='85' r='1.2' opacity='0.04'/%3E%3Ccircle cx='15' cy='175' r='1' opacity='0.03'/%3E%3C%2Fg%3E%3Cg fill='%23212251'%3E%3Ccircle cx='100' cy='10' r='1' opacity='0.03'/%3E%3Ccircle cx='50' cy='90' r='0.8' opacity='0.025'/%3E%3Ccircle cx='170' cy='180' r='1' opacity='0.03'/%3E%3C%2Fg%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 200px 200px;
   color: var(--icf-text-primary);
   padding: var(--icf-space-12) var(--icf-space-8);
   line-height: 1.4;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Decorative SVG brush strokes are positioned absolutely within */
+  position: relative;
+  overflow: hidden;
 }
 
 
@@ -158,11 +156,13 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: var(--icf-space-7);
+  position: relative;
+  z-index: 2;
 }
 
 .icf-page-title {
   font-family: var(--icf-font-heading);
-  font-size: 28px;
+  font-size: 44px;
   font-weight: 800;
   color: var(--icf-text-primary);
   line-height: 1.2;
@@ -175,10 +175,11 @@
   display: flex;
   align-items: center;
   gap: var(--icf-space-5);
+  flex-shrink: 0;
 }
 
 .icf-header__logo {
-  height: 64px;
+  height: 50px;
   width: auto;
   display: block;
 }
@@ -228,6 +229,8 @@
 .icf-ai-button {
   max-width: var(--icf-max-width);
   margin: 0 auto var(--icf-space-11);
+  position: relative;
+  z-index: 2;
   background: linear-gradient(
     135deg,
     var(--icf-ai-gradient-start) 0%,
@@ -266,6 +269,8 @@
 .icf-join-button {
   max-width: var(--icf-max-width);
   margin: 0 auto var(--icf-space-11);
+  position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -300,6 +305,8 @@
 .icf-back-button {
   max-width: var(--icf-max-width);
   margin: 0 auto var(--icf-space-8);
+  position: relative;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: var(--icf-space-2);
@@ -333,6 +340,8 @@
   display: flex;
   gap: var(--icf-space-4);
   flex-wrap: wrap;
+  position: relative;
+  z-index: 2;
 }
 
 .icf-filter-chip {
@@ -496,6 +505,8 @@
   font-size: 13px;
   color: var(--icf-text-tertiary);
   line-height: 1.4;
+  position: relative;
+  z-index: 1;
 }
 
 
@@ -509,13 +520,15 @@
     auto-fill, minmax(var(--icf-grid-min), 1fr)
   );
   gap: var(--icf-grid-gap);
+  position: relative;
+  z-index: 1;
 }
 
 
 /* --- Card --- */
 
 .icf-card {
-  background: var(--icf-surface);
+  background: rgba(248, 240, 228, 0.88);
   border-radius: var(--icf-radius-card);
   padding: var(--icf-space-9);
   border: 1px solid var(--icf-border);
@@ -523,6 +536,8 @@
   flex-direction: column;
   gap: var(--icf-space-7);
   transition: box-shadow 0.2s ease;
+  position: relative;
+  z-index: 1;
 }
 
 .icf-card:hover {
@@ -868,6 +883,15 @@
 }
 
 
+/* --- Decorative SVG brush strokes (brand identity) --- */
+
+.icf-decor {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+
+
 /* ============================================================
    Responsive
    ============================================================ */
@@ -879,11 +903,17 @@
   }
 
   .icf-page-title {
-    font-size: 24px;
+    font-size: 28px;
   }
 
   .icf-header__logo {
-    height: 48px;
+    height: 40px;
+  }
+
+  /* On mobile, stack header elements */
+  .icf-page-header {
+    justify-content: center;
+    text-align: center;
   }
 
   .icf-filters {

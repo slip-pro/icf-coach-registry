@@ -80,10 +80,8 @@ function findContainer(containerId) {
 }
 
 /**
- * Render the page header with logo (or title fallback) and
- * language switcher.
- * Logo is shown when `logoUrl` is provided in config; otherwise
- * the translated text title is rendered as a fallback.
+ * Render the page header: logo (left) + title (center) +
+ * language switcher (right) on one line, white background.
  * @returns {string} HTML string
  */
 function renderHeader() {
@@ -101,24 +99,61 @@ function renderHeader() {
     })
     .join('');
 
-  const brandHTML = appConfig.logoUrl
-    ? `<div class="icf-header__brand">
-        <img src="${esc(appConfig.logoUrl)}"
-             alt="ICF Cyprus Chapter"
-             class="icf-header__logo">
-      </div>`
-    : `<h1 class="icf-page-title" data-i18n="pageTitle">
-        ${esc(t('pageTitle'))}
-      </h1>`;
+  const logoHTML = appConfig.logoUrl
+    ? `<img src="${esc(appConfig.logoUrl)}"
+           alt="ICF Cyprus Chapter"
+           class="icf-header__logo">`
+    : '';
 
   return `
     <header class="icf-page-header">
-      ${brandHTML}
+      <div class="icf-header__brand">
+        ${logoHTML}
+      </div>
+      <h1 class="icf-page-title" data-i18n="pageTitle">
+        ${esc(t('pageTitle'))}
+      </h1>
       <nav class="icf-lang-switch" role="group"
            aria-label="Language">
         ${langButtons}
       </nav>
     </header>
+  `;
+}
+
+/**
+ * Render decorative SVG brush strokes for brand identity.
+ * Positioned absolutely within the .icf-registry container.
+ * @returns {string} HTML string with inline SVG decorations
+ */
+function renderDecorations() {
+  return `
+    <svg class="icf-decor" viewBox="0 0 300 400"
+         style="bottom:-50px;left:-30px;width:280px;opacity:0.15;"
+         aria-hidden="true">
+      <path d="M250 380 Q200 300 180 200 Q160 100 100 50
+               Q60 30 30 60 Q10 100 40 200
+               Q60 280 100 340 Q140 380 200 390"
+            fill="none" stroke="#212251"
+            stroke-width="45" stroke-linecap="round"/>
+    </svg>
+    <svg class="icf-decor" viewBox="0 0 200 200"
+         style="top:20px;right:-20px;width:220px;opacity:0.12;"
+         aria-hidden="true">
+      <g stroke="#efcb30" stroke-width="14"
+         stroke-linecap="round" fill="none">
+        <line x1="100" y1="10" x2="100" y2="190"/>
+        <line x1="10" y1="100" x2="190" y2="100"/>
+        <line x1="30" y1="30" x2="170" y2="170"/>
+        <line x1="170" y1="30" x2="30" y2="170"/>
+      </g>
+    </svg>
+    <svg class="icf-decor" viewBox="0 0 60 80"
+         style="top:45%;left:10px;width:40px;opacity:0.10;"
+         aria-hidden="true">
+      <path d="M30 10 Q10 30 25 55 Q30 65 35 55 Q40 40 30 10Z"
+            fill="#efcb30"/>
+    </svg>
   `;
 }
 
@@ -232,6 +267,7 @@ function renderCatalog(state, errorMessage) {
   }
 
   containerEl.innerHTML = `
+    ${renderDecorations()}
     ${renderHeader()}
     ${renderAIButton()}
     ${bodyHTML}
