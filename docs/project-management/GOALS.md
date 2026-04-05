@@ -19,11 +19,6 @@
 **Phase**: 1.5
 **Description**: Redesign the coach registration form page to match the new ICF brandbook design (cream cards, blue accents, yellow highlights). Currently uses old neutral style.
 
-### G-014: Filter Cleanup + Translation
-**Status**: Planned
-**Phase**: 1.5
-**Description**: Remove unnecessary filter parameters and fix missing translations in filter chips. Specific filters to remove TBD by owner.
-
 ### G-006: Conference Landing Workflow
 **Status**: Planned
 **Phase**: 1.5
@@ -65,6 +60,15 @@
 ---
 
 ## Achieved Goals
+
+### G-014: Filter Cleanup + Translation
+**Status**: Achieved
+**Phase**: 1.5
+**Completed**: 2026-04-05
+
+Languages: only EN/RU/EL (translated per UI language). Format: removed "Both" chip (coaches with both still match). Specializations translated. Price filters on second row.
+
+---
 
 ### G-010: Photo Storage in Google Drive
 **Status**: Achieved
