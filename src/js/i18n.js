@@ -18,9 +18,9 @@ const DEFAULT_LANG = 'en';
 const dictionary = {
   // Page
   pageTitle: {
-    en: 'Find a Coach',
-    ru: 'Найти коуча',
-    el: 'Βρείτε Coach',
+    en: 'ICF Cyprus Coach Registry',
+    ru: 'Реестр коучей ICF Cyprus',
+    el: 'Μητρώο Coaches ICF Cyprus',
   },
 
   // Filter labels
