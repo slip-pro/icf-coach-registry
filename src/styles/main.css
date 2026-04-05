@@ -548,8 +548,8 @@
 }
 
 .icf-card:hover {
-  background: var(--icf-text-secondary);
-  border-color: var(--icf-text-secondary);
+  background: var(--icf-accent);
+  border-color: var(--icf-accent);
   box-shadow: var(--icf-shadow-md);
 }
 
@@ -562,8 +562,8 @@
 }
 
 .icf-card:hover .icf-tag {
-  background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
+  background: var(--icf-cta);
+  color: var(--icf-text-primary);
 }
 
 .icf-card:hover .icf-contact-link {
