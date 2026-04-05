@@ -9,9 +9,10 @@
 ## Future Goals
 
 ### G-010: Photo Storage Solution
-**Status**: Planned
+**Status**: Achieved
 **Phase**: 1.5
-**Description**: Reliable photo hosting independent of coaches' personal storage. Options: Cloudflare R2 (free tier), Vercel Blob, or auto-copy to chapter's Google Drive via Apps Script. Currently coaches provide a URL which can break if deleted.
+**Completed**: 2026-04-05
+**Description**: Coach photos auto-copied to chapter's Google Drive via Apps Script. URL in Sheet replaced with stable Drive thumbnail link. Coaches can delete their originals — photos persist.
 
 ### G-013: Registration Form Redesign
 **Status**: Planned
@@ -64,6 +65,15 @@
 ---
 
 ## Achieved Goals
+
+### G-010: Photo Storage in Google Drive
+**Status**: Achieved
+**Phase**: 1.5
+**Completed**: 2026-04-05
+
+Apps Script auto-copies coach photos to chapter's Google Drive folder on registration. Stable thumbnail URL stored in Sheet.
+
+---
 
 ### G-008+G-009: Vercel Deploy + ICF Brandbook Redesign
 **Status**: Achieved
