@@ -51,6 +51,12 @@
 **Phase**: 2
 **Description**: Track page views, filter usage, contact clicks, and AI conversation conversion.
 
+### G-016: Custom .org Domain
+**Status**: Planned
+**Phase**: 2
+**Description**: Register a .org domain (e.g. coaches.icf-cyprus.org or icf-cyprus-coaches.org) and connect it to Vercel. Replace vercel.app URL with a professional branded domain. Update WP link and all references.
+**Action**: Choose and register domain, configure DNS, connect to Vercel.
+
 ### G-015: Migrate Infrastructure to ICF Cyprus Account
 **Status**: Backlog
 **Phase**: 2+
