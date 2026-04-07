@@ -966,7 +966,11 @@
   }
 
   .icf-page-title {
-    font-size: 24px;
+    font-size: 22px;
+    width: 100%;
+    text-align: center;
+    order: 3;
+    margin-top: var(--icf-space-5);
   }
 
   .icf-page-title__highlight {
@@ -974,29 +978,35 @@
   }
 
   .icf-header__logo {
-    height: 70px;
+    height: 56px;
   }
 
-  /* On mobile, stack header elements */
+  /* Mobile header: logo + language switch on one row, title below */
   .icf-page-header {
-    justify-content: center;
-    text-align: center;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--icf-space-4);
   }
 
+  .icf-header__brand {
+    order: 1;
+  }
+
+  .icf-lang-switch {
+    order: 2;
+  }
+
+  /* Filters: wrap to multiple rows, no horizontal scroll */
   .icf-filters {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    padding-bottom: var(--icf-space-1);
-  }
-
-  .icf-filters::-webkit-scrollbar {
-    display: none;
+    flex-wrap: wrap;
+    gap: var(--icf-space-3);
   }
 
   .icf-filter-chip {
     flex-shrink: 0;
+    font-size: 13px;
+    padding: 6px 12px;
   }
 
   .icf-filter-dropdown__panel {
