@@ -2,7 +2,7 @@
 
 Interactive directory of certified ICF coaches in Cyprus. Phase 1 MVP is complete and deployed. Replaces the static list on the ICF Cyprus website with a filterable catalog, contact buttons, and (Phase 2) AI-powered coach matching.
 
-**Live:** https://icf-coach-registry.vercel.app/
+**Live:** https://icf-cyprus-coaches.vercel.app/
 
 ## Features (MVP) -- Implemented
 

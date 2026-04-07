@@ -3,7 +3,7 @@
 ## Current Stage: Phase 1.5 — Deployed + Branded
 
 G-001 (Catalog) + G-002 (Registration) + G-008 (Vercel) + G-009 (Brandbook Redesign) delivered.
-Live at: https://icf-coach-registry.vercel.app/
+Live at: https://icf-cyprus-coaches.vercel.app/
 Linked from ICF Cyprus WordPress site. Design matches ICF Brand Guidelines 2025.
 Next: Phase 2 — AI Assistant and Analytics.
 

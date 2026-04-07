@@ -93,7 +93,7 @@ Apps Script auto-copies coach photos to chapter's Google Drive folder on registr
 **Phase**: 1.5
 **Completed**: 2026-04-05
 
-- Deployed to Vercel: https://icf-coach-registry.vercel.app/
+- Deployed to Vercel: https://icf-cyprus-coaches.vercel.app/
 - Full redesign per ICF Brand Guidelines 2025
 - Colors: Deep Blue #212251, Blue #2b379b, Yellow #efcb30, Bone #f8f0e4
 - Typography: Nunito headlines + Plus Jakarta Sans body

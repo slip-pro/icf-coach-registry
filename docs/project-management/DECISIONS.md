@@ -66,7 +66,7 @@
 ### D-007: Vercel for production hosting
 **Date**: 2026-04-05
 **Decision**: Deploy on Vercel instead of GitHub Pages
-**Rationale**: Professional URL (icf-coach-registry.vercel.app), auto-deploy on git push, custom domain support for later. GitHub Pages remains as fallback.
+**Rationale**: Professional URL (icf-cyprus-coaches.vercel.app), auto-deploy on git push, custom domain support for later. GitHub Pages remains as fallback.
 **Trade-offs**: Another service dependency, but free tier is sufficient.
 
 ### D-008: ICF Brand Guidelines 2025 as design source
