@@ -332,7 +332,11 @@ export function renderFilters(coaches, container, onFilterChange) {
     wrapper.appendChild(chip);
   }
 
-  // 4. ICF Level chips
+  // 4. ICF Level chips (on new line)
+  const levelBreak = document.createElement('div');
+  levelBreak.className = 'icf-filters__break';
+  wrapper.appendChild(levelBreak);
+
   for (const level of ICF_LEVELS) {
     const chip = buildToggleChip(
       level,
