@@ -45,6 +45,7 @@ import { submitRegistration } from './submit.js';
  * @property {string} [registerUrl] -- URL to registration page (if separate page)
  * @property {string} [catalogUrl] -- URL to catalog page (for back link from registration)
  * @property {string} [logoUrl] -- path to ICF Cyprus logo image (relative to HTML file)
+ * @property {string} [assetsBase] -- base path to assets folder (default: './src/assets/')
  */
 
 /** @type {import('./sheets.js').Coach[]} */
@@ -130,33 +131,17 @@ function renderHeader(titleKey = 'pageTitle', highlightKey = 'pageTitleHighlight
  * @returns {string} HTML string with inline SVG decorations
  */
 function renderDecorations() {
+  const base = appConfig.assetsBase || './src/assets/';
   return `
-    <svg class="icf-decor" viewBox="0 0 300 400"
-         style="bottom:-50px;left:-30px;width:280px;opacity:0.15;"
-         aria-hidden="true">
-      <path d="M250 380 Q200 300 180 200 Q160 100 100 50
-               Q60 30 30 60 Q10 100 40 200
-               Q60 280 100 340 Q140 380 200 390"
-            fill="none" stroke="#212251"
-            stroke-width="45" stroke-linecap="round"/>
-    </svg>
-    <svg class="icf-decor" viewBox="0 0 200 200"
-         style="top:20px;right:-20px;width:220px;opacity:0.12;"
-         aria-hidden="true">
-      <g stroke="#efcb30" stroke-width="14"
-         stroke-linecap="round" fill="none">
-        <line x1="100" y1="10" x2="100" y2="190"/>
-        <line x1="10" y1="100" x2="190" y2="100"/>
-        <line x1="30" y1="30" x2="170" y2="170"/>
-        <line x1="170" y1="30" x2="30" y2="170"/>
-      </g>
-    </svg>
-    <svg class="icf-decor" viewBox="0 0 60 80"
-         style="top:45%;left:10px;width:40px;opacity:0.10;"
-         aria-hidden="true">
-      <path d="M30 10 Q10 30 25 55 Q30 65 35 55 Q40 40 30 10Z"
-            fill="#efcb30"/>
-    </svg>
+    <img class="icf-decor" src="${esc(base)}icf-star.svg"
+         style="top:60px;right:-80px;width:380px;opacity:0.18;"
+         alt="" aria-hidden="true">
+    <img class="icf-decor" src="${esc(base)}icf-symbol-2.svg"
+         style="bottom:-60px;left:-60px;width:340px;opacity:0.15;"
+         alt="" aria-hidden="true">
+    <img class="icf-decor" src="${esc(base)}icf-star.svg"
+         style="top:48%;right:8%;width:140px;opacity:0.10;"
+         alt="" aria-hidden="true">
   `;
 }
 
