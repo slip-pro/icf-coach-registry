@@ -272,7 +272,6 @@ function renderCatalog(state, errorMessage) {
   containerEl.innerHTML = `
     ${renderDecorations()}
     ${renderHeader()}
-    ${renderAIButton()}
     ${bodyHTML}
   `;
 
