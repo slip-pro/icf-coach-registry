@@ -186,7 +186,7 @@
 }
 
 .icf-header__logo {
-  height: 50px;
+  height: 110px;
   width: auto;
   display: block;
 }
@@ -966,7 +966,7 @@
   }
 
   .icf-header__logo {
-    height: 40px;
+    height: 70px;
   }
 
   /* On mobile, stack header elements */

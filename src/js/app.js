@@ -134,13 +134,10 @@ function renderDecorations() {
   const base = appConfig.assetsBase || './src/assets/';
   return `
     <img class="icf-decor" src="${esc(base)}icf-star.svg"
-         style="top:60px;right:-80px;width:380px;opacity:0.18;"
+         style="top:80px;right:-120px;width:600px;opacity:0.18;"
          alt="" aria-hidden="true">
     <img class="icf-decor" src="${esc(base)}icf-symbol-2.svg"
-         style="bottom:-60px;left:-60px;width:340px;opacity:0.15;"
-         alt="" aria-hidden="true">
-    <img class="icf-decor" src="${esc(base)}icf-star.svg"
-         style="top:48%;right:8%;width:140px;opacity:0.10;"
+         style="bottom:-120px;left:-120px;width:560px;opacity:0.15;"
          alt="" aria-hidden="true">
   `;
 }
