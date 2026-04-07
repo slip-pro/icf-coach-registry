@@ -133,11 +133,11 @@ function renderHeader(titleKey = 'pageTitle', highlightKey = 'pageTitleHighlight
 function renderDecorations() {
   const base = appConfig.assetsBase || './src/assets/';
   return `
-    <img class="icf-decor" src="${esc(base)}icf-star.svg"
-         style="top:80px;right:-120px;width:600px;opacity:0.18;"
+    <img class="icf-decor icf-decor--star" src="${esc(base)}icf-star.svg"
+         style="top:80px;right:-120px;width:600px;"
          alt="" aria-hidden="true">
-    <img class="icf-decor" src="${esc(base)}icf-symbol-2.svg"
-         style="bottom:-120px;left:-120px;width:560px;opacity:0.15;"
+    <img class="icf-decor icf-decor--symbol" src="${esc(base)}icf-symbol-2.svg"
+         style="bottom:-120px;left:-120px;width:560px;"
          alt="" aria-hidden="true">
   `;
 }

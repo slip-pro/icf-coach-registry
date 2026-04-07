@@ -186,7 +186,7 @@
 }
 
 .icf-header__logo {
-  height: 110px;
+  height: 70px;
   width: auto;
   display: block;
 }
@@ -946,6 +946,21 @@
   z-index: 0;
 }
 
+/* Star: tint blue → yellow (#efcb30).
+   Filter chain: brightness/saturate adjusts to brand yellow. */
+.icf-decor--star {
+  opacity: 0.22;
+  filter: brightness(0) saturate(100%) invert(82%) sepia(43%)
+          saturate(960%) hue-rotate(358deg) brightness(99%) contrast(91%);
+}
+
+/* Symbol: tint to brand blue (#5778fa) — same as current star color. */
+.icf-decor--symbol {
+  opacity: 0.18;
+  filter: brightness(0) saturate(100%) invert(40%) sepia(89%)
+          saturate(2200%) hue-rotate(220deg) brightness(102%) contrast(96%);
+}
+
 
 /* ============================================================
    Responsive
@@ -966,7 +981,7 @@
   }
 
   .icf-header__logo {
-    height: 70px;
+    height: 48px;
   }
 
   /* On mobile, stack header elements */
