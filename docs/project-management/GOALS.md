@@ -103,6 +103,12 @@ Apps Script auto-copies coach photos to chapter's Google Drive folder on registr
 - ICF logo in header (PNG placeholder, awaiting SVG from designer)
 - Title: "Найти коуча" + "ICF Cyprus" in yellow pill badge
 
+**Finalization (2026-04-07)**:
+- Real ICF Cyprus Chapter logo (full color) at 110px desktop / 70px mobile
+- 2 large brush stroke decorations (blue star + symbol) from designer
+- AI button hidden (deferred to Phase 2)
+- Coach avatars enlarged 64px → 96px
+
 **Notes**: `docs/notes/G-008-009.md`
 
 ---
