@@ -215,13 +215,18 @@ function renderCardTop(coach) {
 
 
 /**
- * Render the bio paragraph with 3-line clamp.
+ * Render the bio paragraph with 3-line clamp + optional "Read more".
  * @param {string} bio
+ * @param {boolean} hasMore — whether full bio is longer than clamp
  * @returns {string} HTML
  */
-function renderBio(bio) {
+function renderBio(bio, hasMore) {
   if (!bio) return '';
-  return `<p class="icf-card__bio">${esc(bio)}</p>`;
+  const readMore = hasMore
+    ? `<button type="button" class="icf-card__read-more"
+        data-i18n="readMore">${t('readMore')}</button>`
+    : '';
+  return `<p class="icf-card__bio">${esc(bio)}</p>${readMore}`;
 }
 
 
@@ -313,21 +318,104 @@ function renderMeta(coach) {
  * @param {import('./sheets.js').Coach} coach
  * @returns {string} HTML
  */
-function renderCard(coach) {
+function renderCard(coach, index) {
   const contact = renderContactBlock(coach);
   const divider = contact ? '<hr class="icf-divider">' : '';
   const bio = getBioForLanguage(coach, getCurrentLanguage());
+  const hasMore = bio.length > 120;
 
   return `
-    <article class="icf-card" aria-label="${esc(coach.name)}">
+    <article class="icf-card" aria-label="${esc(coach.name)}"
+      data-coach-index="${index}">
       ${renderCardTop(coach)}
-      ${renderBio(bio)}
+      ${renderBio(bio, hasMore)}
       ${renderTags(coach.specializations)}
       ${renderMeta(coach)}
       ${divider}
       ${contact}
     </article>`;
 }
+
+
+/* ---------------------------------------------------------------
+   Public API
+   --------------------------------------------------------------- */
+
+/* ---------------------------------------------------------------
+   Modal: full coach profile
+   --------------------------------------------------------------- */
+
+/** @type {import('./sheets.js').Coach[]|null} */
+let currentCoaches = null;
+
+/**
+ * Render the modal HTML for a coach.
+ * @param {import('./sheets.js').Coach} coach
+ * @returns {string} HTML
+ */
+function renderModal(coach) {
+  const bio = getBioForLanguage(coach, getCurrentLanguage());
+  const contact = renderContactBlock(coach);
+  const divider = contact ? '<hr class="icf-divider">' : '';
+
+  return `
+    <div class="icf-modal-overlay" role="dialog"
+      aria-label="${esc(coach.name)}">
+      <div class="icf-modal">
+        <button type="button" class="icf-modal__close"
+          aria-label="${t('closeModal')}">&times;</button>
+        ${renderCardTop(coach)}
+        <p class="icf-modal__bio">${esc(bio)}</p>
+        ${renderTags(coach.specializations)}
+        ${renderMeta(coach)}
+        ${divider}
+        ${contact}
+      </div>
+    </div>`;
+}
+
+/**
+ * Open the coach profile modal.
+ * @param {number} index
+ */
+function openModal(index) {
+  if (!currentCoaches || !currentCoaches[index]) return;
+  closeModal();
+
+  const coach = currentCoaches[index];
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = renderModal(coach);
+  const overlay = wrapper.firstElementChild;
+  document.body.appendChild(overlay);
+  document.body.style.overflow = 'hidden';
+
+  requestAnimationFrame(() => overlay.classList.add('is-visible'));
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay
+      || e.target.closest('.icf-modal__close')) {
+      closeModal();
+    }
+  });
+}
+
+/** Close any open modal. */
+function closeModal() {
+  const overlay = document.querySelector('.icf-modal-overlay');
+  if (!overlay) return;
+  overlay.classList.remove('is-visible');
+  overlay.addEventListener('transitionend', () => overlay.remove(), {
+    once: true,
+  });
+  // Fallback if no transition fires
+  setTimeout(() => { if (overlay.parentNode) overlay.remove(); }, 300);
+  document.body.style.overflow = '';
+}
+
+/** Global keydown for Escape */
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+});
 
 
 /* ---------------------------------------------------------------
@@ -345,6 +433,7 @@ function renderCard(coach) {
  */
 export function renderCards(coaches, container) {
   container.innerHTML = '';
+  currentCoaches = coaches;
 
   if (!coaches || coaches.length === 0) {
     container.innerHTML = `
@@ -356,6 +445,18 @@ export function renderCards(coaches, container) {
   }
 
   container.innerHTML = coaches
-    .map((coach) => renderCard(coach))
+    .map((coach, i) => renderCard(coach, i))
     .join('');
+
+  // Attach click delegation once per container
+  if (!container._icfModalBound) {
+    container._icfModalBound = true;
+    container.addEventListener('click', (e) => {
+      // Skip clicks on links/buttons inside the card
+      if (e.target.closest('a, .icf-contact-link, .icf-social-icon'))
+        return;
+      const card = e.target.closest('.icf-card');
+      if (card) openModal(Number(card.dataset.coachIndex));
+    });
+  }
 }

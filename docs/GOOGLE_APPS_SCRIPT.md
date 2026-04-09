@@ -53,7 +53,7 @@ function doPost(e) {
       ).setMimeType(ContentService.MimeType.JSON);
     }
 
-    var data = JSON.parse(e.postData.contents);
+    var data = JSON.parse(e.parameter.payload);
 
     // Column order: A=Status, B=Name, C=Email, D=ICF Level, E=Photo,
     // F=Specializations, G=Languages, H=Format, I=Price Min, J=Price Max,

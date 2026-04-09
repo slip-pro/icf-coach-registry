@@ -160,6 +160,16 @@ const dictionary = {
     ru: 'Профили:',
     el: 'Προφίλ:',
   },
+  readMore: {
+    en: 'Read more',
+    ru: 'Подробнее',
+    el: 'Περισσότερα',
+  },
+  closeModal: {
+    en: 'Close',
+    ru: 'Закрыть',
+    el: 'Κλείσιμο',
+  },
 
   // Meta
   metaPerSession: {
