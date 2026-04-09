@@ -610,6 +610,7 @@
   height: 96px;
   border-radius: 50%;
   object-fit: cover;
+  object-position: center top;
   flex-shrink: 0;
   background: var(--icf-avatar-fallback);
 }

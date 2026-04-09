@@ -684,20 +684,6 @@ function buildFormHTML() {
         })}
       </div>
 
-      <!-- Section 7: ICF Verification -->
-      <div class="icf-form__section">
-        <h3 class="icf-form__section-title"
-          data-i18n="regSectionIcf">${esc(t('regSectionIcf'))}</h3>
-
-        ${renderInput({
-          id: uid('icf-membership'),
-          labelKey: 'regLabelIcfMembership',
-          type: 'text',
-          required: false,
-          placeholderKey: 'regPlaceholderIcfMembership',
-        })}
-      </div>
-
       <!-- Card Preview -->
       <div class="icf-form__preview">
         <h3 class="icf-form__section-title"
@@ -773,7 +759,6 @@ function collectFormData(form) {
     instagram: val(uid('instagram')),
     linkedin: val(uid('linkedin')),
     facebook: val(uid('facebook')),
-    icfMembership: val(uid('icf-membership')),
   };
 }
 
