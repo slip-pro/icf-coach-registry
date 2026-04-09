@@ -25,6 +25,30 @@
 
 ---
 
+## G-019: Registration Form Fix -- Done
+
+### F-014: Apps Script Redeployment + Docs Fix -- Done
+
+---
+
+## G-020: Remove ICF Membership Field -- Done
+
+### F-015: Remove Section 7 from Registration Form -- Done
+
+---
+
+## G-021: Avatar Photo Centering Fix -- Done
+
+### F-016: Avatar object-position Fix -- Done
+
+---
+
+## G-022: Browser-Based Modal Tests -- Done
+
+### F-017: Modal Test Suite (13 assertions) -- Done
+
+---
+
 ## G-003: AI Coach Matching (Phase 2)
 
 ### F-010: AI Chatbot Widget

@@ -72,6 +72,48 @@ Clicking a coach card opens a modal with the full profile: complete bio (no trun
 
 ---
 
+### G-019: Registration Form Fix (Apps Script Redeployment)
+**Status**: Achieved
+**Phase**: 1.5
+**Completed**: 2026-04-09
+
+Apps Script endpoint was broken (page not found error). User redeployed the script with a new deployment. Documentation updated: `docs/GOOGLE_APPS_SCRIPT.md` now uses `e.parameter.payload` instead of `e.postData.contents` for correct parameter handling.
+
+**Files changed**: `docs/GOOGLE_APPS_SCRIPT.md`
+
+---
+
+### G-020: Remove ICF Membership Field from Registration
+**Status**: Achieved
+**Phase**: 1.5
+**Completed**: 2026-04-09
+
+Removed Section 7 (ICF Membership Number) from the registration form entirely. Field removed from data collection. Coaches no longer need to provide membership info during registration.
+
+---
+
+### G-021: Avatar Photo Centering Fix
+**Status**: Achieved
+**Phase**: 1.5
+**Completed**: 2026-04-09
+
+Added `object-position: center top` to `.icf-avatar` so that coach photos focus on the face/upper body rather than the center of the image. Fixes cropping issues with portrait photos.
+
+**Files changed**: `src/styles/main.css`
+
+---
+
+### G-022: Browser-Based Modal Tests
+**Status**: Achieved
+**Phase**: 1.5
+**Completed**: 2026-04-09
+
+Added `tests/modal.test.html` with 13 assertions covering modal open/close behavior, content rendering, keyboard navigation (Escape), and backdrop click. Simple HTML test runner — no npm/Node required, runs in any browser.
+
+**Files changed**: `tests/modal.test.html`
+
+---
+
 ### G-013: Registration Form Redesign + Bilingual Bio
 **Status**: Achieved
 **Phase**: 1.5
