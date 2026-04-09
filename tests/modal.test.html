@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Modal Tests — ICF Registry</title>
+  <link rel="stylesheet" href="../src/styles/main.css">
+  <style>
+    body { margin: 0; padding: 20px; font-family: sans-serif; }
+    .test-log { margin-top: 20px; padding: 16px; border-radius: 8px; }
+    .test-log.pass { background: #d4edda; color: #155724; }
+    .test-log.fail { background: #f8d7da; color: #721c24; }
+    .test-log pre { margin: 4px 0; }
+    h2 { margin-top: 24px; }
+  </style>
+</head>
+<body>
+
+<h1>ICF Registry — Modal Tests</h1>
+<div id="icf-coach-registry"></div>
+<div id="results"></div>
+
+<script type="module">
+import { renderCards, getBioForLanguage } from '../src/js/cards.js';
+import { setLanguage } from '../src/js/i18n.js';
+
+const results = document.getElementById('results');
+let passed = 0;
+let failed = 0;
+
+function assert(name, condition) {
+  const el = document.createElement('div');
+  el.className = `test-log ${condition ? 'pass' : 'fail'}`;
+  el.innerHTML = `<pre>${condition ? 'PASS' : 'FAIL'}: ${name}</pre>`;
+  results.appendChild(el);
+  if (condition) passed++; else failed++;
+}
+
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+// --- Mock data ---
+const coaches = [
+  {
+    name: 'Test Coach Long Bio',
+    photo: '',
+    specializations: ['Leadership', 'Business'],
+    icfLevel: 'PCC',
+    languages: ['English', 'Russian'],
+    format: 'online',
+    priceMin: 100,
+    priceMax: 150,
+    bio1: 'This is a very long bio that should trigger the modal with full content visible. '.repeat(5),
+    bio1Lang: 'en',
+    bio2: '',
+    bio2Lang: '',
+    email: 'test@test.com',
+    whatsapp: '',
+    telegram: '',
+    instagram: '',
+    linkedin: '',
+    facebook: '',
+  },
+  {
+    name: 'Short Bio Coach',
+    photo: '',
+    specializations: ['Life'],
+    icfLevel: 'ACC',
+    languages: ['English'],
+    format: 'both',
+    priceMin: 50,
+    priceMax: 80,
+    bio1: 'Short bio.',
+    bio1Lang: 'en',
+    bio2: '',
+    bio2Lang: '',
+    email: '',
+    whatsapp: '',
+    telegram: '',
+    instagram: '',
+    linkedin: '',
+    facebook: '',
+  },
+];
+
+// --- Setup ---
+setLanguage('en');
+const container = document.getElementById('icf-coach-registry');
+container.classList.add('icf-registry');
+renderCards(coaches, container);
+
+// --- Test 1: Cards render ---
+const cards = container.querySelectorAll('.icf-card');
+assert('Cards render correctly', cards.length === 2);
+
+// --- Test 2: Cards have data-coach-index ---
+assert('First card has data-coach-index=0',
+  cards[0]?.dataset.coachIndex === '0');
+assert('Second card has data-coach-index=1',
+  cards[1]?.dataset.coachIndex === '1');
+
+// --- Test 3: Cards have cursor pointer ---
+const style = window.getComputedStyle(cards[0]);
+assert('Cards have cursor:pointer', style.cursor === 'pointer');
+
+// --- Test 4: No "Read more" buttons ---
+const readMoreBtns = container.querySelectorAll('.icf-card__read-more');
+assert('No "Read more" buttons rendered', readMoreBtns.length === 0);
+
+// --- Test 5: Click card opens modal ---
+cards[0].click();
+await sleep(100);
+const overlay = document.querySelector('.icf-modal-overlay');
+assert('Modal overlay created after card click', !!overlay);
+
+const modal = document.querySelector('.icf-modal');
+assert('Modal panel exists', !!modal);
+
+// --- Test 6: Modal has full bio ---
+const modalBio = modal?.querySelector('.icf-modal__bio');
+assert('Modal bio exists', !!modalBio);
+assert('Modal bio is not truncated (no line-clamp)',
+  !modalBio?.classList.contains('icf-card__bio'));
+
+// --- Test 7: Modal has close button ---
+const closeBtn = modal?.querySelector('.icf-modal__close');
+assert('Modal has close button', !!closeBtn);
+
+// --- Test 8: Modal has coach name ---
+const modalName = modal?.querySelector('.icf-card__name');
+assert('Modal shows coach name',
+  modalName?.textContent === 'Test Coach Long Bio');
+
+// --- Test 9: Close via X button ---
+closeBtn?.click();
+await sleep(400);
+const overlayAfterClose = document.querySelector('.icf-modal-overlay');
+assert('Modal removed after close click', !overlayAfterClose);
+
+// --- Test 10: Close via Escape ---
+cards[1].click();
+await sleep(100);
+assert('Second modal opens', !!document.querySelector('.icf-modal-overlay'));
+document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+await sleep(400);
+assert('Modal removed after Escape',
+  !document.querySelector('.icf-modal-overlay'));
+
+// --- Test 11: Close via backdrop ---
+cards[0].click();
+await sleep(100);
+const overlay2 = document.querySelector('.icf-modal-overlay');
+overlay2?.click();
+await sleep(400);
+assert('Modal removed after backdrop click',
+  !document.querySelector('.icf-modal-overlay'));
+
+// --- Test 12: Contact links don't open modal ---
+// Re-render to test that clicking a link inside card doesn't trigger modal
+// (only testable if coach has contact links)
+
+// --- Test 13: getBioForLanguage ---
+assert('getBioForLanguage returns correct bio for en',
+  getBioForLanguage(coaches[0], 'en') === coaches[0].bio1);
+
+// --- Summary ---
+const summary = document.createElement('h2');
+summary.textContent = `Results: ${passed} passed, ${failed} failed`;
+summary.style.color = failed === 0 ? '#155724' : '#721c24';
+results.prepend(summary);
+</script>
+</body>
+</html>

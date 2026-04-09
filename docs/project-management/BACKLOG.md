@@ -19,6 +19,12 @@
 
 ---
 
+## G-018: Coach Profile Modal -- Done
+
+### F-013: Coach Profile Modal -- Done
+
+---
+
 ## G-003: AI Coach Matching (Phase 2)
 
 ### F-010: AI Chatbot Widget

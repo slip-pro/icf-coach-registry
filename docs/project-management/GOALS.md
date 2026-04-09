@@ -61,6 +61,17 @@
 
 ## Achieved Goals
 
+### G-018: Coach Profile Modal
+**Status**: Achieved
+**Phase**: 1.5
+**Completed**: 2026-04-09
+
+Clicking a coach card opens a modal with the full profile: complete bio (no truncation), tags, meta info, and contact buttons. Modal closes via X button, backdrop click, or Escape key. On mobile the modal renders as a bottom sheet (85vh max). Cards show cursor:pointer for clickability. i18n key `closeModal` added for EN/RU/EL.
+
+**Files changed**: `src/js/cards.js`, `src/styles/main.css`, `src/js/i18n.js`
+
+---
+
 ### G-013: Registration Form Redesign + Bilingual Bio
 **Status**: Achieved
 **Phase**: 1.5
