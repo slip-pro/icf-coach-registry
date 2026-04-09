@@ -386,7 +386,9 @@ function openModal(index) {
   const wrapper = document.createElement('div');
   wrapper.innerHTML = renderModal(coach);
   const overlay = wrapper.firstElementChild;
-  document.body.appendChild(overlay);
+  const registry = document.querySelector('.icf-registry')
+    || document.body;
+  registry.appendChild(overlay);
   document.body.style.overflow = 'hidden';
 
   requestAnimationFrame(() => overlay.classList.add('is-visible'));
