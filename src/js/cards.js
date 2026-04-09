@@ -220,13 +220,9 @@ function renderCardTop(coach) {
  * @param {boolean} hasMore — whether full bio is longer than clamp
  * @returns {string} HTML
  */
-function renderBio(bio, hasMore) {
+function renderBio(bio) {
   if (!bio) return '';
-  const readMore = hasMore
-    ? `<button type="button" class="icf-card__read-more"
-        data-i18n="readMore">${t('readMore')}</button>`
-    : '';
-  return `<p class="icf-card__bio">${esc(bio)}</p>${readMore}`;
+  return `<p class="icf-card__bio">${esc(bio)}</p>`;
 }
 
 
@@ -322,13 +318,12 @@ function renderCard(coach, index) {
   const contact = renderContactBlock(coach);
   const divider = contact ? '<hr class="icf-divider">' : '';
   const bio = getBioForLanguage(coach, getCurrentLanguage());
-  const hasMore = bio.length > 120;
 
   return `
     <article class="icf-card" aria-label="${esc(coach.name)}"
       data-coach-index="${index}">
       ${renderCardTop(coach)}
-      ${renderBio(bio, hasMore)}
+      ${renderBio(bio)}
       ${renderTags(coach.specializations)}
       ${renderMeta(coach)}
       ${divider}
