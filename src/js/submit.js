@@ -1,16 +1,20 @@
 /**
  * ICF Registry -- Form Submission Module
  *
- * Submits registration data to Google Apps Script via fetch.
- * Uses application/x-www-form-urlencoded + no-cors mode,
- * which guarantees the body is sent (unlike JSON + no-cors).
+ * Submits registration data via Vercel serverless proxy (/api/submit).
+ * The proxy forwards to Google Apps Script, avoiding ad-blocker issues
+ * (request stays on same domain) and returning real success/error.
+ *
+ * Fallback: if no apiUrl configured, tries direct Google Apps Script
+ * (may be blocked by ad-blockers).
  *
  * @module submit
  */
 
 /**
  * @typedef {Object} SubmitConfig
- * @property {string} [scriptUrl]
+ * @property {string} [scriptUrl] -- Google Apps Script URL (legacy/fallback)
+ * @property {string} [apiUrl] -- Vercel serverless proxy URL (preferred)
  * @property {boolean} [devMode]
  */
 
@@ -26,26 +30,44 @@
  * @returns {Promise<SubmitResult>}
  */
 export async function submitRegistration(formData, config = {}) {
-  const { scriptUrl, devMode = false } = config;
+  const { apiUrl, scriptUrl, devMode = false } = config;
 
-  if (devMode || !scriptUrl) {
+  if (devMode) {
     await new Promise((resolve) => setTimeout(resolve, 1500));
     return { success: true, message: 'Submission simulated (dev mode)' };
   }
 
-  const body = new URLSearchParams();
-  body.append('payload', JSON.stringify(formData));
+  // Preferred: Vercel serverless proxy (same domain, no ad-blocker issues)
+  if (apiUrl) {
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    });
 
-  // Fire-and-forget: don't await — no-cors opaque response
-  // can hang in some browsers. Data is sent regardless.
-  fetch(scriptUrl, {
-    method: 'POST',
-    mode: 'no-cors',
-    body: body,
-  });
+    const result = await response.json();
 
-  // Small delay to let the request start before page navigates
-  await new Promise((resolve) => setTimeout(resolve, 500));
+    if (!response.ok || !result.success) {
+      throw new Error(result.error || 'Submission failed');
+    }
 
-  return { success: true };
+    return { success: true };
+  }
+
+  // Fallback: direct to Google Apps Script (may be blocked)
+  if (scriptUrl) {
+    const body = new URLSearchParams();
+    body.append('payload', JSON.stringify(formData));
+
+    fetch(scriptUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: body,
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    return { success: true };
+  }
+
+  throw new Error('No submission endpoint configured');
 }

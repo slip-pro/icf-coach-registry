@@ -308,6 +308,7 @@ function renderRegistration() {
  */
 async function handleFormSubmit(formData) {
   await submitRegistration(formData, {
+    apiUrl: appConfig.apiUrl,
     scriptUrl: appConfig.scriptUrl,
     devMode: appConfig.devMode,
   });
