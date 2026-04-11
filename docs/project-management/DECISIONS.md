@@ -92,3 +92,15 @@
 **Decision**: Moved Status column to A (first) for admin convenience. New column order: Status, Name, Email, ICF Level, Photo, Specializations, Languages, Format, Prices, Bios, Contacts, Meta.
 **Rationale**: Admin primarily needs Status + Name + Email for moderation. All other columns are secondary.
 **Trade-offs**: Required full Apps Script rewrite and Sheet data migration.
+
+### D-012: Vercel Serverless proxy for form submission
+**Date**: 2026-04-11
+**Decision**: Route form submissions through Vercel Serverless Function (/api/submit) instead of direct fetch to Google Apps Script.
+**Rationale**: Ad-blockers block cross-origin requests to script.google.com. Serverless proxy keeps the request on the same domain (icf-cyprus-coaches.vercel.app), invisible to ad-blockers. Also enables real success/error responses instead of fire-and-forget.
+**Trade-offs**: Extra hop (client → Vercel → Apps Script), but latency is negligible. Falls back to direct Apps Script if proxy unavailable.
+
+### D-013: Vercel project rename to icf-cyprus-coaches
+**Date**: 2026-04-11
+**Decision**: Renamed Vercel project from icf-coach-registry to icf-cyprus-coaches for a professional branded URL.
+**Rationale**: Owner wanted icf-cyprus-coaches in the domain name. Old URL (icf-coach-registry.vercel.app) still works as alias.
+**Trade-offs**: Had to manually add new domain in Vercel Domains settings and update all references in code/docs.
