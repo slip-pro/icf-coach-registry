@@ -2,7 +2,7 @@
 
 ## Current Deployment: Vercel
 
-The registry is live at: **https://icf-cyprus-coaches.vercel.app/**
+The registry is live at: **https://coaches.icf-cyprus.com/**
 
 Vercel is the primary deployment method. The site auto-deploys
 from the `main` branch. No manual deployment steps needed -- push to

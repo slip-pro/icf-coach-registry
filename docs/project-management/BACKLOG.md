@@ -61,6 +61,14 @@
 
 ---
 
+## G-023: Переработать загрузку фото коучей
+
+### F-018: Новый flow загрузки фото
+**Priority**: Medium
+**Description**: Текущий концепт неудобный — коуч вставляет URL на фото из Google Drive, затем Apps Script копирует файл. Нужно переработать: рассмотреть прямую загрузку файла через форму (upload to Google Drive via Apps Script или Vercel Serverless Function), чтобы коучу не нужно было разбираться с ссылками.
+
+---
+
 ## G-004: Analytics (Phase 2)
 
 ### F-012: Usage Analytics

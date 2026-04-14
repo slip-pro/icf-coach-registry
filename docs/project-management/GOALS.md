@@ -8,11 +8,7 @@
 
 ## Future Goals
 
-### G-016: Custom .org Domain
-**Status**: Planned
-**Phase**: 2
-**Description**: Register a .org domain (e.g. coaches.icf-cyprus.org or icf-cyprus-coaches.org) and connect it to Vercel. Replace vercel.app URL with a professional branded domain. Update WP link and all references.
-**Action**: Choose and register domain, configure DNS, connect to Vercel.
+### G-016: Custom Domain — Done (moved to Achieved)
 
 ### G-006: Conference Landing Workflow
 **Status**: Planned
@@ -138,6 +134,17 @@ Languages: only EN/RU/EL (translated per UI language). Format: removed "Both" ch
 **Completed**: 2026-04-05
 
 Apps Script auto-copies coach photos to chapter's Google Drive folder on registration. Stable thumbnail URL stored in Sheet.
+
+---
+
+### G-016: Custom Domain
+**Status**: Achieved
+**Phase**: 1.5
+**Completed**: 2026-04-14
+
+Connected custom subdomain `coaches.icf-cyprus.com` to Vercel. Domain admin created CNAME record pointing `coaches` to `cname.vercel-dns.com`. Vercel auto-issued SSL certificate. Old URLs (`icf-cyprus-coaches.vercel.app`, `icf-coach-registry.vercel.app`) continue to work as aliases.
+
+**Live URL**: https://coaches.icf-cyprus.com
 
 ---
 

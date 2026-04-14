@@ -104,3 +104,10 @@
 **Decision**: Renamed Vercel project from icf-coach-registry to icf-cyprus-coaches for a professional branded URL.
 **Rationale**: Owner wanted icf-cyprus-coaches in the domain name. Old URL (icf-coach-registry.vercel.app) still works as alias.
 **Trade-offs**: Had to manually add new domain in Vercel Domains settings and update all references in code/docs.
+
+### D-014: Custom subdomain coaches.icf-cyprus.com
+**Date**: 2026-04-14
+**Decision**: Connect custom subdomain `coaches.icf-cyprus.com` to Vercel instead of registering a separate .org domain.
+**Rationale**: ICF Cyprus already owns `icf-cyprus.com`. Using a subdomain is free, branded, and professional. No need to register and pay for a separate domain.
+**DNS**: CNAME record `coaches` → `cname.vercel-dns.com` (Vercel recommends updating to `8f3b787b3b52597a.vercel-dns-017.com`).
+**Trade-offs**: Depends on the parent domain owner for DNS changes. Old Vercel URLs continue to work as aliases.
