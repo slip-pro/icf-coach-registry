@@ -12,7 +12,7 @@
  *   A3: ADMIN_EMAIL      B3: admin@example.com
  *   A4: SITE_URL         B4: https://coaches.icf-cyprus.com
  *   A5: EDIT_PAGE        B5: /src/edit.html
- *   A6: DRIVE_FOLDER     B6: 1wz3ucR9kxek16X0F836Nu7rAcZrMNPFr
+ *   A6: DRIVE_FOLDER     B6: https://drive.google.com/drive/folders/XXXXX
  *   A7: REGISTRY_NAME    B7: ICF Cyprus Coach Registry
  *   A8: BRAND_NAME       B8: ICF Cyprus
  *   A9: COLOR_PRIMARY    B9: #212251
@@ -23,7 +23,7 @@
  *  A14: FONT_BODY       B14: Plus Jakarta Sans
  *  A15: LOCATION        B15: Cyprus
  *  A16: COUNTRY_CODE    B16: +357
- *  A17: SHEET_ID        B17: (Google Sheet ID for CSV export)
+ *  A17: SHEET_URL       B17: https://docs.google.com/spreadsheets/d/XXXXX/edit
  * ============================================================
  */
 
@@ -34,13 +34,44 @@
  * Returns an object with key-value pairs.
  * Falls back to defaults if sheet or key is missing.
  */
+/**
+ * Extract Google Drive folder ID from a full URL or plain ID.
+ * Accepts:
+ *   https://drive.google.com/drive/folders/ABC123
+ *   https://drive.google.com/drive/u/0/folders/ABC123
+ *   ABC123
+ */
+function parseDriveFolderId(value) {
+  if (!value) return '';
+  var match = value.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+  if (match) return match[1];
+  // Already a plain ID (no slashes)
+  if (value.indexOf('/') === -1) return value;
+  return value;
+}
+
+/**
+ * Extract Google Sheet ID from a full URL or plain ID.
+ * Accepts:
+ *   https://docs.google.com/spreadsheets/d/ABC123/edit
+ *   https://docs.google.com/spreadsheets/d/ABC123/edit#gid=0
+ *   ABC123
+ */
+function parseSheetId(value) {
+  if (!value) return '';
+  var match = value.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+  if (match) return match[1];
+  if (value.indexOf('/') === -1) return value;
+  return value;
+}
+
 function getSettings() {
   var defaults = {
     SENDER_NAME: 'ICF Cyprus',
     ADMIN_EMAIL: '',
     SITE_URL: 'https://coaches.icf-cyprus.com',
     EDIT_PAGE: '/src/edit.html',
-    DRIVE_FOLDER: '1wz3ucR9kxek16X0F836Nu7rAcZrMNPFr',
+    DRIVE_FOLDER: 'https://drive.google.com/drive/folders/1wz3ucR9kxek16X0F836Nu7rAcZrMNPFr',
     REGISTRY_NAME: 'ICF Cyprus Coach Registry',
     BRAND_NAME: 'ICF Cyprus',
     COLOR_PRIMARY: '#212251',
@@ -51,7 +82,7 @@ function getSettings() {
     FONT_BODY: 'Plus Jakarta Sans',
     LOCATION: 'Cyprus',
     COUNTRY_CODE: '+357',
-    SHEET_ID: '',
+    SHEET_URL: '',
   };
 
   var settingsSheet = SpreadsheetApp.getActiveSpreadsheet()
@@ -71,6 +102,12 @@ function getSettings() {
       settings[k] = v;
     }
   }
+
+  // Parse URLs into IDs for internal use
+  settings.DRIVE_FOLDER_ID =
+    parseDriveFolderId(settings.DRIVE_FOLDER);
+  settings.SHEET_ID =
+    parseSheetId(settings.SHEET_URL);
 
   // Fallback: check Script Properties for ADMIN_EMAIL
   if (!settings.ADMIN_EMAIL) {
@@ -200,7 +237,7 @@ function handleRegister(data) {
         data.photoFilename || 'photo.jpg'
       );
       var folder = DriveApp.getFolderById(
-        settings.DRIVE_FOLDER
+        settings.DRIVE_FOLDER_ID
       );
       var file = folder.createFile(blob);
       file.setName(
@@ -565,7 +602,7 @@ function handleSaveProfile(data) {
         data.photoFilename || 'photo.jpg'
       );
       var folder = DriveApp.getFolderById(
-        settings.DRIVE_FOLDER
+        settings.DRIVE_FOLDER_ID
       );
       var file = folder.createFile(blob);
       file.setName(
@@ -699,7 +736,7 @@ function createSettingsSheet() {
     ['ADMIN_EMAIL', ''],
     ['SITE_URL', 'https://coaches.icf-cyprus.com'],
     ['EDIT_PAGE', '/src/edit.html'],
-    ['DRIVE_FOLDER', '1wz3ucR9kxek16X0F836Nu7rAcZrMNPFr'],
+    ['DRIVE_FOLDER', 'https://drive.google.com/drive/folders/1wz3ucR9kxek16X0F836Nu7rAcZrMNPFr'],
     ['REGISTRY_NAME', 'ICF Cyprus Coach Registry'],
     ['BRAND_NAME', 'ICF Cyprus'],
     ['COLOR_PRIMARY', '#212251'],
@@ -710,7 +747,7 @@ function createSettingsSheet() {
     ['FONT_BODY', 'Plus Jakarta Sans'],
     ['LOCATION', 'Cyprus'],
     ['COUNTRY_CODE', '+357'],
-    ['SHEET_ID', ''],
+    ['SHEET_URL', ''],
     ['', ''],
   ]);
   sheet.getRange('A1:B1').setFontWeight('bold');
