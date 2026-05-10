@@ -10,7 +10,7 @@
  */
 
 const APPS_SCRIPT_URL =
-  'https://script.google.com/macros/s/AKfycbz-iaJYXG4oIrth327C0tRxUVQHfHoLx28REhUlc0d2fdRVdpivc2TvwYdb59sGeaLE/exec';
+  'https://script.google.com/macros/s/AKfycbzjRKXzmP1N66K9cSdMTzE90n_cx0IjZYNVGCmXfjnfCNTUnJEusnM74NghncSjXy2x/exec';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
