@@ -26,6 +26,7 @@ import {
   setLanguage,
   getCurrentLanguage,
   t,
+  setBrandOverrides,
   SUPPORTED_LANGS,
 } from './i18n.js';
 import { esc } from './utils.js';
@@ -35,6 +36,7 @@ import { renderFilters } from './filters.js';
 import { renderRegistrationForm } from './registration.js';
 import { submitRegistration } from './submit.js';
 import { renderEditView } from './edit.js';
+import { fetchConfig, applyConfig } from './config.js';
 
 /**
  * @typedef {Object} RegistryConfig
@@ -105,7 +107,7 @@ function renderHeader(titleKey = 'pageTitle', highlightKey = 'pageTitleHighlight
 
   const logoHTML = appConfig.logoUrl
     ? `<img src="${esc(appConfig.logoUrl)}"
-           alt="ICF Cyprus Chapter"
+           alt="${esc(t('pageTitleHighlight'))}"
            class="icf-header__logo">`
     : '';
 
@@ -435,6 +437,26 @@ async function init(config = {}) {
   // Add the scoping class for CSS custom properties
   containerEl.classList.add('icf-registry');
 
+  // Load remote config from Settings sheet
+  const remoteConfig = await fetchConfig(config.apiUrl);
+  if (remoteConfig) {
+    // Apply colors and fonts
+    applyConfig(remoteConfig, containerEl);
+
+    // Override brand name in i18n
+    if (remoteConfig.brandName) {
+      setBrandOverrides(remoteConfig.brandName, {
+        registryName: remoteConfig.registryName,
+        location: remoteConfig.location,
+      });
+    }
+
+    // Use sheetId from remote if not provided locally
+    if (remoteConfig.sheetId && !config.sheetId) {
+      appConfig.sheetId = remoteConfig.sheetId;
+    }
+  }
+
   // Initialize language
   const lang = initLanguage();
   containerEl.setAttribute('lang', lang);
@@ -453,7 +475,7 @@ async function init(config = {}) {
     renderCatalog('loading');
 
     try {
-      coaches = await fetchCoaches(config.sheetId);
+      coaches = await fetchCoaches(appConfig.sheetId);
       renderCatalog('ready');
     } catch (err) {
       renderCatalog('error', esc(t('errorState')));

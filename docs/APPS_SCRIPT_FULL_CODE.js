@@ -7,13 +7,23 @@
  * После вставки: Deploy → Manage deployments → ✏️ → New version → Deploy
  *
  * НАСТРОЙКИ: Создайте лист "Settings" в Google Sheet:
- *   A1: Key           B1: Value
- *   A2: SENDER_NAME   B2: ICF Cyprus
- *   A3: ADMIN_EMAIL   B3: admin@example.com
- *   A4: SITE_URL      B4: https://coaches.icf-cyprus.com
- *   A5: EDIT_PAGE     B5: /src/edit.html
- *   A6: DRIVE_FOLDER  B6: 1wz3ucR9kxek16X0F836Nu7rAcZrMNPFr
- *   A7: REGISTRY_NAME B7: ICF Cyprus Coach Registry
+ *   A1: Key              B1: Value
+ *   A2: SENDER_NAME      B2: ICF Cyprus
+ *   A3: ADMIN_EMAIL      B3: admin@example.com
+ *   A4: SITE_URL         B4: https://coaches.icf-cyprus.com
+ *   A5: EDIT_PAGE        B5: /src/edit.html
+ *   A6: DRIVE_FOLDER     B6: 1wz3ucR9kxek16X0F836Nu7rAcZrMNPFr
+ *   A7: REGISTRY_NAME    B7: ICF Cyprus Coach Registry
+ *   A8: BRAND_NAME       B8: ICF Cyprus
+ *   A9: COLOR_PRIMARY    B9: #212251
+ *  A10: COLOR_SECONDARY B10: #2b379b
+ *  A11: COLOR_ACCENT    B11: #efcb30
+ *  A12: COLOR_SURFACE   B12: #f8f0e4
+ *  A13: FONT_HEADING    B13: Nunito
+ *  A14: FONT_BODY       B14: Plus Jakarta Sans
+ *  A15: LOCATION        B15: Cyprus
+ *  A16: COUNTRY_CODE    B16: +357
+ *  A17: SHEET_ID        B17: (Google Sheet ID for CSV export)
  * ============================================================
  */
 
@@ -32,6 +42,16 @@ function getSettings() {
     EDIT_PAGE: '/src/edit.html',
     DRIVE_FOLDER: '1wz3ucR9kxek16X0F836Nu7rAcZrMNPFr',
     REGISTRY_NAME: 'ICF Cyprus Coach Registry',
+    BRAND_NAME: 'ICF Cyprus',
+    COLOR_PRIMARY: '#212251',
+    COLOR_SECONDARY: '#2b379b',
+    COLOR_ACCENT: '#efcb30',
+    COLOR_SURFACE: '#f8f0e4',
+    FONT_HEADING: 'Nunito',
+    FONT_BODY: 'Plus Jakarta Sans',
+    LOCATION: 'Cyprus',
+    COUNTRY_CODE: '+357',
+    SHEET_ID: '',
   };
 
   var settingsSheet = SpreadsheetApp.getActiveSpreadsheet()
@@ -83,6 +103,8 @@ function doPost(e) {
       return handleVerifyToken(data);
     } else if (action === 'saveProfile') {
       return handleSaveProfile(data);
+    } else if (action === 'getConfig') {
+      return handleGetConfig();
     }
 
     return jsonResponse({
@@ -97,9 +119,56 @@ function doPost(e) {
   }
 }
 
+/**
+ * GET handler — returns public config for frontend.
+ * URL: https://script.google.com/.../exec?action=getConfig
+ */
+function doGet(e) {
+  var action = (e.parameter.action || '').trim();
+  if (action === 'getConfig') {
+    return handleGetConfig();
+  }
+  return jsonResponse({
+    success: false,
+    error: 'Unknown action',
+  });
+}
+
 function jsonResponse(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ==================== CONFIG ====================
+
+/**
+ * Return public frontend config from Settings sheet.
+ * Excludes sensitive keys (ADMIN_EMAIL, DRIVE_FOLDER).
+ */
+function handleGetConfig() {
+  var settings = getSettings();
+  return jsonResponse({
+    success: true,
+    config: {
+      brandName: settings.BRAND_NAME,
+      registryName: settings.REGISTRY_NAME,
+      siteUrl: settings.SITE_URL,
+      editPage: settings.EDIT_PAGE,
+      sheetId: settings.SHEET_ID,
+      location: settings.LOCATION,
+      countryCode: settings.COUNTRY_CODE,
+      colors: {
+        primary: settings.COLOR_PRIMARY,
+        secondary: settings.COLOR_SECONDARY,
+        accent: settings.COLOR_ACCENT,
+        surface: settings.COLOR_SURFACE,
+      },
+      fonts: {
+        heading: settings.FONT_HEADING,
+        body: settings.FONT_BODY,
+      },
+    },
+  });
 }
 
 // ==================== REGISTRATION ====================
@@ -625,13 +694,23 @@ function createSettingsSheet() {
 
   var sheet = ss.insertSheet('Settings');
   sheet.getRange('A1:B1').setValues([['Key', 'Value']]);
-  sheet.getRange('A2:B8').setValues([
+  sheet.getRange('A2:B18').setValues([
     ['SENDER_NAME', 'ICF Cyprus'],
     ['ADMIN_EMAIL', ''],
     ['SITE_URL', 'https://coaches.icf-cyprus.com'],
     ['EDIT_PAGE', '/src/edit.html'],
     ['DRIVE_FOLDER', '1wz3ucR9kxek16X0F836Nu7rAcZrMNPFr'],
     ['REGISTRY_NAME', 'ICF Cyprus Coach Registry'],
+    ['BRAND_NAME', 'ICF Cyprus'],
+    ['COLOR_PRIMARY', '#212251'],
+    ['COLOR_SECONDARY', '#2b379b'],
+    ['COLOR_ACCENT', '#efcb30'],
+    ['COLOR_SURFACE', '#f8f0e4'],
+    ['FONT_HEADING', 'Nunito'],
+    ['FONT_BODY', 'Plus Jakarta Sans'],
+    ['LOCATION', 'Cyprus'],
+    ['COUNTRY_CODE', '+357'],
+    ['SHEET_ID', ''],
     ['', ''],
   ]);
   sheet.getRange('A1:B1').setFontWeight('bold');

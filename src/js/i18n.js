@@ -917,4 +917,63 @@ function updateDOM() {
   }
 }
 
+/**
+ * Override brand-specific i18n keys with values from
+ * the remote config (Settings sheet).
+ *
+ * Replaces "ICF Cyprus" with the configured brand name
+ * in all relevant dictionary entries.
+ *
+ * @param {string} brandName — e.g. "ICF Cyprus" or "Coaching School X"
+ * @param {Object} [opts]
+ * @param {string} [opts.registryName] — e.g. "ICF Cyprus Coach Registry"
+ * @param {string} [opts.location] — e.g. "Cyprus"
+ */
+export function setBrandOverrides(brandName, opts = {}) {
+  const registryName = opts.registryName
+    || `${brandName} Coach Registry`;
+  const location = opts.location || '';
+
+  // Keys that should be set to brandName in all langs
+  const brandKeys = [
+    'pageTitleHighlight',
+    'regPageTitleHighlight',
+    'editPageTitleHighlight',
+  ];
+  brandKeys.forEach((key) => {
+    if (dictionary[key]) {
+      SUPPORTED_LANGS.forEach((lang) => {
+        dictionary[key][lang] = brandName;
+      });
+    }
+  });
+
+  // Replace "ICF Cyprus" in text strings
+  const replaceInAll = (key) => {
+    if (!dictionary[key]) return;
+    SUPPORTED_LANGS.forEach((lang) => {
+      if (dictionary[key][lang]) {
+        dictionary[key][lang] = dictionary[key][lang]
+          .replace(/ICF Cyprus/g, brandName);
+      }
+    });
+  };
+
+  replaceInAll('contactMessage');
+  replaceInAll('contactSubject');
+  replaceInAll('regSuccess');
+  replaceInAll('backToCatalog');
+
+  // Location override (e.g. "Offline (Cyprus)")
+  if (location && dictionary.formatOffline) {
+    SUPPORTED_LANGS.forEach((lang) => {
+      if (dictionary.formatOffline[lang]) {
+        dictionary.formatOffline[lang] =
+          dictionary.formatOffline[lang]
+            .replace(/Cyprus/g, location);
+      }
+    });
+  }
+}
+
 export { SUPPORTED_LANGS, dictionary };
