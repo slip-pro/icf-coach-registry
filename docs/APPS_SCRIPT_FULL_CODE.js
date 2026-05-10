@@ -1,0 +1,558 @@
+/**
+ * ============================================================
+ * ICF Cyprus Coach Registry — Google Apps Script
+ * ============================================================
+ * ИНСТРУКЦИЯ: Скопируйте ВЕСЬ этот файл и вставьте в Apps Script.
+ * Удалите ВСЁ старое содержимое перед вставкой.
+ * После вставки: Deploy → Manage deployments → ✏️ → New version → Deploy
+ * ============================================================
+ */
+
+// ==================== MAIN DISPATCHER ====================
+
+/**
+ * Main entry point — dispatches based on action field.
+ * Backwards-compatible: requests without action are treated
+ * as registration submissions.
+ */
+function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var action = data.action || 'register';
+
+    if (action === 'register') {
+      return handleRegister(data);
+    } else if (action === 'requestEditLink') {
+      return handleRequestEditLink(data);
+    } else if (action === 'verifyToken') {
+      return handleVerifyToken(data);
+    } else if (action === 'saveProfile') {
+      return handleSaveProfile(data);
+    }
+
+    return jsonResponse({
+      success: false,
+      error: 'Unknown action',
+    });
+  } catch (err) {
+    return jsonResponse({
+      success: false,
+      error: err.message,
+    });
+  }
+}
+
+function jsonResponse(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ==================== REGISTRATION ====================
+
+/**
+ * Handle new coach registration.
+ */
+function handleRegister(data) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet()
+    .getSheetByName('Submissions');
+
+  if (!sheet) {
+    return jsonResponse({
+      success: false,
+      error: 'Submissions tab not found',
+    });
+  }
+
+  var photoUrl = '';
+  if (data.photoBase64) {
+    try {
+      var decoded = Utilities.base64Decode(data.photoBase64);
+      var mimeType = data.photoFilename
+        && data.photoFilename.toLowerCase().endsWith('.png')
+        ? 'image/png' : 'image/jpeg';
+      var blob = Utilities.newBlob(
+        decoded, mimeType,
+        data.photoFilename || 'photo.jpg'
+      );
+      var folder = DriveApp.getFolderById(
+        '1wz3ucR9kxek16X0F836Nu7rAcZrMNPFr'
+      );
+      var file = folder.createFile(blob);
+      file.setName(
+        (data.name || 'coach') + '_' + file.getId()
+      );
+      photoUrl =
+        'https://drive.google.com/thumbnail?id='
+        + file.getId() + '&sz=w400';
+    } catch (photoErr) {
+      photoUrl = '';
+    }
+  }
+
+  sheet.appendRow([
+    'pending',
+    data.name || '',
+    data.email || '',
+    data.icfLevel || '',
+    photoUrl,
+    (data.specializations || []).join(', '),
+    (data.languages || []).join(', '),
+    data.format || '',
+    data.priceMin || '',
+    data.priceMax || '',
+    data.bio1 || data.bio || '',
+    data.bio1Language || '',
+    data.bio2 || '',
+    data.bio2Language || '',
+    data.whatsapp || '',
+    data.telegram || '',
+    data.instagram || '',
+    data.linkedin || '',
+    data.facebook || '',
+    data.icfMembership || '',
+    new Date().toISOString(),
+  ]);
+
+  var lastRow = sheet.getLastRow();
+  sheet.getRange(lastRow, 1, 1, sheet.getLastColumn())
+    .setBackground('#fff2cc');
+
+  var statusCell = sheet.getRange(lastRow, 1);
+  var rule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(
+      ['pending', 'approved', 'rejected'], true
+    )
+    .build();
+  statusCell.setDataValidation(rule);
+
+  var adminEmail = PropertiesService
+    .getScriptProperties()
+    .getProperty('ADMIN_EMAIL');
+
+  if (adminEmail) {
+    MailApp.sendEmail({
+      to: adminEmail,
+      subject: 'New coach registration: '
+        + (data.name || 'Unknown'),
+      body: 'A new coach has submitted a registration:\n\n'
+        + 'Name: ' + (data.name || '') + '\n'
+        + 'Email: ' + (data.email || '') + '\n'
+        + 'ICF Level: ' + (data.icfLevel || '') + '\n'
+        + 'Specializations: '
+        + (data.specializations || []).join(', ') + '\n\n'
+        + 'Review in the "Submissions" tab.',
+    });
+  }
+
+  return jsonResponse({ success: true });
+}
+
+// ==================== EDIT: REQUEST LINK ====================
+
+/**
+ * Handle request for edit link.
+ * Finds approved coach by email, generates a token,
+ * stores it in EditTokens tab, and sends email.
+ * Always returns success to prevent email enumeration.
+ */
+function handleRequestEditLink(data) {
+  var email = (data.email || '').trim().toLowerCase();
+  if (!email) return jsonResponse({ success: true });
+
+  var sheet = SpreadsheetApp.getActiveSpreadsheet()
+    .getSheetByName('Submissions');
+  if (!sheet) return jsonResponse({ success: true });
+
+  // Find approved coach by email
+  var dataRange = sheet.getDataRange().getValues();
+  var coachRow = -1;
+  for (var i = 1; i < dataRange.length; i++) {
+    if (dataRange[i][2].toString().trim().toLowerCase()
+        === email
+        && dataRange[i][0].toString().trim().toLowerCase()
+        === 'approved') {
+      coachRow = i;
+      break;
+    }
+  }
+
+  if (coachRow === -1) {
+    return jsonResponse({ success: true });
+  }
+
+  // Get or create EditTokens tab
+  var tokensSheet = SpreadsheetApp.getActiveSpreadsheet()
+    .getSheetByName('EditTokens');
+  if (!tokensSheet) {
+    tokensSheet = SpreadsheetApp.getActiveSpreadsheet()
+      .insertSheet('EditTokens');
+    tokensSheet.appendRow([
+      'Email', 'Token', 'ExpiresAt', 'Used',
+    ]);
+  }
+
+  // Rate limit: no token sent in last 5 minutes
+  var tokenData = tokensSheet.getDataRange().getValues();
+  var now = new Date();
+  var fiveMinAgo = new Date(
+    now.getTime() - 5 * 60 * 1000
+  );
+  for (var j = 1; j < tokenData.length; j++) {
+    if (tokenData[j][0].toString().trim().toLowerCase()
+        === email) {
+      var expiresAt = new Date(tokenData[j][2]);
+      // expiresAt minus 24h = created time
+      var createdTime = new Date(
+        expiresAt.getTime() - 24 * 60 * 60 * 1000
+      );
+      if (createdTime > fiveMinAgo) {
+        return jsonResponse({ success: true });
+      }
+    }
+  }
+
+  // Generate token
+  var token = Utilities.getUuid();
+  var expires = new Date(
+    now.getTime() + 24 * 60 * 60 * 1000
+  );
+  tokensSheet.appendRow([
+    email, token, expires.toISOString(), false,
+  ]);
+
+  // Send email
+  var editUrl =
+    'https://coaches.icf-cyprus.com/src/edit.html?token='
+    + token;
+  MailApp.sendEmail({
+    to: email,
+    subject: 'Edit your coach profile — ICF Cyprus',
+    body: 'Hello,\n\n'
+      + 'You requested to edit your coach profile '
+      + 'in the ICF Cyprus Registry.\n\n'
+      + 'Click this link to edit your profile:\n'
+      + editUrl + '\n\n'
+      + 'This link is valid for 24 hours.\n\n'
+      + 'If you did not request this, '
+      + 'please ignore this email.\n\n'
+      + 'ICF Cyprus Coach Registry\n'
+      + 'https://coaches.icf-cyprus.com',
+  });
+
+  return jsonResponse({ success: true });
+}
+
+// ==================== EDIT: VERIFY TOKEN ====================
+
+/**
+ * Verify an edit token and return the coach's profile.
+ */
+function handleVerifyToken(data) {
+  var token = (data.token || '').trim();
+  if (!token) {
+    return jsonResponse({
+      success: false,
+      error: 'No token',
+    });
+  }
+
+  var tokensSheet = SpreadsheetApp.getActiveSpreadsheet()
+    .getSheetByName('EditTokens');
+  if (!tokensSheet) {
+    return jsonResponse({
+      success: false,
+      error: 'Invalid token',
+    });
+  }
+
+  var tokenData = tokensSheet.getDataRange().getValues();
+  var tokenRow = -1;
+  var tokenEmail = '';
+  for (var i = 1; i < tokenData.length; i++) {
+    if (tokenData[i][1] === token) {
+      tokenRow = i;
+      tokenEmail = tokenData[i][0].toString()
+        .trim().toLowerCase();
+      break;
+    }
+  }
+
+  if (tokenRow === -1) {
+    return jsonResponse({
+      success: false,
+      error: 'Invalid token',
+    });
+  }
+
+  var expiresAt = new Date(tokenData[tokenRow][2]);
+  if (new Date() > expiresAt) {
+    return jsonResponse({
+      success: false,
+      error: 'Token expired',
+    });
+  }
+
+  if (tokenData[tokenRow][3] === true
+      || tokenData[tokenRow][3] === 'true') {
+    return jsonResponse({
+      success: false,
+      error: 'Token already used',
+    });
+  }
+
+  // Find coach in Submissions
+  var sheet = SpreadsheetApp.getActiveSpreadsheet()
+    .getSheetByName('Submissions');
+  var allData = sheet.getDataRange().getValues();
+  for (var j = 1; j < allData.length; j++) {
+    var row = allData[j];
+    if (row[2].toString().trim().toLowerCase()
+        === tokenEmail
+        && row[0].toString().trim().toLowerCase()
+        === 'approved') {
+      return jsonResponse({
+        success: true,
+        profile: {
+          name: row[1] || '',
+          email: row[2] || '',
+          icfLevel: row[3] || '',
+          photo: row[4] || '',
+          specializations: row[5] || '',
+          languages: row[6] || '',
+          format: row[7] || '',
+          priceMin: row[8] || '',
+          priceMax: row[9] || '',
+          bio1: row[10] || '',
+          bio1Language: row[11] || '',
+          bio2: row[12] || '',
+          bio2Language: row[13] || '',
+          whatsapp: row[14] || '',
+          telegram: row[15] || '',
+          instagram: row[16] || '',
+          linkedin: row[17] || '',
+          facebook: row[18] || '',
+        },
+      });
+    }
+  }
+
+  return jsonResponse({
+    success: false,
+    error: 'Coach not found',
+  });
+}
+
+// ==================== EDIT: SAVE PROFILE ====================
+
+/**
+ * Save edited profile. Re-verifies token, updates the
+ * Submissions row, marks token as used.
+ */
+function handleSaveProfile(data) {
+  var token = (data.token || '').trim();
+  if (!token) {
+    return jsonResponse({
+      success: false,
+      error: 'No token',
+    });
+  }
+
+  var tokensSheet = SpreadsheetApp.getActiveSpreadsheet()
+    .getSheetByName('EditTokens');
+  if (!tokensSheet) {
+    return jsonResponse({
+      success: false,
+      error: 'Invalid token',
+    });
+  }
+
+  var tokenData = tokensSheet.getDataRange().getValues();
+  var tokenRow = -1;
+  var tokenEmail = '';
+  for (var i = 1; i < tokenData.length; i++) {
+    if (tokenData[i][1] === token) {
+      tokenRow = i;
+      tokenEmail = tokenData[i][0].toString()
+        .trim().toLowerCase();
+      break;
+    }
+  }
+
+  if (tokenRow === -1) {
+    return jsonResponse({
+      success: false,
+      error: 'Invalid token',
+    });
+  }
+
+  var expiresAt = new Date(tokenData[tokenRow][2]);
+  if (new Date() > expiresAt) {
+    return jsonResponse({
+      success: false,
+      error: 'Token expired',
+    });
+  }
+
+  if (tokenData[tokenRow][3] === true
+      || tokenData[tokenRow][3] === 'true') {
+    return jsonResponse({
+      success: false,
+      error: 'Token already used',
+    });
+  }
+
+  // Find coach row
+  var sheet = SpreadsheetApp.getActiveSpreadsheet()
+    .getSheetByName('Submissions');
+  var allData = sheet.getDataRange().getValues();
+  var coachRowNum = -1;
+  for (var j = 1; j < allData.length; j++) {
+    if (allData[j][2].toString().trim().toLowerCase()
+        === tokenEmail
+        && allData[j][0].toString().trim().toLowerCase()
+        === 'approved') {
+      coachRowNum = j + 1; // 1-indexed
+      break;
+    }
+  }
+
+  if (coachRowNum === -1) {
+    return jsonResponse({
+      success: false,
+      error: 'Coach not found',
+    });
+  }
+
+  // Handle photo
+  var photoUrl = allData[coachRowNum - 1][4] || '';
+  if (data.photoBase64) {
+    try {
+      var decoded = Utilities.base64Decode(
+        data.photoBase64
+      );
+      var mimeType = data.photoFilename
+        && data.photoFilename.toLowerCase()
+          .endsWith('.png')
+        ? 'image/png' : 'image/jpeg';
+      var blob = Utilities.newBlob(
+        decoded, mimeType,
+        data.photoFilename || 'photo.jpg'
+      );
+      var folder = DriveApp.getFolderById(
+        '1wz3ucR9kxek16X0F836Nu7rAcZrMNPFr'
+      );
+      var file = folder.createFile(blob);
+      file.setName(
+        (data.name || 'coach') + '_' + file.getId()
+      );
+      photoUrl =
+        'https://drive.google.com/thumbnail?id='
+        + file.getId() + '&sz=w400';
+    } catch (photoErr) {
+      // keep existing photo on error
+    }
+  }
+
+  // Update row (B through S = 18 columns)
+  var range = sheet.getRange(coachRowNum, 2, 1, 18);
+  range.setValues([[
+    data.name || '',
+    tokenEmail,
+    data.icfLevel || '',
+    photoUrl,
+    (data.specializations || []).join(', '),
+    (data.languages || []).join(', '),
+    data.format || '',
+    data.priceMin || '',
+    data.priceMax || '',
+    data.bio1 || '',
+    data.bio1Language || '',
+    data.bio2 || '',
+    data.bio2Language || '',
+    data.whatsapp || '',
+    data.telegram || '',
+    data.instagram || '',
+    data.linkedin || '',
+    data.facebook || '',
+  ]]);
+
+  // Mark token as used
+  tokensSheet.getRange(tokenRow + 1, 4).setValue(true);
+
+  return jsonResponse({ success: true });
+}
+
+// ==================== COLOR CODING ====================
+
+/**
+ * Automatically colors a row when the Status cell is changed.
+ * Set this up as an onEdit trigger.
+ */
+function colorByStatus(e) {
+  var sheet = e.source.getActiveSheet();
+  if (sheet.getName() !== 'Submissions') return;
+
+  var range = e.range;
+  var col = range.getColumn();
+  var row = range.getRow();
+
+  if (col !== 1 || row === 1) return;
+
+  var status = range.getValue().toString().toLowerCase().trim();
+  var rowRange = sheet.getRange(row, 1, 1, sheet.getLastColumn());
+
+  if (status === 'approved') {
+    rowRange.setBackground('#d9ead3');
+  } else if (status === 'rejected') {
+    rowRange.setBackground('#f4cccc');
+  } else if (status === 'pending') {
+    rowRange.setBackground('#fff2cc');
+  }
+}
+
+/**
+ * Recolors ALL rows based on their current Status value.
+ * Run manually if colors get out of sync.
+ */
+function colorAllRows() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet()
+    .getSheetByName('Submissions');
+  if (!sheet) return;
+
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2) return;
+
+  for (var row = 2; row <= lastRow; row++) {
+    var status = sheet.getRange(row, 1).getValue()
+      .toString().toLowerCase().trim();
+    var rowRange = sheet.getRange(row, 1, 1, sheet.getLastColumn());
+
+    if (status === 'approved') {
+      rowRange.setBackground('#d9ead3');
+    } else if (status === 'rejected') {
+      rowRange.setBackground('#f4cccc');
+    } else if (status === 'pending') {
+      rowRange.setBackground('#fff2cc');
+    }
+  }
+}
+
+/**
+ * Adds a dropdown list (pending / approved / rejected) to every
+ * Status cell in the Submissions tab.
+ * Run once during initial setup.
+ */
+function addStatusDropdown() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet()
+    .getSheetByName('Submissions');
+  if (!sheet) return;
+
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2) return;
+
+  var range = sheet.getRange(2, 1, lastRow - 1, 1);
+  var rule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['pending', 'approved', 'rejected'], true)
+    .build();
+  range.setDataValidation(rule);
+}
