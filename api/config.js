@@ -24,7 +24,20 @@ export default async function handler(req, res) {
       APPS_SCRIPT_URL + '?action=getConfig',
       { redirect: 'follow' }
     );
-    const data = await response.json();
+    const text = await response.text();
+
+    // Try to parse as JSON
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (_parseErr) {
+      return res.status(502).json({
+        success: false,
+        error: 'Invalid response from Apps Script',
+        status: response.status,
+        body: text.substring(0, 500),
+      });
+    }
 
     // Cache for 5 minutes
     res.setHeader(
@@ -36,7 +49,7 @@ export default async function handler(req, res) {
   } catch (err) {
     return res.status(500).json({
       success: false,
-      error: 'Failed to fetch config',
+      error: err.message || 'Failed to fetch config',
     });
   }
 }
