@@ -40,13 +40,13 @@ export default async function handler(req, res) {
       });
     }
 
-    // Forward to Google Apps Script as form-encoded payload
-    const body = new URLSearchParams();
-    body.append('payload', JSON.stringify(formData));
-
+    // Forward to Google Apps Script as JSON via POST
+    // Using postData.contents on Apps Script side to handle
+    // large payloads (base64 photos can be several MB).
     const response = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      body: body,
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(formData),
       redirect: 'follow',
     });
 
