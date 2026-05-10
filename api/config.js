@@ -20,10 +20,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await fetch(
-      APPS_SCRIPT_URL + '?action=getConfig',
-      { redirect: 'follow' }
-    );
+    const response = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'getConfig' }),
+      redirect: 'follow',
+    });
     const text = await response.text();
 
     // Try to parse as JSON
