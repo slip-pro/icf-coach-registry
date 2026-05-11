@@ -28,10 +28,13 @@
 - [x] Full Google URLs accepted for Drive folder and Sheet (auto-parsed to IDs)
 - [x] Logo URL in Settings — remote logo from Google Drive, overrides local config
 - [x] Debug details removed from /api/config error responses
+- [x] Apps Script URL moved to Vercel env var (APPS_SCRIPT_URL)
+- [x] All hardcoded "ICF Cyprus" removed from HTML titles and success page
+- [x] Page titles set dynamically from remote config (registryName)
+- [x] success.html reads brand from config cache
+- [x] Deployment guide for new instances (docs/DEPLOYMENT_GUIDE.md)
 
 **Remaining**:
-- [ ] Apps Script URL as Vercel env var (currently hardcoded in api/*.js)
-- [ ] Deployment guide for new instances
 - [ ] Test with a second instance (the coaching school)
 
 ### G-006: Conference Landing Workflow
