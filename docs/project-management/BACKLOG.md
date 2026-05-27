@@ -86,6 +86,13 @@
 
 ---
 
+## G-026: First Client Instance (Russian Coaching School) — Done
+
+### F-023: Client repo setup + Vercel deployment — Done
+### F-024: Russian market customizations (currency, language, labels) — Done
+
+---
+
 ## G-004: Analytics (Phase 2)
 
 ### F-012: Usage Analytics

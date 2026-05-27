@@ -437,13 +437,36 @@ async function init(config = {}) {
   // Add the scoping class for CSS custom properties
   containerEl.classList.add('icf-registry');
 
-  // Load remote config from Settings sheet
-  const remoteConfig = await fetchConfig(config.apiUrl);
+  // Initialize language immediately so hero renders with correct text
+  const lang = initLanguage();
+  containerEl.setAttribute('lang', lang);
+
+  // Start with the configured view or default to catalog
+  const startView = config.view || 'catalog';
+
+  // Render hero + skeleton immediately (no waiting for network)
+  if (startView === 'registration') {
+    showView('registration');
+  } else if (startView === 'edit') {
+    showView('edit');
+  } else {
+    renderCatalog('loading');
+  }
+
+  // Load remote config and coach data in parallel
+  const [remoteConfig] = await Promise.all([
+    fetchConfig(config.apiUrl),
+    (startView === 'catalog' || !startView)
+      ? fetchCoaches(appConfig.sheetId)
+          .then((data) => { coaches = data; })
+          .catch(() => { coaches = []; })
+      : Promise.resolve(),
+  ]);
+
+  // Apply remote config after hero is already visible
   if (remoteConfig) {
-    // Apply colors and fonts
     applyConfig(remoteConfig, containerEl);
 
-    // Override brand name in i18n
     if (remoteConfig.brandName) {
       setBrandOverrides(remoteConfig.brandName, {
         registryName: remoteConfig.registryName,
@@ -451,17 +474,14 @@ async function init(config = {}) {
       });
     }
 
-    // Use sheetId from remote if not provided locally
     if (remoteConfig.sheetId && !config.sheetId) {
       appConfig.sheetId = remoteConfig.sheetId;
     }
 
-    // Remote logoUrl takes priority over local
     if (remoteConfig.logoUrl) {
       appConfig.logoUrl = remoteConfig.logoUrl;
     }
 
-    // Update page title with brand name
     if (remoteConfig.registryName) {
       const suffix = {
         catalog: '',
@@ -473,27 +493,11 @@ async function init(config = {}) {
     }
   }
 
-  // Initialize language
-  const lang = initLanguage();
-  containerEl.setAttribute('lang', lang);
-
-  // Start with the configured view or default to catalog
-  const startView = config.view || 'catalog';
-
-  if (startView === 'registration') {
-    // Registration-only page — no need to fetch coaches
-    showView('registration');
-  } else if (startView === 'edit') {
-    // Edit page — no need to fetch coaches
-    showView('edit');
-  } else {
-    // Catalog view — fetch coaches first
-    renderCatalog('loading');
-
-    try {
-      coaches = await fetchCoaches(appConfig.sheetId);
+  // Re-render with real data (config applied, coaches loaded)
+  if (startView === 'catalog' || !startView) {
+    if (coaches.length > 0) {
       renderCatalog('ready');
-    } catch (err) {
+    } else {
       renderCatalog('error', esc(t('errorState')));
     }
   }

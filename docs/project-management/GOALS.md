@@ -57,6 +57,27 @@
 
 ## Achieved Goals
 
+### G-026: First Client Instance (Russian Coaching School)
+**Status**: Achieved
+**Phase**: 2
+**Completed**: 2026-05-13
+
+Deployed the first white-label client instance for a Russian coaching school. Created a separate repo `slip-pro/coach_registry` (not a fork — GitHub doesn't allow forking to the same org), deployed on Vercel as `coach-registry.vercel.app` with its own Google Sheet and Apps Script backend.
+
+**Client-specific customizations** (in the client repo, not in main):
+- Languages: EN/RU only (Greek removed from `SUPPORTED_LANGS`, registration form, bio options)
+- Currency: ₽ instead of € in all price labels
+- Price ranges: <5000₽, 5000–10000₽, 10000–20000₽, 20000₽+
+- Location: "Offline (Moscow)" instead of "Offline (Cyprus)"
+- ICF credential label: "No ICF certification" / "Нет сертификации в ICF" instead of "ICF Member (no credential yet)"
+- Default bio language: Russian (was English)
+
+**Infrastructure**: Separate Google Sheet (ID: `16Q1IQFcnJ_lUFCBolPAnO4pyj19cjh0Z0KBdZCtVgSk`), separate Apps Script deployment, Vercel env var `APPS_SCRIPT_URL` pointing to client's backend.
+
+**Decisions**: D-022 (separate repo per client)
+
+---
+
 ### G-025: White-Label Product (Reusable Registry)
 **Status**: Achieved
 **Phase**: 2

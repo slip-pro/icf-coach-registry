@@ -159,3 +159,10 @@
 **Decision**: Move the Google Apps Script deployment URL from hardcoded strings in 5 API files to a single Vercel environment variable (`APPS_SCRIPT_URL`).
 **Rationale**: The URL was duplicated in `api/submit.js`, `api/config.js`, `api/request-edit-link.js`, `api/verify-token.js`, and `api/save-profile.js`. Changing it required editing all files and redeploying. With an env var, new instances only need to set one variable in Vercel dashboard — no code changes.
 **Trade-offs**: Requires Vercel dashboard access to configure. Clear error message returned if env var is not set.
+
+### D-022: Separate repo per client instance
+**Date**: 2026-05-13
+**Decision**: Create a separate repository for each client instance (e.g. `slip-pro/coach_registry`) instead of forking the main repo or using feature flags.
+**Rationale**: GitHub does not allow forking a repo into the same organization (`slip-pro`). Separate repos allow client-specific customizations (languages, currency, price ranges, location labels) without polluting the main codebase. Each client repo shares the same structure and can pull upstream changes manually.
+**Client customizations**: Languages (remove/add), currency symbol, price ranges, location labels, ICF credential naming, default bio language. All changes are localized to `src/js/i18n.js`, `src/js/filters.js`, `src/js/registration.js`, and `src/js/config.js`.
+**Trade-offs**: No automatic upstream sync — client repos must manually pull changes from the main repo. Risk of drift increases with more clients. Future consideration: extract shared core into an npm package or use git subtree.
