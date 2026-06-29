@@ -14,7 +14,7 @@
  */
 
 import { t } from './i18n.js';
-import { esc } from './utils.js';
+import { esc, compressImageToBase64 } from './utils.js';
 
 /* ---------------------------------------------------------------
    Constants
@@ -99,25 +99,6 @@ function debounce(fn, ms) {
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => fn.apply(this, args), ms);
   };
-}
-
-/**
- * Read a File as a base64-encoded string (data URL without
- * the prefix). Returns only the base64 payload.
- * @param {File} file
- * @returns {Promise<string>}
- */
-function readFileAsBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      // result is "data:<mime>;base64,PAYLOAD"
-      const base64 = reader.result.split(',')[1];
-      resolve(base64);
-    };
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
 }
 
 /**
@@ -1245,9 +1226,9 @@ export function renderRegistrationForm(container, onSubmit) {
       && photoInput.files[0];
 
     const prepareData = photoFile
-      ? readFileAsBase64(photoFile).then((b64) => {
-        data.photoBase64 = b64;
-        data.photoFilename = photoFile.name;
+      ? compressImageToBase64(photoFile).then((compressed) => {
+        data.photoBase64 = compressed.base64;
+        data.photoFilename = compressed.filename;
         return data;
       })
       : Promise.resolve(data);

@@ -17,7 +17,7 @@
  */
 
 import { t } from './i18n.js';
-import { esc } from './utils.js';
+import { esc, compressImageToBase64 } from './utils.js';
 
 /* ---------------------------------------------------------------
    Constants
@@ -104,18 +104,6 @@ function debounce(fn, ms) {
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => fn.apply(this, args), ms);
   };
-}
-
-function readFileAsBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const base64 = reader.result.split(',')[1];
-      resolve(base64);
-    };
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
 }
 
 function isValidEmail(email) {
@@ -1215,9 +1203,9 @@ function renderEditForm(container, profile, token, config) {
         && photoInput.files[0];
 
       if (photoFile) {
-        const b64 = await readFileAsBase64(photoFile);
-        data.photoBase64 = b64;
-        data.photoFilename = photoFile.name;
+        const compressed = await compressImageToBase64(photoFile);
+        data.photoBase64 = compressed.base64;
+        data.photoFilename = compressed.filename;
       }
 
       data.token = token;
