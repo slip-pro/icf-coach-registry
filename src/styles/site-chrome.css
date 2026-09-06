@@ -59,6 +59,24 @@
   gap: 8px;
 }
 
+/* Matches the website's header CTA: bg-brand, rounded-full, text-sm. */
+.icf-site-cta {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--icf-site-blue);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.icf-site-cta:hover {
+  background: var(--icf-site-navy);
+}
+
 .icf-site-nav {
   display: none;
   gap: 24px;

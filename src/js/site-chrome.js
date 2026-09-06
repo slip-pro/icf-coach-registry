@@ -53,11 +53,13 @@ export function siteChromeHTML(logoUrl) {
 
         <nav class="icf-site-nav">${NAV.map(navLink).join('')}</nav>
 
-        <!-- Wrapper stays in the layout even when the menu inside it is hidden,
-             so space-between distributes the header exactly as it does on the
-             main site. Without it the nav slides to the right edge and the two
-             headers no longer line up. -->
+        <!-- Mirrors the website header's right-hand side exactly. The wrapper
+             stays in the layout even when the menu inside it is hidden: under
+             space-between, anything missing here shifts the nav and the two
+             headers stop lining up. -->
         <div class="icf-site-header__actions">
+          <a href="${SITE_URL}/friends" class="icf-site-cta">Become a Friend</a>
+
           <details class="icf-site-menu">
             <summary aria-label="Open menu">
               <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" fill="none">
