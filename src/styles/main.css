@@ -1071,14 +1071,30 @@
   position: absolute;
   pointer-events: none;
   z-index: 0;
+  width: 340px;
+  max-width: 40vw;
+  height: auto;
 }
 
 .icf-decor--star {
-  opacity: 0.18;
+  top: 40px;
+  right: -80px;
+  opacity: 0.12;
 }
 
 .icf-decor--symbol {
-  opacity: 0.15;
+  bottom: -80px;
+  left: -80px;
+  opacity: 0.1;
+}
+
+@media (min-width: 1280px) {
+  .icf-decor { width: 420px; }
+}
+
+/* Below the desktop breakpoint they only crowd the cards. */
+@media (max-width: 1023px) {
+  .icf-decor { display: none; }
 }
 
 

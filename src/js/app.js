@@ -135,13 +135,15 @@ function renderHeader(titleKey = 'pageTitle', highlightKey = 'pageTitleHighlight
  */
 function renderDecorations() {
   const base = appConfig.assetsBase || './src/assets/';
+  // Size and position live in main.css so they can respond to viewport width —
+  // inline styles could not, and the star crowded the cards on wide screens.
+  // WebP rather than the original SVGs: those wrapped a full-size PNG in base64
+  // and cost 1.5 MB per page load for two watermarks at 12% opacity.
   return `
-    <img class="icf-decor icf-decor--star" src="${esc(base)}icf-star.svg"
-         style="top:80px;right:-120px;width:600px;"
-         alt="" aria-hidden="true">
-    <img class="icf-decor icf-decor--symbol" src="${esc(base)}icf-symbol-2.svg"
-         style="bottom:-120px;left:-120px;width:560px;"
-         alt="" aria-hidden="true">
+    <img class="icf-decor icf-decor--star" src="${esc(base)}icf-decor-star.webp"
+         alt="" aria-hidden="true" loading="lazy" decoding="async">
+    <img class="icf-decor icf-decor--symbol" src="${esc(base)}icf-decor-symbol.webp"
+         alt="" aria-hidden="true" loading="lazy" decoding="async">
   `;
 }
 
