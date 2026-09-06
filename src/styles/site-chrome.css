@@ -8,6 +8,14 @@
    theme chrome, so nothing here can reach it.
    ============================================================ */
 
+/* Tailwind's max-w-* includes padding; a plain max-width does not. Without
+   border-box the container ends up 32px wider than the website's and the logo
+   sits 16px further left. */
+.icf-site-header__inner,
+.icf-site-footer__inner {
+  box-sizing: border-box;
+}
+
 .icf-site {
   --icf-site-navy: #212251;
   --icf-site-blue: #2b389c;
