@@ -24,3 +24,7 @@ build/
 .claude/handoff*.md
 .claude/compact-state.json
 .claude/worktrees/
+
+# Next.js build output — the sibling website project leaves this here when
+# a build is run from the wrong directory.
+.next/

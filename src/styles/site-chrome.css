@@ -1,0 +1,160 @@
+/* ============================================================
+   Site chrome — the shared header and footer that make the
+   registry read as part of the ICF Cyprus website.
+
+   NOT part of the widget. This file is loaded only by the
+   standalone pages (index / register / edit / success); a
+   WordPress page embeds the widget alone and keeps its own
+   theme chrome, so nothing here can reach it.
+   ============================================================ */
+
+.icf-site {
+  --icf-site-navy: #212251;
+  --icf-site-blue: #2b389c;
+  --icf-site-border: #e5e7eb;
+  --icf-site-muted: #4b5563;
+
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* --- Header --- */
+
+.icf-site-header {
+  border-bottom: 1px solid var(--icf-site-border);
+  background: #fff;
+}
+
+.icf-site-header__inner {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.icf-site-header__logo {
+  height: 36px;
+  width: auto;
+  display: block;
+}
+
+.icf-site-nav {
+  display: none;
+  gap: 24px;
+}
+
+.icf-site-nav a {
+  font-size: 14px;
+  color: #374151;
+  text-decoration: none;
+}
+
+.icf-site-nav a:hover {
+  color: var(--icf-site-blue);
+}
+
+/* The registry is the page you are on — mark it rather than link it. */
+.icf-site-nav a[aria-current='page'] {
+  color: var(--icf-site-navy);
+  font-weight: 600;
+}
+
+@media (min-width: 1024px) {
+  .icf-site-nav { display: flex; }
+  .icf-site-menu { display: none; }
+}
+
+/* Mobile menu: <details>, so the chrome needs no JavaScript of its own. */
+.icf-site-menu {
+  position: relative;
+}
+
+.icf-site-menu > summary {
+  list-style: none;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--icf-site-border);
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--icf-site-navy);
+}
+
+.icf-site-menu > summary::-webkit-details-marker { display: none; }
+
+.icf-site-menu__panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 30;
+  width: 240px;
+  background: #fff;
+  border: 1px solid var(--icf-site-border);
+  border-radius: 16px;
+  padding: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.icf-site-menu__panel a {
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #374151;
+  text-decoration: none;
+}
+
+.icf-site-menu__panel a:hover {
+  background: #f8f0e4;
+  color: var(--icf-site-blue);
+}
+
+/* --- Footer --- */
+
+.icf-site-footer {
+  margin-top: 80px;
+  border-top: 1px solid var(--icf-site-border);
+  background: #f9fafb;
+}
+
+.icf-site-footer__inner {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 40px 16px;
+  display: grid;
+  gap: 24px;
+}
+
+@media (min-width: 768px) {
+  .icf-site-footer__inner { grid-template-columns: 1fr 1fr; }
+}
+
+.icf-site-footer__logo {
+  height: 36px;
+  width: auto;
+  display: block;
+}
+
+.icf-site-footer p {
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: var(--icf-site-muted);
+}
+
+.icf-site-footer__legal {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.icf-site-footer a {
+  color: #5778fb;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.icf-site-footer a:hover { text-decoration: underline; }

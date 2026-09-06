@@ -3,15 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Coach Registry</title>
+  <title>Find a coach — ICF Cyprus</title>
 
   <!-- Google Fonts: Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Widget Styles -->
   <link rel="stylesheet" href="./styles/main.css">
+  <link rel="stylesheet" href="./styles/site-chrome.css">
 
   <style>
     /* Page-level reset for standalone testing only.
@@ -32,11 +33,17 @@
   <!-- Widget initialization -->
   <script type="module">
     import { ICFRegistry } from './js/app.js';
+    import { mountSiteChrome } from './js/site-chrome.js';
+
+    // Shared header/footer around the widget, so the registry reads as part of
+    // the main site. Standalone pages only — a WordPress embed keeps its own.
+    mountSiteChrome('icf-coach-registry', './assets/icf-charter-logo.png');
 
     ICFRegistry.init({
       // sheetId: 'YOUR_GOOGLE_SHEET_ID_HERE',
       // Omit sheetId to use mock data during development
-      logoUrl: './assets/icf-logo.png',
+      // No logo here: the site header above already carries it.
+      logoUrl: '',
       assetsBase: './assets/',
     });
   </script>

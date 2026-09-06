@@ -172,17 +172,24 @@ export function applyConfig(config, container) {
 }
 
 /**
+ * Families shipped with the widget as @font-face in main.css. Asking Google
+ * for these would fetch a 404 and, worse, make the heading silently fall back.
+ * @type {string[]}
+ */
+const SELF_HOSTED_FONTS = ['Hoss Round'];
+
+/**
  * Dynamically load Google Fonts if not already present.
  * @param {{ heading: string, body: string }} fonts
  */
 function loadGoogleFonts(fonts) {
   const families = [];
-  if (fonts.heading) {
+  if (fonts.heading && !SELF_HOSTED_FONTS.includes(fonts.heading)) {
     families.push(
       `${fonts.heading}:wght@700;800`
     );
   }
-  if (fonts.body) {
+  if (fonts.body && !SELF_HOSTED_FONTS.includes(fonts.body)) {
     families.push(
       `${fonts.body}:wght@400;500;600;700`
     );
