@@ -7,9 +7,10 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="./src/styles/main.css">
+  <link rel="stylesheet" href="./src/styles/site-chrome.css">
 
   <style>
     body {
@@ -26,10 +27,16 @@
 
   <script type="module">
     import { ICFRegistry } from './src/js/app.js';
+    import { mountSiteChrome } from './src/js/site-chrome.js';
+
+    // Shared header/footer around the widget, so the registry reads as part of
+    // the main site. Standalone pages only — a WordPress embed keeps its own.
+    mountSiteChrome('icf-coach-registry', './src/assets/icf-charter-logo.png');
 
     ICFRegistry.init({
       sheetId: '1eloH2qMpKIDypcrbuA4L0Sav7qmGNKkRsLJJQHpUojM',
-      logoUrl: './src/assets/icf-logo.png',
+      // No logo here: the site header above already carries it.
+      logoUrl: '',
       assetsBase: './src/assets/',
     });
   </script>
