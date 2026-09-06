@@ -207,7 +207,7 @@ Open your Vercel URL and check:
 Edit the **Settings** tab in your Google Sheet. Changes appear on the site within 5 minutes (cached).
 
 No code changes needed for:
-- Brand name, colors, fonts
+- Brand name, colors (typography and logo are fixed in code — see CLAUDE.md)
 - Logo, location, country code
 - Admin email, site URL
 

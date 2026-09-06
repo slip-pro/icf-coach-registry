@@ -478,9 +478,6 @@ async function init(config = {}) {
       appConfig.sheetId = remoteConfig.sheetId;
     }
 
-    if (remoteConfig.logoUrl) {
-      appConfig.logoUrl = remoteConfig.logoUrl;
-    }
 
     if (remoteConfig.registryName) {
       const suffix = {

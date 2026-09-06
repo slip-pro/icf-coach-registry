@@ -75,7 +75,13 @@ Configurable for any coaching organization — no code changes needed.
 
 All instance-specific config is in two places:
 1. **Vercel env var**: `APPS_SCRIPT_URL` — Google Apps Script deployment URL
-2. **Google Sheet Settings tab**: 17 keys — branding, colors, fonts, emails, URLs
+2. **Google Sheet Settings tab**: branding, colors, emails, URLs
+
+Typography and the logo are **not** configurable — they are fixed in code so the registry stays
+visually identical to the ICF Cyprus website. The heading face is Hoss Round, self-hosted in
+`src/styles/main.css`; the logo is `src/assets/icf-charter-logo.png`. A new instance changes those
+two places rather than a spreadsheet. Any `fonts` or `logoUrl` values still present in a Settings
+sheet are ignored.
 
 No code changes needed for new instances. See `docs/DEPLOYMENT_GUIDE.md`.
 

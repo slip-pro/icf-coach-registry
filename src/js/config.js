@@ -4,7 +4,7 @@
  * Fetches frontend config from /api/config (which reads
  * from the Settings sheet in Google Sheets).
  *
- * Config includes: brand name, colors, fonts, location,
+ * Config includes: brand name, colors, location,
  * country code, sheet ID.
  *
  * Results are cached in memory for the page session
@@ -28,10 +28,8 @@ let cachedConfig = null;
  * @property {string} sheetId
  * @property {string} location
  * @property {string} countryCode
- * @property {string} logoUrl
  * @property {{ primary: string, secondary: string,
  *              accent: string, surface: string }} colors
- * @property {{ heading: string, body: string }} fonts
  */
 
 /**
@@ -106,9 +104,8 @@ export async function fetchConfig(apiBase = '') {
 }
 
 /**
- * Apply remote config to the page:
- * - Override CSS custom properties (colors, fonts)
- * - Load Google Fonts dynamically
+ * Apply remote config to the page: overrides the brand colour custom
+ * properties. Typography and the logo are fixed in code — see below.
  *
  * @param {RemoteConfig} config
  * @param {HTMLElement} container
@@ -153,65 +150,10 @@ export function applyConfig(config, container) {
     }
   }
 
-  // Apply fonts
-  if (config.fonts) {
-    if (config.fonts.heading) {
-      container.style.setProperty(
-        '--icf-font-heading', `'${config.fonts.heading}'`
-      );
-    }
-    if (config.fonts.body) {
-      container.style.setProperty(
-        '--icf-font', `'${config.fonts.body}'`
-      );
-    }
+  // Fonts and the logo are deliberately NOT configurable. The heading face is
+  // Hoss Round, self-hosted in main.css and shared with the ICF Cyprus website;
+  // a remote override would silently break that pairing.
 
-    // Load Google Fonts dynamically
-    loadGoogleFonts(config.fonts);
-  }
-}
-
-/**
- * Families shipped with the widget as @font-face in main.css. Asking Google
- * for these would fetch a 404 and, worse, make the heading silently fall back.
- * @type {string[]}
- */
-const SELF_HOSTED_FONTS = ['Hoss Round'];
-
-/**
- * Dynamically load Google Fonts if not already present.
- * @param {{ heading: string, body: string }} fonts
- */
-function loadGoogleFonts(fonts) {
-  const families = [];
-  if (fonts.heading && !SELF_HOSTED_FONTS.includes(fonts.heading)) {
-    families.push(
-      `${fonts.heading}:wght@700;800`
-    );
-  }
-  if (fonts.body && !SELF_HOSTED_FONTS.includes(fonts.body)) {
-    families.push(
-      `${fonts.body}:wght@400;500;600;700`
-    );
-  }
-  if (families.length === 0) return;
-
-  const familyParam = families
-    .map((f) => `family=${f.replace(/ /g, '+')}`)
-    .join('&');
-  const href =
-    `https://fonts.googleapis.com/css2?${familyParam}&display=swap`;
-
-  // Check if already loaded
-  const existing = document.querySelector(
-    `link[href="${href}"]`
-  );
-  if (existing) return;
-
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = href;
-  document.head.appendChild(link);
 }
 
 /**
