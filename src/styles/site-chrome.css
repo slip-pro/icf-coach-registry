@@ -40,6 +40,17 @@
   display: block;
 }
 
+/* Matches the website's h-9 md:h-10 */
+@media (min-width: 768px) {
+  .icf-site-header__logo { height: 40px; }
+}
+
+.icf-site-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .icf-site-nav {
   display: none;
   gap: 24px;

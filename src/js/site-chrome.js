@@ -53,15 +53,21 @@ export function siteChromeHTML(logoUrl) {
 
         <nav class="icf-site-nav">${NAV.map(navLink).join('')}</nav>
 
-        <details class="icf-site-menu">
-          <summary aria-label="Open menu">
-            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" fill="none">
-              <path d="M2 4.5h14M2 9h14M2 13.5h14" stroke="currentColor"
-                    stroke-width="1.8" stroke-linecap="round"></path>
-            </svg>
-          </summary>
-          <nav class="icf-site-menu__panel">${NAV.map(navLink).join('')}</nav>
-        </details>
+        <!-- Wrapper stays in the layout even when the menu inside it is hidden,
+             so space-between distributes the header exactly as it does on the
+             main site. Without it the nav slides to the right edge and the two
+             headers no longer line up. -->
+        <div class="icf-site-header__actions">
+          <details class="icf-site-menu">
+            <summary aria-label="Open menu">
+              <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" fill="none">
+                <path d="M2 4.5h14M2 9h14M2 13.5h14" stroke="currentColor"
+                      stroke-width="1.8" stroke-linecap="round"></path>
+              </svg>
+            </summary>
+            <nav class="icf-site-menu__panel">${NAV.map(navLink).join('')}</nav>
+          </details>
+        </div>
       </div>
     </header>
   `;
