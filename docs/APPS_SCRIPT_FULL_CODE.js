@@ -767,7 +767,7 @@ function createSettingsSheet() {
    and when each member's ICF membership runs out.
 
    Sheets (created automatically on first call):
-     "Board"    — Email | Name | Role
+     "Board"    — Email | Name | Role | Expiration date
      "Members"  — Email | Name | Member until
 
    Requires a row in Settings:
@@ -804,19 +804,57 @@ function handleGetPeople(data) {
   });
 }
 
+/**
+ * Find a column by header name. Reading by position breaks the moment somebody
+ * inserts a column; reading by name survives it, and lets people label the
+ * column whichever way reads naturally to them.
+ */
+function columnIndex_(headers, names) {
+  for (var i = 0; i < headers.length; i++) {
+    var header = (headers[i] || '').toString().trim().toLowerCase();
+    for (var j = 0; j < names.length; j++) {
+      if (header === names[j].toLowerCase()) return i;
+    }
+  }
+  return -1;
+}
+
+/** Append a header the sheet does not have yet, so older sheets pick up new fields. */
+function ensureColumn_(sheet, headers, names, label) {
+  var index = columnIndex_(headers, names);
+  if (index !== -1) return index;
+  sheet.getRange(1, headers.length + 1).setValue(label).setFontWeight('bold');
+  headers.push(label);
+  return headers.length - 1;
+}
+
 /** Board members who may sign in to the website admin. */
 function readBoard_() {
-  var sheet = ensureSheet_(BOARD_SHEET, ['Email', 'Name', 'Role']);
+  var sheet = ensureSheet_(BOARD_SHEET, ['Email', 'Name', 'Role', 'Expiration date']);
   var rows = sheet.getDataRange().getValues();
-  var out = [];
+  if (rows.length === 0) return [];
 
+  var headers = rows[0];
+  var emailAt = columnIndex_(headers, ['Email', 'E-mail']);
+  var nameAt = columnIndex_(headers, ['Name']);
+  var roleAt = columnIndex_(headers, ['Role']);
+  var untilAt = ensureColumn_(
+    sheet, headers,
+    ['Expiration date', 'Expires', 'Until', 'Term ends'],
+    'Expiration date'
+  );
+  if (emailAt === -1) return [];
+
+  var out = [];
   for (var i = 1; i < rows.length; i++) {
-    var email = (rows[i][0] || '').toString().trim().toLowerCase();
+    var email = (rows[i][emailAt] || '').toString().trim().toLowerCase();
     if (!email || email.indexOf('@') === -1) continue;
     out.push({
       email: email,
-      name: (rows[i][1] || '').toString().trim(),
-      role: (rows[i][2] || '').toString().trim(),
+      name: nameAt === -1 ? '' : (rows[i][nameAt] || '').toString().trim(),
+      role: roleAt === -1 ? '' : (rows[i][roleAt] || '').toString().trim(),
+      // Blank means no end date — a permanent seat, not an expired one.
+      until: formatDate_(rows[i][untilAt]),
     });
   }
   return out;
@@ -826,15 +864,22 @@ function readBoard_() {
 function readMembers_() {
   var sheet = ensureSheet_(MEMBERS_SHEET, ['Email', 'Name', 'Member until']);
   var rows = sheet.getDataRange().getValues();
-  var out = [];
+  if (rows.length === 0) return [];
 
+  var headers = rows[0];
+  var emailAt = columnIndex_(headers, ['Email', 'E-mail']);
+  var nameAt = columnIndex_(headers, ['Name']);
+  var untilAt = columnIndex_(headers, ['Member until', 'Expiration date', 'Expires', 'Until']);
+  if (emailAt === -1) return [];
+
+  var out = [];
   for (var i = 1; i < rows.length; i++) {
-    var email = (rows[i][0] || '').toString().trim().toLowerCase();
+    var email = (rows[i][emailAt] || '').toString().trim().toLowerCase();
     if (!email || email.indexOf('@') === -1) continue;
     out.push({
       email: email,
-      name: (rows[i][1] || '').toString().trim(),
-      until: formatDate_(rows[i][2]),
+      name: nameAt === -1 ? '' : (rows[i][nameAt] || '').toString().trim(),
+      until: untilAt === -1 ? '' : formatDate_(rows[i][untilAt]),
     });
   }
   return out;
