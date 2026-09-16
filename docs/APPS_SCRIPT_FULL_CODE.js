@@ -144,6 +144,8 @@ function doPost(e) {
       return handleSaveProfile(data);
     } else if (action === 'getConfig') {
       return handleGetConfig();
+    } else if (action === 'getPeople') {
+      return handleGetPeople(data);
     }
 
     return jsonResponse({
@@ -756,4 +758,112 @@ function createSettingsSheet() {
   ]);
   sheet.getRange('A1:B1').setFontWeight('bold');
   sheet.autoResizeColumns(1, 2);
+}
+
+
+/* ============================================================
+   PEOPLE LISTS — board access and the ICF member roster
+   Used by the chapter website: who may sign in to its admin,
+   and when each member's ICF membership runs out.
+
+   Sheets (created automatically on first call):
+     "Board"    — Email | Name | Role
+     "Members"  — Email | Name | Member until
+
+   Requires a row in Settings:
+     PEOPLE_API_SECRET | <a long random string>
+   The /exec URL is public and these are email addresses, so the
+   endpoint refuses any request without the matching secret.
+   ============================================================ */
+
+var BOARD_SHEET = 'Board';
+var MEMBERS_SHEET = 'Members';
+
+/**
+ * Returns the board access list and the member roster.
+ * Requires the shared secret from the Settings sheet.
+ */
+function handleGetPeople(data) {
+  var settings = getSettings();
+  var expected = (settings.PEOPLE_API_SECRET || '').toString().trim();
+
+  if (!expected) {
+    return jsonResponse({
+      success: false,
+      error: 'PEOPLE_API_SECRET is not set in the Settings sheet',
+    });
+  }
+  if (((data && data.secret) || '').toString().trim() !== expected) {
+    return jsonResponse({ success: false, error: 'Forbidden' });
+  }
+
+  return jsonResponse({
+    success: true,
+    board: readBoard_(),
+    members: readMembers_(),
+  });
+}
+
+/** Board members who may sign in to the website admin. */
+function readBoard_() {
+  var sheet = ensureSheet_(BOARD_SHEET, ['Email', 'Name', 'Role']);
+  var rows = sheet.getDataRange().getValues();
+  var out = [];
+
+  for (var i = 1; i < rows.length; i++) {
+    var email = (rows[i][0] || '').toString().trim().toLowerCase();
+    if (!email || email.indexOf('@') === -1) continue;
+    out.push({
+      email: email,
+      name: (rows[i][1] || '').toString().trim(),
+      role: (rows[i][2] || '').toString().trim(),
+    });
+  }
+  return out;
+}
+
+/** ICF members and the date their membership runs out. */
+function readMembers_() {
+  var sheet = ensureSheet_(MEMBERS_SHEET, ['Email', 'Name', 'Member until']);
+  var rows = sheet.getDataRange().getValues();
+  var out = [];
+
+  for (var i = 1; i < rows.length; i++) {
+    var email = (rows[i][0] || '').toString().trim().toLowerCase();
+    if (!email || email.indexOf('@') === -1) continue;
+    out.push({
+      email: email,
+      name: (rows[i][1] || '').toString().trim(),
+      until: formatDate_(rows[i][2]),
+    });
+  }
+  return out;
+}
+
+/** A cell may hold a real date or typed text; both must come out as YYYY-MM-DD. */
+function formatDate_(value) {
+  if (!value) return '';
+  if (Object.prototype.toString.call(value) === '[object Date]') {
+    return Utilities.formatDate(value, 'UTC', 'yyyy-MM-dd');
+  }
+  var text = value.toString().trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
+  var parsed = new Date(text);
+  if (!isNaN(parsed.getTime())) {
+    return Utilities.formatDate(parsed, 'UTC', 'yyyy-MM-dd');
+  }
+  return '';
+}
+
+/** Create the sheet with headers if somebody has not made it yet. */
+function ensureSheet_(name, headers) {
+  var book = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = book.getSheetByName(name);
+  if (!sheet) {
+    sheet = book.insertSheet(name);
+    sheet.appendRow(headers);
+    sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
+    sheet.setFrozenRows(1);
+  }
+  return sheet;
 }
