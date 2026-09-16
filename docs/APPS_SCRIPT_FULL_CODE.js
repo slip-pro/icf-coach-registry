@@ -146,6 +146,14 @@ function doPost(e) {
       return handleGetConfig();
     } else if (action === 'getPeople') {
       return handleGetPeople(data);
+    } else if (action === 'getContent') {
+      return handleGetContent(data);
+    } else if (action === 'saveContent') {
+      return handleSaveContent(data);
+    } else if (action === 'deleteContent') {
+      return handleDeleteContent(data);
+    } else if (action === 'uploadImage') {
+      return handleUploadImage(data);
     }
 
     return jsonResponse({
@@ -233,24 +241,12 @@ function handleRegister(data) {
   var photoUrl = '';
   if (data.photoBase64) {
     try {
-      var decoded = Utilities.base64Decode(data.photoBase64);
-      var mimeType = data.photoFilename
-        && data.photoFilename.toLowerCase().endsWith('.png')
-        ? 'image/png' : 'image/jpeg';
-      var blob = Utilities.newBlob(
-        decoded, mimeType,
-        data.photoFilename || 'photo.jpg'
+      photoUrl = uploadImage_(
+        data.photoBase64,
+        data.photoFilename,
+        data.name || 'coach',
+        400
       );
-      var folder = DriveApp.getFolderById(
-        settings.DRIVE_FOLDER_ID
-      );
-      var file = folder.createFile(blob);
-      file.setName(
-        (data.name || 'coach') + '_' + file.getId()
-      );
-      photoUrl =
-        'https://drive.google.com/thumbnail?id='
-        + file.getId() + '&sz=w400';
     } catch (photoErr) {
       photoUrl = '';
     }
@@ -516,7 +512,6 @@ function handleVerifyToken(data) {
  * Submissions row, marks token as used.
  */
 function handleSaveProfile(data) {
-  var settings = getSettings();
   var token = (data.token || '').trim();
   if (!token) {
     return jsonResponse({
@@ -595,27 +590,13 @@ function handleSaveProfile(data) {
   var photoUrl = allData[coachRowNum - 1][4] || '';
   if (data.photoBase64) {
     try {
-      var decoded = Utilities.base64Decode(
-        data.photoBase64
+      var uploaded = uploadImage_(
+        data.photoBase64,
+        data.photoFilename,
+        data.name || 'coach',
+        400
       );
-      var mimeType = data.photoFilename
-        && data.photoFilename.toLowerCase()
-          .endsWith('.png')
-        ? 'image/png' : 'image/jpeg';
-      var blob = Utilities.newBlob(
-        decoded, mimeType,
-        data.photoFilename || 'photo.jpg'
-      );
-      var folder = DriveApp.getFolderById(
-        settings.DRIVE_FOLDER_ID
-      );
-      var file = folder.createFile(blob);
-      file.setName(
-        (data.name || 'coach') + '_' + file.getId()
-      );
-      photoUrl =
-        'https://drive.google.com/thumbnail?id='
-        + file.getId() + '&sz=w400';
+      if (uploaded) photoUrl = uploaded;
     } catch (photoErr) {
       // keep existing photo on error
     }
@@ -911,4 +892,385 @@ function ensureSheet_(name, headers) {
     sheet.setFrozenRows(1);
   }
   return sheet;
+}
+
+/* ============================================================
+   IMAGES ON DRIVE
+   ============================================================ */
+
+/**
+ * Put an image on Drive and return a link that renders on a public page.
+ *
+ * Sharing is set on the FILE rather than inherited from the folder. Inheriting
+ * meant the folder itself had to be open "anyone with the link" for photos to
+ * show at all — which let anyone holding the folder link page through every
+ * photo in one go. Per-file sharing keeps each image reachable by its own link
+ * while the folder stays private.
+ *
+ * `width` is the rendered width Drive serves: 400 is plenty for a coach
+ * avatar, an event cover spans the page and needs far more.
+ */
+function uploadImage_(base64, filename, nameHint, width) {
+  if (!base64) return '';
+
+  var settings = getSettings();
+  if (!settings.DRIVE_FOLDER_ID) return '';
+
+  var lower = (filename || '').toString().toLowerCase();
+  var mimeType = lower.slice(-4) === '.png' ? 'image/png'
+    : lower.slice(-5) === '.webp' ? 'image/webp'
+    : 'image/jpeg';
+
+  var blob = Utilities.newBlob(
+    Utilities.base64Decode(base64),
+    mimeType,
+    filename || 'image.jpg'
+  );
+
+  var file = DriveApp.getFolderById(settings.DRIVE_FOLDER_ID).createFile(blob);
+  file.setName((nameHint || 'image') + '_' + file.getId());
+
+  try {
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  } catch (shareErr) {
+    // Some Workspace domains forbid link sharing by policy. The file is stored
+    // either way; it just will not render until somebody opens it up by hand.
+  }
+
+  return 'https://drive.google.com/thumbnail?id=' + file.getId()
+    + '&sz=w' + (width || 400);
+}
+
+/**
+ * Upload an image on its own, outside any form submission — used by the website
+ * admin for event covers and galleries.
+ */
+function handleUploadImage(data) {
+  if (!contentSecretOk_(data)) {
+    return jsonResponse({ success: false, error: 'Forbidden' });
+  }
+  try {
+    var url = uploadImage_(
+      data.base64,
+      data.filename,
+      data.nameHint || 'image',
+      data.width || 1200
+    );
+    if (!url) {
+      return jsonResponse({
+        success: false,
+        error: 'No image data, or DRIVE_FOLDER is not set in Settings',
+      });
+    }
+    return jsonResponse({ success: true, url: url });
+  } catch (err) {
+    return jsonResponse({ success: false, error: err.message });
+  }
+}
+
+/* ============================================================
+   WEBSITE CONTENT — events, articles, partners
+   ============================================================
+   The chapter website used to keep these in JSON files inside its own
+   deployment. On Vercel that filesystem is read-only, so every save from the
+   admin failed and nothing a board member typed survived. The records live
+   here instead: the board can edit them in the spreadsheet directly, and the
+   admin writes through this endpoint.
+
+   Sheets, created on first use:
+     "Events"    — Slug | Title | Start | End | Category | Location |
+                   Cover | Summary | Description | Fienta URL | Gallery
+     "Articles"  — Source URL | Title | Image | Summary | Tags | Added at
+     "Partners"  — Slug | Name | Kind | URL | Logo | Summary | Since
+
+   Guarded by the same PEOPLE_API_SECRET as the board list: the /exec URL is
+   public, and write access to the chapter's content is not something to leave
+   open to whoever finds it.
+   ============================================================ */
+
+var CONTENT_KINDS = {
+  events: {
+    sheet: 'Events',
+    key: 'slug',
+    titleField: 'title',
+    fields: [
+      { name: 'slug',        header: 'Slug',        aliases: ['Slug', 'ID'] },
+      { name: 'title',       header: 'Title',       aliases: ['Title', 'Name'] },
+      { name: 'start',       header: 'Start',       aliases: ['Start', 'Starts', 'Date'], datetime: true },
+      { name: 'end',         header: 'End',         aliases: ['End', 'Ends'], datetime: true },
+      { name: 'category',    header: 'Category',    aliases: ['Category'] },
+      { name: 'location',    header: 'Location',    aliases: ['Location', 'Place'] },
+      { name: 'cover',       header: 'Cover',       aliases: ['Cover', 'Cover image', 'Image'] },
+      { name: 'summary',     header: 'Summary',     aliases: ['Summary'] },
+      { name: 'description', header: 'Description', aliases: ['Description'] },
+      { name: 'fientaUrl',   header: 'Fienta URL',  aliases: ['Fienta URL', 'Fienta', 'Ticket URL'] },
+      { name: 'gallery',     header: 'Gallery',     aliases: ['Gallery', 'Photos'], list: true }
+    ]
+  },
+  articles: {
+    sheet: 'Articles',
+    key: 'sourceUrl',
+    titleField: 'title',
+    fields: [
+      { name: 'sourceUrl', header: 'Source URL', aliases: ['Source URL', 'URL', 'Link'] },
+      { name: 'title',     header: 'Title',      aliases: ['Title', 'Name'] },
+      { name: 'image',     header: 'Image',      aliases: ['Image', 'Cover'] },
+      { name: 'summary',   header: 'Summary',    aliases: ['Summary'] },
+      { name: 'tags',      header: 'Tags',       aliases: ['Tags'], list: true },
+      { name: 'addedAt',   header: 'Added at',   aliases: ['Added at', 'Added', 'Date'], date: true }
+    ]
+  },
+  partners: {
+    sheet: 'Partners',
+    key: 'slug',
+    titleField: 'name',
+    fields: [
+      { name: 'slug',    header: 'Slug',    aliases: ['Slug', 'ID'] },
+      { name: 'name',    header: 'Name',    aliases: ['Name', 'Title'] },
+      { name: 'kind',    header: 'Kind',    aliases: ['Kind', 'Type'] },
+      { name: 'url',     header: 'URL',     aliases: ['URL', 'Website', 'Link'] },
+      { name: 'logo',    header: 'Logo',    aliases: ['Logo', 'Image'] },
+      { name: 'summary', header: 'Summary', aliases: ['Summary'] },
+      { name: 'since',   header: 'Since',   aliases: ['Since', 'Partner since'], date: true }
+    ]
+  }
+};
+
+/** The content endpoints share the board list's secret — same trust boundary. */
+function contentSecretOk_(data) {
+  var expected = (getSettings().PEOPLE_API_SECRET || '').toString().trim();
+  if (!expected) return false;
+  return ((data && data.secret) || '').toString().trim() === expected;
+}
+
+/**
+ * Read one kind, or all three at once.
+ * POST { action: 'getContent', secret: '...', kind: 'events' (optional) }
+ */
+function handleGetContent(data) {
+  if (!contentSecretOk_(data)) {
+    return jsonResponse({ success: false, error: 'Forbidden' });
+  }
+
+  var kind = ((data && data.kind) || '').toString().trim();
+  if (kind) {
+    if (!CONTENT_KINDS[kind]) {
+      return jsonResponse({ success: false, error: 'Unknown kind: ' + kind });
+    }
+    return jsonResponse({ success: true, items: readContent_(kind) });
+  }
+
+  return jsonResponse({
+    success: true,
+    events: readContent_('events'),
+    articles: readContent_('articles'),
+    partners: readContent_('partners')
+  });
+}
+
+/**
+ * Add or replace one record, matched on its key.
+ * POST { action: 'saveContent', secret: '...', kind: 'events', item: {...} }
+ */
+function handleSaveContent(data) {
+  if (!contentSecretOk_(data)) {
+    return jsonResponse({ success: false, error: 'Forbidden' });
+  }
+
+  var spec = CONTENT_KINDS[((data && data.kind) || '').toString().trim()];
+  if (!spec) {
+    return jsonResponse({ success: false, error: 'Unknown kind' });
+  }
+
+  var item = data.item || {};
+  var key = (item[spec.key] || '').toString().trim();
+  if (!key) {
+    return jsonResponse({ success: false, error: spec.key + ' is required' });
+  }
+
+  var sheet = ensureSheet_(spec.sheet, contentHeaders_(spec));
+  var at = contentColumns_(sheet, spec);
+  var rows = sheet.getDataRange().getValues();
+
+  // Find the existing row by key, so a re-save edits instead of duplicating.
+  var target = -1;
+  for (var i = 1; i < rows.length; i++) {
+    if (contentKeyOf_(spec, rows[i], at, i) === key) { target = i + 1; break; }
+  }
+  var replaced = target !== -1;
+
+  var width = Math.max(sheet.getLastColumn(), 1);
+  for (var f = 0; f < spec.fields.length; f++) {
+    if (at[spec.fields[f].name] + 1 > width) width = at[spec.fields[f].name] + 1;
+  }
+
+  // Start from what is already in the row and overwrite only our own columns.
+  // The board edits this sheet by hand, so sooner or later somebody adds a
+  // column of their own — rebuilding the row from scratch would wipe it.
+  var row = [];
+  for (var c = 0; c < width; c++) {
+    row[c] = replaced && rows[target - 1][c] !== undefined ? rows[target - 1][c] : '';
+  }
+  for (var g = 0; g < spec.fields.length; g++) {
+    var field = spec.fields[g];
+    var value = item[field.name];
+    row[at[field.name]] = field.list
+      ? (value && value.length ? value.join(', ') : '')
+      : (value === undefined || value === null ? '' : value.toString());
+  }
+
+  if (!replaced) target = sheet.getLastRow() + 1;
+
+  // Timestamps go in as plain text. Left as a normal cell, Sheets re-reads
+  // "2026-09-18T18:00:00+03:00" as a date in its own timezone and the offset
+  // is gone — the event silently moves by a few hours. Only our own date
+  // columns are reformatted; other people's columns are left alone.
+  for (var h = 0; h < spec.fields.length; h++) {
+    if (spec.fields[h].datetime) {
+      sheet.getRange(target, at[spec.fields[h].name] + 1).setNumberFormat('@');
+    }
+  }
+  sheet.getRange(target, 1, 1, row.length).setValues([row]);
+
+  return jsonResponse({ success: true, key: key, replaced: replaced });
+}
+
+/**
+ * Remove one record by key.
+ * POST { action: 'deleteContent', secret: '...', kind: 'events', key: '...' }
+ */
+function handleDeleteContent(data) {
+  if (!contentSecretOk_(data)) {
+    return jsonResponse({ success: false, error: 'Forbidden' });
+  }
+
+  var spec = CONTENT_KINDS[((data && data.kind) || '').toString().trim()];
+  if (!spec) {
+    return jsonResponse({ success: false, error: 'Unknown kind' });
+  }
+
+  var key = ((data && data.key) || '').toString().trim();
+  if (!key) {
+    return jsonResponse({ success: false, error: 'key is required' });
+  }
+
+  var sheet = ensureSheet_(spec.sheet, contentHeaders_(spec));
+  var at = contentColumns_(sheet, spec);
+  var rows = sheet.getDataRange().getValues();
+
+  for (var i = 1; i < rows.length; i++) {
+    if (contentKeyOf_(spec, rows[i], at, i) === key) {
+      sheet.deleteRow(i + 1);
+      return jsonResponse({ success: true, deleted: key });
+    }
+  }
+  return jsonResponse({ success: true, deleted: null });
+}
+
+function contentHeaders_(spec) {
+  var headers = [];
+  for (var i = 0; i < spec.fields.length; i++) headers.push(spec.fields[i].header);
+  return headers;
+}
+
+/** Map every field to its column, adding any header the sheet does not have yet. */
+function contentColumns_(sheet, spec) {
+  var headers = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), 1)).getValues()[0];
+  var at = {};
+  for (var i = 0; i < spec.fields.length; i++) {
+    var field = spec.fields[i];
+    at[field.name] = ensureColumn_(sheet, headers, field.aliases, field.header);
+  }
+  return at;
+}
+
+/**
+ * The key of a row. A record added through the admin always carries one, but a
+ * board member adding a row by hand will not fill in a slug — so derive it from
+ * the title rather than skipping the row and losing their work silently.
+ */
+function contentKeyOf_(spec, row, at, rowIndex) {
+  var stored = (row[at[spec.key]] || '').toString().trim();
+  if (stored) return stored;
+
+  var title = (row[at[spec.titleField]] || '').toString().trim();
+  if (!title) return '';
+  // The key doubles as the page address for events and partners, so it has to
+  // be an address-safe string, not the title itself.
+  if (spec.key !== 'slug') return '';
+  return slugify_(title) || ('item-' + hashOf_(title));
+}
+
+function slugify_(value) {
+  return (value || '').toString().toLowerCase().trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+}
+
+/** Greek and Cyrillic titles slugify to nothing; they get a stable id instead. */
+function hashOf_(value) {
+  var hash = 5381;
+  var text = (value || '').toString();
+  for (var i = 0; i < text.length; i++) {
+    hash = ((hash << 5) + hash + text.charCodeAt(i)) >>> 0;
+  }
+  return hash.toString(36);
+}
+
+function readContent_(kind) {
+  var spec = CONTENT_KINDS[kind];
+  if (!spec) return [];
+
+  var sheet = ensureSheet_(spec.sheet, contentHeaders_(spec));
+  var at = contentColumns_(sheet, spec);
+  var rows = sheet.getDataRange().getValues();
+  if (rows.length < 2) return [];
+
+  var out = [];
+  for (var i = 1; i < rows.length; i++) {
+    var key = contentKeyOf_(spec, rows[i], at, i);
+    if (!key) continue;
+
+    var item = {};
+    item[spec.key] = key;
+    for (var f = 0; f < spec.fields.length; f++) {
+      var field = spec.fields[f];
+      if (field.name === spec.key) continue;
+      var raw = rows[i][at[field.name]];
+      if (field.list) {
+        item[field.name] = splitList_(raw);
+      } else if (field.datetime) {
+        item[field.name] = formatDateTime_(raw);
+      } else if (field.date) {
+        item[field.name] = formatDate_(raw);
+      } else {
+        item[field.name] = (raw === undefined || raw === null) ? '' : raw.toString().trim();
+      }
+    }
+    out.push(item);
+  }
+  return out;
+}
+
+function splitList_(value) {
+  if (!value) return [];
+  return value.toString().split(/[,\n]/)
+    .map(function (part) { return part.trim(); })
+    .filter(function (part) { return part.length > 0; });
+}
+
+/**
+ * Event times carry a timezone offset ("2026-09-18T18:00:00+03:00") and must
+ * keep it. Text written by the admin is passed through untouched; a cell
+ * somebody typed a date into comes back in the spreadsheet's own timezone,
+ * which is the timezone they meant.
+ */
+function formatDateTime_(value) {
+  if (!value) return '';
+  if (Object.prototype.toString.call(value) === '[object Date]') {
+    var tz = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone() || 'Etc/UTC';
+    return Utilities.formatDate(value, tz, "yyyy-MM-dd'T'HH:mm:ssXXX");
+  }
+  return value.toString().trim();
 }
