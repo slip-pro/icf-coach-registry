@@ -113,6 +113,12 @@ The web app URL must match in all Vercel API files:
 | `handleRequestEditLink` | Generate magic link, send email | `action: 'requestEditLink'` |
 | `handleVerifyToken` | Verify token, return profile | `action: 'verifyToken'` |
 | `handleSaveProfile` | Update coach row in sheet | `action: 'saveProfile'` |
+| `handleGetPeople` | Board access list + member roster | `action: 'getPeople'` |
+| `handleGetContent` | Website events / articles / partners | `action: 'getContent'` |
+| `handleSaveContent` | Add or replace one content record | `action: 'saveContent'` |
+| `handleDeleteContent` | Remove one content record | `action: 'deleteContent'` |
+| `handleUploadImage` | Store an image on Drive, return its URL | `action: 'uploadImage'` |
+| `uploadImage_` | Shared Drive upload; sets sharing per file | Called by the above and by registration |
 | `parseDriveFolderId` | Extract Drive folder ID from URL | Called by getSettings |
 | `parseSheetId` | Extract Sheet ID from URL | Called by getSettings |
 | `colorByStatus` | Color row on Status change | onEdit trigger |
@@ -143,11 +149,45 @@ Auto-created on first edit link request.
 
 Rate limit: 1 token per email per 5 minutes.
 
+### Board, Members
+Who may sign in to the chapter website's admin, and who counts as an ICF member.
+Auto-created on first `getPeople` call.
+
+| Sheet | Columns |
+|-------|---------|
+| Board | `Email \| Name \| Role \| Expiration date` — blank date means a seat with no end |
+| Members | `Email \| Name \| Member until` |
+
+### Events, Articles, Partners
+The chapter website's content. Auto-created on first `getContent` call. The site
+reads them every five minutes; the board edits them either in the website admin
+or directly here.
+
+| Sheet | Columns |
+|-------|---------|
+| Events | `Slug \| Title \| Start \| End \| Category \| Location \| Cover \| Summary \| Description \| Fienta URL \| Gallery` |
+| Articles | `Source URL \| Title \| Image \| Summary \| Tags \| Added at` |
+| Partners | `Slug \| Name \| Kind \| URL \| Logo \| Summary \| Since` |
+
+Three things worth knowing before editing by hand:
+
+- **Columns are matched by their header text**, not position, so they can be
+  reordered, and a column you add for your own notes survives a save from the admin.
+- **A row added without a slug still works** — the slug is derived from the title.
+- **Dates and times are stored as text on purpose.** Reformatting those cells as
+  real dates makes Sheets reinterpret them: an event's `+03:00` offset is lost and
+  it moves by hours.
+
 ### Settings
-Configuration key-value pairs (16 keys). Read by `getSettings()` on every request.
+Configuration key-value pairs. Read by `getSettings()` on every request.
 Falls back to defaults if sheet or key is missing.
 
-Backend keys (used by Apps Script internally): SENDER_NAME, ADMIN_EMAIL, SITE_URL, EDIT_PAGE, DRIVE_FOLDER, REGISTRY_NAME.
+Backend keys (used by Apps Script internally): SENDER_NAME, ADMIN_EMAIL, SITE_URL, EDIT_PAGE, DRIVE_FOLDER, REGISTRY_NAME, PEOPLE_API_SECRET.
+
+`PEOPLE_API_SECRET` guards `getPeople` and all four content actions. The `/exec`
+URL is public, so without it anyone holding that URL could read every email
+address and rewrite the website's content. It must match the environment
+variable of the same name on the chapter website.
 
 Frontend keys (served to the website via `/api/config`): BRAND_NAME, COLOR_PRIMARY, COLOR_SECONDARY, COLOR_ACCENT, COLOR_SURFACE, FONT_HEADING, FONT_BODY, LOCATION, COUNTRY_CODE, SHEET_URL.
 
