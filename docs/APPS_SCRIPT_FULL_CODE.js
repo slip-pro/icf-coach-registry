@@ -866,17 +866,25 @@ function readMembers_() {
   return out;
 }
 
-/** A cell may hold a real date or typed text; both must come out as YYYY-MM-DD. */
+/**
+ * A cell may hold a real date or typed text; both must come out as YYYY-MM-DD.
+ *
+ * Formatted in the spreadsheet's own timezone, not UTC. Sheets stores a date
+ * cell as midnight local time, so in Cyprus reading it as UTC lands at 21:00
+ * the previous day and the date comes back one day early — which, for a board
+ * member's expiration date, ends their access a day before it should.
+ */
 function formatDate_(value) {
   if (!value) return '';
+  var tz = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone() || 'Etc/UTC';
   if (Object.prototype.toString.call(value) === '[object Date]') {
-    return Utilities.formatDate(value, 'UTC', 'yyyy-MM-dd');
+    return Utilities.formatDate(value, tz, 'yyyy-MM-dd');
   }
   var text = value.toString().trim();
   if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
   var parsed = new Date(text);
   if (!isNaN(parsed.getTime())) {
-    return Utilities.formatDate(parsed, 'UTC', 'yyyy-MM-dd');
+    return Utilities.formatDate(parsed, tz, 'yyyy-MM-dd');
   }
   return '';
 }
@@ -1121,12 +1129,13 @@ function handleSaveContent(data) {
 
   if (!replaced) target = sheet.getLastRow() + 1;
 
-  // Timestamps go in as plain text. Left as a normal cell, Sheets re-reads
-  // "2026-09-18T18:00:00+03:00" as a date in its own timezone and the offset
-  // is gone — the event silently moves by a few hours. Only our own date
-  // columns are reformatted; other people's columns are left alone.
+  // Dates and timestamps go in as plain text. Left as normal cells, Sheets
+  // re-reads them as dates of its own: "2026-09-18T18:00:00+03:00" loses its
+  // offset and the event moves by hours, and "2026-07-01" becomes midnight
+  // local time, which read back anywhere west of here is the 30th of June.
+  // Only our own date columns are reformatted; other people's are left alone.
   for (var h = 0; h < spec.fields.length; h++) {
-    if (spec.fields[h].datetime) {
+    if (spec.fields[h].datetime || spec.fields[h].date) {
       sheet.getRange(target, at[spec.fields[h].name] + 1).setNumberFormat('@');
     }
   }
