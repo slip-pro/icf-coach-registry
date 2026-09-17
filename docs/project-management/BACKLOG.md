@@ -118,14 +118,33 @@ directory already knowing who they want.
 and `applyFilters()` runs a pure predicate per coach — a name term joins both cleanly. AND with the
 other groups, matching the existing behaviour between groups.
 
-**Worth deciding before building**:
-- Match on a substring, or on whole words? Substring is kinder for partial spellings.
-- Case and accents: Cypriot names carry Greek spellings and diacritics, and people type them without.
-  Normalise both sides — the registry already does something similar when building slugs.
-- Should it search anything besides the name — the bio, the specialisations written in free text?
-  A search that quietly matches a bio surprises people; keeping it to the name is honest and
-  predictable. Recommend name only, at least at first.
-- Placement: above the filter chips rather than among them. It is a different kind of action.
+**Matching — decided with the owner, 17 Sep 2026**: names in this registry are written in Russian
+or English, never both for the same coach. Search should find a coach whichever script the person
+typing happens to use.
 
-**Not in scope**: fuzzy or phonetic matching. Worth it only if real use shows people misspelling
-names, and there is no usage data yet (see F-012).
+The obvious approach — transliterate everything to English and compare — misses, because
+transliteration is not one to one. Юлия is typed Yulia, Julia and Iuliya; Мария as Maria and
+Mariya; Александр as Alexander, Aleksandr and Alexandr. Index one spelling and the others return
+nothing, which reads to the user as "this coach is not in the register".
+
+So reduce both the stored name and the query to the same rough skeleton, and compare those:
+
+1. lowercase, strip accents and punctuation, collapse whitespace;
+2. transliterate Cyrillic to Latin;
+3. collapse the spellings that vary: `ya`/`ia`/`ja` to one, `y`/`i`/`j` to one, `ks`/`x` to one,
+   `kh`/`h`, doubled letters to single.
+
+Both "Юлия" and "Julia" then reduce to the same string, and either query finds the coach.
+
+Substring match on the skeleton, not whole-word: people type partial names, and a surname alone
+should find somebody.
+
+**Worth deciding before building**:
+- Placement: above the filter chips rather than among them. It is a different kind of action.
+- Whether an empty result should say "no coach by that name" distinctly from "no coach matches
+  these filters". The two are different disappointments.
+
+**Not in scope**: searching bios or specialisations — a search that quietly matches a bio surprises
+people, and name-only is predictable. Nor fuzzy matching of genuine misspellings: the skeleton above
+handles spelling *variants*, which is a different thing, and whether real typos matter cannot be
+known without usage data (see F-012).
