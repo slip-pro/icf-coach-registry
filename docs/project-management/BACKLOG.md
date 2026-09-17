@@ -98,3 +98,34 @@
 ### F-012: Usage Analytics
 **Priority**: Low (Phase 2)
 **Description**: Track page views, filter usage, contact button clicks.
+
+---
+
+## G-027: Find a Coach by Name
+
+### F-025: Name search in the catalogue
+**Priority**: Medium
+**Requested**: Owner, 17 Sep 2026
+
+**Description**: A search box that filters the catalogue by coach name.
+
+**Why**: the panel filters by specialization, language, format, ICF level and price — every way of
+finding *a* coach, and no way of finding *a particular* coach. Someone told "talk to Maria, she is
+in the ICF register" has to read every card. That is the most likely reason a person opens the
+directory already knowing who they want.
+
+**Where it fits**: `src/js/filters.js`. The state is a set of Sets built by `createEmptyState()`,
+and `applyFilters()` runs a pure predicate per coach — a name term joins both cleanly. AND with the
+other groups, matching the existing behaviour between groups.
+
+**Worth deciding before building**:
+- Match on a substring, or on whole words? Substring is kinder for partial spellings.
+- Case and accents: Cypriot names carry Greek spellings and diacritics, and people type them without.
+  Normalise both sides — the registry already does something similar when building slugs.
+- Should it search anything besides the name — the bio, the specialisations written in free text?
+  A search that quietly matches a bio surprises people; keeping it to the name is honest and
+  predictable. Recommend name only, at least at first.
+- Placement: above the filter chips rather than among them. It is a different kind of action.
+
+**Not in scope**: fuzzy or phonetic matching. Worth it only if real use shows people misspelling
+names, and there is no usage data yet (see F-012).
