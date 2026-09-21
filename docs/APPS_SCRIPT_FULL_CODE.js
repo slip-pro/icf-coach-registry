@@ -25,6 +25,14 @@
  *  A16: COUNTRY_CODE    B16: +357
  *  A17: SHEET_URL       B17: https://docs.google.com/spreadsheets/d/XXXXX/edit
  *  A18: LOGO_URL        B18: https://drive.google.com/thumbnail?id=XXXXX&sz=w200
+ *
+ * НЕОБЯЗАТЕЛЬНО — папки под каждый вид картинок. Любая незаполненная
+ * означает «класть туда же, куда и раньше», то есть в DRIVE_FOLDER:
+ *   DRIVE_FOLDER_COACHES           фото коучей
+ *   DRIVE_FOLDER_EVENT_COVERS      обложки событий
+ *   DRIVE_FOLDER_EVENT_GALLERIES   фото с событий
+ *   DRIVE_FOLDER_PARTNERS          логотипы партнёров
+ * Значение — ссылка на папку или её ID, как и у DRIVE_FOLDER.
  * ============================================================
  */
 
@@ -108,6 +116,17 @@ function getSettings() {
   // Parse URLs into IDs for internal use
   settings.DRIVE_FOLDER_ID =
     parseDriveFolderId(settings.DRIVE_FOLDER);
+
+  // Optional per-kind folders. Absent ones fall back to DRIVE_FOLDER, so a
+  // Settings sheet that predates these keys keeps behaving exactly as before.
+  settings.DRIVE_FOLDER_COACHES_ID =
+    parseDriveFolderId(settings.DRIVE_FOLDER_COACHES);
+  settings.DRIVE_FOLDER_EVENT_COVERS_ID =
+    parseDriveFolderId(settings.DRIVE_FOLDER_EVENT_COVERS);
+  settings.DRIVE_FOLDER_EVENT_GALLERIES_ID =
+    parseDriveFolderId(settings.DRIVE_FOLDER_EVENT_GALLERIES);
+  settings.DRIVE_FOLDER_PARTNERS_ID =
+    parseDriveFolderId(settings.DRIVE_FOLDER_PARTNERS);
   settings.SHEET_ID =
     parseSheetId(settings.SHEET_URL);
 
@@ -245,7 +264,8 @@ function handleRegister(data) {
         data.photoBase64,
         data.photoFilename,
         data.name || 'coach',
-        400
+        400,
+        'coach'
       );
     } catch (photoErr) {
       photoUrl = '';
@@ -594,7 +614,8 @@ function handleSaveProfile(data) {
         data.photoBase64,
         data.photoFilename,
         data.name || 'coach',
-        400
+        400,
+        'coach'
       );
       if (uploaded) photoUrl = uploaded;
     } catch (photoErr) {
@@ -907,6 +928,34 @@ function ensureSheet_(name, headers) {
    ============================================================ */
 
 /**
+ * Which folder an upload belongs in.
+ *
+ * Everything used to land in one folder — named "Coach Photos", and holding
+ * event covers and gallery photos as well, because the code had nowhere else
+ * to put them. A year of that and nobody can tell whose picture is whose.
+ *
+ * Each kind now has its own folder, configured in the Settings sheet:
+ *
+ *   coach          → DRIVE_FOLDER_COACHES          Website/Coach photos
+ *   event-cover    → DRIVE_FOLDER_EVENT_COVERS     Website/Event covers
+ *   event-gallery  → DRIVE_FOLDER_EVENT_GALLERIES  Website/Event galleries
+ *   partner-logo   → DRIVE_FOLDER_PARTNERS         Website/Partner logos
+ *
+ * Any of these left blank falls back to DRIVE_FOLDER, which is also what an
+ * unknown or missing kind gets. So this can be rolled out one folder at a time,
+ * and a Settings sheet written before these keys existed keeps working.
+ */
+function folderIdForKind_(settings, kind) {
+  var byKind = {
+    'coach': settings.DRIVE_FOLDER_COACHES_ID,
+    'event-cover': settings.DRIVE_FOLDER_EVENT_COVERS_ID,
+    'event-gallery': settings.DRIVE_FOLDER_EVENT_GALLERIES_ID,
+    'partner-logo': settings.DRIVE_FOLDER_PARTNERS_ID
+  };
+  return byKind[kind] || settings.DRIVE_FOLDER_ID || '';
+}
+
+/**
  * Put an image on Drive and return a link that renders on a public page.
  *
  * Sharing is set on the FILE rather than inherited from the folder. Inheriting
@@ -917,12 +966,17 @@ function ensureSheet_(name, headers) {
  *
  * `width` is the rendered width Drive serves: 400 is plenty for a coach
  * avatar, an event cover spans the page and needs far more.
+ *
+ * `kind` decides which folder the file lands in — see folderIdForKind_. It is
+ * optional: without it, or without the matching folder configured, everything
+ * goes where it always went.
  */
-function uploadImage_(base64, filename, nameHint, width) {
+function uploadImage_(base64, filename, nameHint, width, kind) {
   if (!base64) return '';
 
   var settings = getSettings();
-  if (!settings.DRIVE_FOLDER_ID) return '';
+  var folderId = folderIdForKind_(settings, kind);
+  if (!folderId) return '';
 
   var lower = (filename || '').toString().toLowerCase();
   var mimeType = lower.slice(-4) === '.png' ? 'image/png'
@@ -935,7 +989,7 @@ function uploadImage_(base64, filename, nameHint, width) {
     filename || 'image.jpg'
   );
 
-  var file = DriveApp.getFolderById(settings.DRIVE_FOLDER_ID).createFile(blob);
+  var file = DriveApp.getFolderById(folderId).createFile(blob);
   file.setName((nameHint || 'image') + '_' + file.getId());
 
   try {
@@ -962,7 +1016,8 @@ function handleUploadImage(data) {
       data.base64,
       data.filename,
       data.nameHint || 'image',
-      data.width || 1200
+      data.width || 1200,
+      data.kind
     );
     if (!url) {
       return jsonResponse({
