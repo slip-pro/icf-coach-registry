@@ -426,16 +426,19 @@ document.addEventListener('keydown', (e) => {
  *
  * @param {import('./sheets.js').Coach[]} coaches
  * @param {HTMLElement} container
+ * @param {{emptyKey?: string}} [options] — i18n key for the empty message
+ *   (default 'emptyState'; 'emptyStateName' when a name search found nobody)
  * @returns {void}
  */
-export function renderCards(coaches, container) {
+export function renderCards(coaches, container, options = {}) {
   container.innerHTML = '';
   currentCoaches = coaches;
 
   if (!coaches || coaches.length === 0) {
+    const emptyKey = options.emptyKey || 'emptyState';
     container.innerHTML = `
       <div class="icf-empty-state">
-        <p data-i18n="emptyState">${t('emptyState')}</p>
+        <p data-i18n="${emptyKey}">${t(emptyKey)}</p>
       </div>
     `;
     return;

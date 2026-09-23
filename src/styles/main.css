@@ -357,6 +357,54 @@
 }
 
 
+/* --- Name search --- */
+
+.icf-search {
+  max-width: var(--icf-max-width);
+  margin: 0 auto var(--icf-space-6);
+  position: relative;
+  z-index: 2;
+}
+
+.icf-search__icon {
+  position: absolute;
+  left: var(--icf-space-6);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--icf-text-muted);
+  pointer-events: none;
+}
+
+.icf-search__input {
+  background: var(--icf-surface);
+  border: 1px solid var(--icf-border-input);
+  border-radius: var(--icf-radius-chip);
+  padding: 10px var(--icf-space-7) 10px calc(var(--icf-space-6) + 26px);
+  font-size: 14px;
+  color: var(--icf-text-primary);
+  font-family: var(--icf-font);
+  width: 100%;
+  max-width: 420px;
+  line-height: 1.4;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.icf-search__input::placeholder {
+  color: var(--icf-text-muted);
+}
+
+.icf-search__input:hover {
+  border-color: var(--icf-text-secondary);
+}
+
+.icf-search__input:focus {
+  border-color: var(--icf-accent);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(87, 120, 250, 0.15);
+}
+
 /* --- Filters --- */
 
 .icf-filters {

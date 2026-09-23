@@ -8,6 +8,7 @@ White-label coach directory — deploy your own filterable catalog of coaches wi
 
 - Coach profile cards with photo, specialization, ICF level, languages, pricing
 - Client-side filtering (specialization, language, format, ICF level, price)
+- Name search that finds a coach whether the name is typed in Latin or Cyrillic
 - Coach profile modal with full bio
 - Direct contact via WhatsApp, Telegram, Email with pre-filled messages
 - Coach registration form with admin moderation

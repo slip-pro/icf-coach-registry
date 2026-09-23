@@ -367,13 +367,17 @@ function showView(view) {
  * Handle filter change callback.
  * Re-renders cards with the filtered subset.
  * @param {import('./sheets.js').Coach[]} filteredCoaches
+ * @param {{nameQuery: string}} [meta] — active name search, if any
  */
-function handleFilterChange(filteredCoaches) {
+function handleFilterChange(filteredCoaches, meta) {
   const gridContainer = containerEl?.querySelector(
     '#icf-grid-container'
   );
   if (gridContainer) {
-    renderCards(filteredCoaches, gridContainer);
+    // "Nobody by that name" is a different disappointment from
+    // "nobody matches these filters" — say which one it is.
+    const emptyKey = meta?.nameQuery ? 'emptyStateName' : 'emptyState';
+    renderCards(filteredCoaches, gridContainer, { emptyKey });
   }
 }
 

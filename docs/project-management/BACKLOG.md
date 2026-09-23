@@ -101,9 +101,9 @@
 
 ---
 
-## G-027: Find a Coach by Name
+## G-027: Find a Coach by Name — Done
 
-### F-025: Name search in the catalogue
+### F-025: Name search in the catalogue — Done
 **Priority**: Medium
 **Requested**: Owner, 17 Sep 2026
 
@@ -151,6 +151,14 @@ known without usage data (see F-012).
 
 **Re-requested by the owner on 23 Sep 2026** after the marketing and membership calls — still
 Medium, but now the top registry item once the site launch is behind us.
+
+**Built 23 Sep 2026.** Both questions above decided: the search box sits above the chips, and an
+empty result under a name search says "no coach by that name" (`emptyStateName`), distinct from
+the filter message. Matching lives in `src/js/name-search.js`; `tests/name-search.test.mjs` runs
+under plain `node` and pins the spelling pairs. One rule beyond the list above: a word-initial
+*Chr-/Khr-/Hr-* reads as *Kr-*, so Кристина finds the three Christinas in the register.
+Known miss: Alexander vs Aleksandr differ by a vowel, not a spelling scheme — "Alex" finds both.
+See `docs/notes/G-027.md`.
 
 ---
 

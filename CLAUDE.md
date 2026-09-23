@@ -37,7 +37,8 @@ Configurable for any coaching organization — no code changes needed.
 │   │   ├── config.js                  # Remote config loader
 │   │   ├── i18n.js                    # Translations (EN/RU/EL)
 │   │   ├── cards.js                   # Coach card rendering
-│   │   ├── filters.js                 # Filter panel
+│   │   ├── filters.js                 # Filter panel + name search box
+│   │   ├── name-search.js             # Script-independent name matching
 │   │   ├── registration.js            # Registration form
 │   │   ├── edit.js                    # Edit profile (magic link)
 │   │   ├── submit.js                  # Form submission

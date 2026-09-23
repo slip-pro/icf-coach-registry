@@ -194,6 +194,11 @@ const dictionary = {
     ru: 'Коучи по выбранным фильтрам не найдены.',
     el: 'Δεν βρέθηκαν coaches με τα επιλεγμένα φίλτρα.',
   },
+  emptyStateName: {
+    en: 'No coach by that name in the register.',
+    ru: 'Коуча с таким именем в реестре нет.',
+    el: 'Δεν υπάρχει coach με αυτό το όνομα στο μητρώο.',
+  },
   errorState: {
     en: 'Failed to load coach data. Please try again later.',
     ru: 'Не удалось загрузить данные. Попробуйте позже.',
@@ -232,6 +237,13 @@ const dictionary = {
     en: 'German',
     ru: 'Немецкий',
     el: 'Γερμανικά',
+  },
+
+  // Name search (above the filter chips)
+  searchByName: {
+    en: 'Find a coach by name',
+    ru: 'Найти коуча по имени',
+    el: 'Αναζήτηση coach με όνομα',
   },
 
   // Filter actions

@@ -17,12 +17,14 @@
  */
 
 import { t } from './i18n.js';
+import { matchesName } from './name-search.js';
 
 /** Track the current outside-click handler to prevent listener accumulation */
 let currentOutsideClickHandler = null;
 
 /**
  * @typedef {Object} FilterState
+ * @property {string} name — search term typed by the visitor ('' = no search)
  * @property {Set<string>} specializations
  * @property {Set<string>} languages
  * @property {Set<string>} formats
@@ -83,6 +85,7 @@ const SPEC_I18N_MAP = {
  */
 function createEmptyState() {
   return {
+    name: '',
     specializations: new Set(),
     languages: new Set(),
     formats: new Set(),
@@ -131,6 +134,9 @@ function extractLanguages(coaches) {
  */
 export function applyFilters(coaches, state) {
   return coaches.filter((coach) => {
+    // Name: substring on a script-independent skeleton (see name-search.js)
+    if (state.name && !matchesName(coach.name, state.name)) return false;
+
     // Specialization: OR within group
     if (state.specializations.size > 0) {
       const match = coach.specializations.some(
@@ -209,6 +215,19 @@ function filterIcon() {
 }
 
 /**
+ * SVG magnifier icon for the name search field.
+ * @returns {string}
+ */
+function searchIcon() {
+  return `<svg class="icf-search__icon" viewBox="0 0 16 16" fill="none"
+    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+    width="16" height="16" aria-hidden="true">
+    <circle cx="7" cy="7" r="4.5"/>
+    <path d="M10.5 10.5L14 14"/>
+  </svg>`;
+}
+
+/**
  * SVG chevron-down icon for the dropdown toggle.
  * @returns {string}
  */
@@ -235,7 +254,9 @@ function checkIcon() {
  *
  * @param {import('./sheets.js').Coach[]} coaches — full coach list
  * @param {HTMLElement} container — DOM element to render into
- * @param {function(import('./sheets.js').Coach[]): void} onFilterChange
+ * @param {function(import('./sheets.js').Coach[], {nameQuery: string}): void} onFilterChange
+ *   — receives the filtered list and the active name search term, so the
+ *   caller can tell "nobody by that name" from "nobody matches these filters"
  * @returns {void}
  */
 export function renderFilters(coaches, container, onFilterChange) {
@@ -248,7 +269,7 @@ export function renderFilters(coaches, container, onFilterChange) {
   /** Re-apply filters and notify parent */
   function update() {
     const filtered = applyFilters(coaches, state);
-    onFilterChange(filtered);
+    onFilterChange(filtered, { nameQuery: state.name });
     updateResultsCount(filtered.length, coaches.length);
     updateClearAllVisibility();
   }
@@ -271,7 +292,8 @@ export function renderFilters(coaches, container, onFilterChange) {
     );
     if (!clearBtn) return;
 
-    const hasActive = state.specializations.size > 0
+    const hasActive = state.name !== ''
+      || state.specializations.size > 0
       || state.languages.size > 0
       || state.formats.size > 0
       || state.levels.size > 0
@@ -281,6 +303,26 @@ export function renderFilters(coaches, container, onFilterChange) {
   }
 
   // --- Build DOM ---
+
+  // 0. Name search — above the chips: finding *a particular* coach is a
+  //    different action from narrowing down by criteria.
+  const search = document.createElement('div');
+  search.className = 'icf-search';
+  search.innerHTML = `${searchIcon()}
+    <input type="search" class="icf-search__input"
+      autocomplete="off" spellcheck="false"
+      placeholder="${t('searchByName')}"
+      aria-label="${t('searchByName')}">`;
+  const searchInput = /** @type {HTMLInputElement} */ (
+    search.querySelector('.icf-search__input')
+  );
+  searchInput.addEventListener('input', () => {
+    const term = searchInput.value.trim();
+    if (term === state.name) return;
+    state.name = term;
+    update();
+  });
+  container.appendChild(search);
 
   const wrapper = document.createElement('div');
   wrapper.className = 'icf-filters';
@@ -371,6 +413,8 @@ export function renderFilters(coaches, container, onFilterChange) {
   clearBtn.innerHTML = `<span>&times;</span>
     <span data-i18n="filterClearAll">${t('filterClearAll')}</span>`;
   clearBtn.addEventListener('click', () => {
+    state.name = '';
+    searchInput.value = '';
     state.specializations.clear();
     state.languages.clear();
     state.formats.clear();
