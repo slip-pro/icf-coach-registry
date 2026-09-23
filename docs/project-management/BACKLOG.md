@@ -148,3 +148,67 @@ should find somebody.
 people, and name-only is predictable. Nor fuzzy matching of genuine misspellings: the skeleton above
 handles spelling *variants*, which is a different thing, and whether real typos matter cannot be
 known without usage data (see F-012).
+
+**Re-requested by the owner on 23 Sep 2026** after the marketing and membership calls — still
+Medium, but now the top registry item once the site launch is behind us.
+
+---
+
+## G-028: Consent to publish, and to be featured
+
+### F-026: Two consent checkboxes on registration and edit
+**Priority**: Medium
+**Requested**: Owner, 23 Sep 2026
+
+**Description**: Two opt-ins on the registration form and the profile edit form:
+- *Publish my profile in the coach registry* — stored as `PUBLISH_CONSENT`. A profile without it
+  is kept in the sheet but never rendered in the catalogue, whatever its moderation status.
+- *The chapter may feature me on its social media* — stored as `SOCIAL_CONSENT`. Read by the
+  site's marketing desk (site backlog #28) when drafting welcome and congratulations posts.
+
+Both are unticked by default; the first is effectively required to appear, and the form should say
+so rather than silently hiding the person. Text in all three languages via `src/js/i18n.js`.
+
+**Existing coaches** have answered neither. Treat the registry consent as given — they registered
+in order to be listed — and ask the social one the next time they open the edit form (magic link).
+
+**Where**: `src/js/registration.js` and `src/js/edit.js` for the fields; `docs/APPS_SCRIPT_FULL_CODE.js`
+(`handleRegister`, `handleSaveProfile`) for writing the two new columns. The catalogue reads the
+sheet directly as CSV (`src/js/sheets.js`), so the `PUBLISH_CONSENT` filter is applied there, next
+to the existing `approved` status check. `docs/GOOGLE_SHEETS_SETUP.md` for the columns.
+
+---
+
+## G-029: Membership ends, profile goes
+
+### F-027: A `Status` the site's membership desk can set
+**Priority**: Medium — after the site's membership desk exists (site backlog #23)
+**Requested**: Owner, 23 Sep 2026
+
+**Description**: When the roster says a coach is no longer an ICF member, the site's membership
+admin hides their registry profile. The registry side is a `Membership status` column
+(`active` / `left`) that the catalogue respects (filtered in `src/js/sheets.js`, like the status),
+and one new Apps Script action, `setMembershipStatus`, guarded by `contentSecretOk_` — the same
+`PEOPLE_API_SECRET` the site already sends for content and uploads.
+
+Not a deletion: the row stays, the coach can be reinstated when they renew, and their photo and
+consents survive. Deleting on a roster glitch and re-asking a coach to register is the failure to
+avoid.
+
+**Open**: what the coach sees if they open their magic link while hidden — probably a one-line
+notice that the profile is paused while membership is renewed.
+
+---
+
+## G-030: Somebody hears about a new registration
+
+### F-028: Set `ADMIN_EMAIL` — Minutes, already built
+**Priority**: High — do now
+**Requested**: Owner, 23 Sep 2026
+
+The Apps Script already sends "New coach registration: <name>" to `ADMIN_EMAIL` from the `Settings`
+sheet on every submission. The key is currently blank, so nothing is sent. Put the responsible
+person's address there — nothing to build. Several addresses: comma-separated works for `MailApp`.
+
+Later the site's membership desk can list pending registrations as well, but the email is the
+right first step: it needs no code and reaches a person, which is the whole point.
