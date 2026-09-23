@@ -32,6 +32,7 @@
  *   DRIVE_FOLDER_EVENT_COVERS      обложки событий
  *   DRIVE_FOLDER_EVENT_GALLERIES   фото с событий
  *   DRIVE_FOLDER_PARTNERS          логотипы партнёров
+ *   DRIVE_FOLDER_BOARD_PHOTOS      фото членов борда
  * Значение — ссылка на папку или её ID, как и у DRIVE_FOLDER.
  * ============================================================
  */
@@ -127,6 +128,8 @@ function getSettings() {
     parseDriveFolderId(settings.DRIVE_FOLDER_EVENT_GALLERIES);
   settings.DRIVE_FOLDER_PARTNERS_ID =
     parseDriveFolderId(settings.DRIVE_FOLDER_PARTNERS);
+  settings.DRIVE_FOLDER_BOARD_PHOTOS_ID =
+    parseDriveFolderId(settings.DRIVE_FOLDER_BOARD_PHOTOS);
   settings.SHEET_ID =
     parseSheetId(settings.SHEET_URL);
 
@@ -165,6 +168,8 @@ function doPost(e) {
       return handleGetConfig();
     } else if (action === 'getPeople') {
       return handleGetPeople(data);
+    } else if (action === 'saveBoardProfile') {
+      return handleSaveBoardProfile(data);
     } else if (action === 'getContent') {
       return handleGetContent(data);
     } else if (action === 'saveContent') {
@@ -769,8 +774,12 @@ function createSettingsSheet() {
    and when each member's ICF membership runs out.
 
    Sheets (created automatically on first call):
-     "Board"    — Email | Name | Role | Expiration date
+     "Board"    — Email | Name | Role | Expiration date | Photo | Bio
      "Members"  — Email | Name | Member until
+
+   Photo and Bio are what the website shows on its board page; the
+   admin writes them through saveBoardProfile. The other columns are
+   the board's to edit by hand.
 
    Requires a row in Settings:
      PEOPLE_API_SECRET | <a long random string>
@@ -845,6 +854,8 @@ function readBoard_() {
     ['Expiration date', 'Expires', 'Until', 'Term ends'],
     'Expiration date'
   );
+  var photoAt = ensureColumn_(sheet, headers, ['Photo', 'Photo URL'], 'Photo');
+  var bioAt = ensureColumn_(sheet, headers, ['Bio', 'About'], 'Bio');
   if (emailAt === -1) return [];
 
   var out = [];
@@ -857,9 +868,57 @@ function readBoard_() {
       role: roleAt === -1 ? '' : (rows[i][roleAt] || '').toString().trim(),
       // Blank means no end date — a permanent seat, not an expired one.
       until: formatDate_(rows[i][untilAt]),
+      photo: (rows[i][photoAt] || '').toString().trim(),
+      bio: (rows[i][bioAt] || '').toString().trim(),
     });
   }
   return out;
+}
+
+/**
+ * Set the photo and bio the website shows for one board member.
+ * POST { action: 'saveBoardProfile', secret, email, photo, bio }
+ *
+ * Only these two columns are written. Who is on the board, in which role and
+ * until when stays a hand-edited decision in the sheet: the website admin
+ * must not be able to add a seat, because a seat is also a sign-in.
+ *
+ * A blank photo or bio keeps what the row already holds — the admin saves
+ * both fields together, and re-uploading a photo must not wipe the text.
+ */
+function handleSaveBoardProfile(data) {
+  if (!contentSecretOk_(data)) {
+    return jsonResponse({ success: false, error: 'Forbidden' });
+  }
+  var email = ((data && data.email) || '').toString().trim().toLowerCase();
+  if (!email || email.indexOf('@') === -1) {
+    return jsonResponse({ success: false, error: 'email is required' });
+  }
+
+  var sheet = ensureSheet_(BOARD_SHEET, ['Email', 'Name', 'Role', 'Expiration date']);
+  var rows = sheet.getDataRange().getValues();
+  if (rows.length === 0) {
+    return jsonResponse({ success: false, error: 'Not on the board' });
+  }
+  var headers = rows[0];
+  var emailAt = columnIndex_(headers, ['Email', 'E-mail']);
+  var photoAt = ensureColumn_(sheet, headers, ['Photo', 'Photo URL'], 'Photo');
+  var bioAt = ensureColumn_(sheet, headers, ['Bio', 'About'], 'Bio');
+  if (emailAt === -1) {
+    return jsonResponse({ success: false, error: 'The Board sheet has no Email column' });
+  }
+
+  for (var i = 1; i < rows.length; i++) {
+    var rowEmail = (rows[i][emailAt] || '').toString().trim().toLowerCase();
+    if (rowEmail !== email) continue;
+
+    var photo = ((data && data.photo) || '').toString().trim();
+    var bio = ((data && data.bio) || '').toString().trim();
+    if (photo) sheet.getRange(i + 1, photoAt + 1).setValue(photo);
+    if (bio) sheet.getRange(i + 1, bioAt + 1).setValue(bio);
+    return jsonResponse({ success: true });
+  }
+  return jsonResponse({ success: false, error: 'Not on the board' });
 }
 
 /** ICF members and the date their membership runs out. */
@@ -940,6 +999,7 @@ function ensureSheet_(name, headers) {
  *   event-cover    → DRIVE_FOLDER_EVENT_COVERS     Website/Event covers
  *   event-gallery  → DRIVE_FOLDER_EVENT_GALLERIES  Website/Event galleries
  *   partner-logo   → DRIVE_FOLDER_PARTNERS         Website/Partner logos
+ *   board-photo    → DRIVE_FOLDER_BOARD_PHOTOS     Website/Board photos
  *
  * Any of these left blank falls back to DRIVE_FOLDER, which is also what an
  * unknown or missing kind gets. So this can be rolled out one folder at a time,
@@ -950,7 +1010,8 @@ function folderIdForKind_(settings, kind) {
     'coach': settings.DRIVE_FOLDER_COACHES_ID,
     'event-cover': settings.DRIVE_FOLDER_EVENT_COVERS_ID,
     'event-gallery': settings.DRIVE_FOLDER_EVENT_GALLERIES_ID,
-    'partner-logo': settings.DRIVE_FOLDER_PARTNERS_ID
+    'partner-logo': settings.DRIVE_FOLDER_PARTNERS_ID,
+    'board-photo': settings.DRIVE_FOLDER_BOARD_PHOTOS_ID
   };
   return byKind[kind] || settings.DRIVE_FOLDER_ID || '';
 }

@@ -114,6 +114,7 @@ The web app URL must match in all Vercel API files:
 | `handleVerifyToken` | Verify token, return profile | `action: 'verifyToken'` |
 | `handleSaveProfile` | Update coach row in sheet | `action: 'saveProfile'` |
 | `handleGetPeople` | Board access list + member roster | `action: 'getPeople'` |
+| `handleSaveBoardProfile` | Set one board member's photo and bio | `action: 'saveBoardProfile'` |
 | `handleGetContent` | Website events / articles / partners | `action: 'getContent'` |
 | `handleSaveContent` | Add or replace one content record | `action: 'saveContent'` |
 | `handleDeleteContent` | Remove one content record | `action: 'deleteContent'` |
@@ -155,7 +156,7 @@ Auto-created on first `getPeople` call.
 
 | Sheet | Columns |
 |-------|---------|
-| Board | `Email \| Name \| Role \| Expiration date` — blank date means a seat with no end |
+| Board | `Email \| Name \| Role \| Expiration date \| Photo \| Bio` — blank date means a seat with no end; `Photo` and `Bio` feed the website's board block and are written by its admin |
 | Members | `Email \| Name \| Member until` |
 
 ### Events, Articles, Partners
