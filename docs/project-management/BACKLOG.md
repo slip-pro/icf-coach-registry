@@ -222,3 +222,36 @@ person's address there — nothing to build. Several addresses: comma-separated 
 
 Later the site's membership desk can list pending registrations as well, but the email is the
 right first step: it needs no code and reaches a person, which is the whole point.
+
+---
+
+## G-031: Find a coach by what they work with
+
+### F-029: Keyword search — through the bio first, a keywords field if that is not enough
+**Priority**: Medium
+**Requested**: Owner, 24 Sep 2026
+
+**Description**: A client looking for "burnout", "relocation" or "career change" today has only the
+specialization chips — a fixed list the coach picked from — and the name box (G-027), which
+deliberately does not look into bios. Wanted: typing a word finds the coaches who work with it.
+
+Two ways, and they are not either/or:
+
+1. **Search the bios — no new field, works for every coach already listed.** The same search box
+   also matches words in `bio1` / `bio2` and the specialization labels. Cheap, and nobody has to
+   re-register. The catch: bios are written in EN, RU or EL by the coach, so "выгорание" does not
+   find a bio that says "burnout". The name search's transliteration (`name-search.js`) helps with
+   the alphabet, not with the language — a translation of the word is a different problem.
+2. **A `Keywords` field on registration and edit** — up to ~10 short tags the coach chooses
+   ("burnout, leadership, expats"), in the language(s) they expect clients to search in. More
+   precise than the bio and under the coach's control; costs a new sheet column, a form field in
+   three languages, and only helps once coaches fill it in (existing profiles through the edit link).
+
+**Suggested order:** ship 1 first and watch what people type; add 2 if bios turn out too thin or the
+language gap bites. With 31 coaches, searching every bio in the browser is instant — no server
+index needed.
+
+**Open**: one box for name and keywords, or a separate one? One box is simpler for the client; the
+results then need to say *why* a coach matched (name vs. bio), or a bio hit looks random.
+Name search stays as it is (script-independent, prefix-friendly); bio matching is a plain
+word match on top.
