@@ -144,6 +144,13 @@ function getSettings() {
   return settings;
 }
 
+/*
+   Bumped with every change to this file. getConfig and getCoaches return it,
+   so "is the new code live?" is a request, not a guess — pasting the code
+   without deploying a New version leaves the old one answering.
+*/
+var SCRIPT_VERSION = '2026-09-24 g029';
+
 // ==================== MAIN DISPATCHER ====================
 
 /**
@@ -228,6 +235,7 @@ function handleGetConfig() {
   var settings = getSettings();
   return jsonResponse({
     success: true,
+    version: SCRIPT_VERSION,
     config: {
       brandName: settings.BRAND_NAME,
       registryName: settings.REGISTRY_NAME,
@@ -301,7 +309,9 @@ function handleGetCoaches() {
     if (!row[0].trim()) continue; // no name, no card
     rows.push(row);
   }
-  return jsonResponse({ success: true, headers: PUBLIC_COACH_COLUMNS, rows: rows });
+  return jsonResponse({
+    success: true, version: SCRIPT_VERSION, headers: PUBLIC_COACH_COLUMNS, rows: rows,
+  });
 }
 
 /*
