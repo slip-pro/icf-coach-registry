@@ -208,6 +208,15 @@ avoid.
 **Open**: what the coach sees if they open their magic link while hidden — probably a one-line
 notice that the profile is paused while membership is renewed.
 
+**Built 24 Sep 2026** — simpler than planned above: no `Membership status` column and no
+`setMembershipStatus` action. `getCoaches` reads the `Members` tab directly and skips a coach whose
+email is there with `Status = left` and nowhere as current; the desk's own write is the switch, so
+there is nothing to keep in sync. A coach the roster does not know stays visible. For a coach who
+registered under another address, an optional `Member ID` column in Submissions overrides the
+email. `verifyToken` returns `paused`, and the edit page shows a notice (EN/RU/EL) above the form.
+Admin steps: `docs/ADMIN_GUIDE.md`, "When a coach's ICF membership ends". Live once the script is
+redeployed.
+
 ---
 
 ## G-030: Somebody hears about a new registration

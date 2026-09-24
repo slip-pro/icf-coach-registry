@@ -1485,6 +1485,20 @@
 }
 
 
+/* --- Notice above the edit form (e.g. profile paused) --- */
+
+.icf-form__notice {
+  margin: 0 0 var(--icf-space-4);
+  padding: var(--icf-space-3) var(--icf-space-4);
+  border-left: 3px solid var(--icf-accent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--icf-accent) 8%, var(--icf-surface));
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+
 /* --- Error messages --- */
 
 .icf-form__error {

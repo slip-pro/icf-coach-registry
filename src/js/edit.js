@@ -507,7 +507,7 @@ function renderTokenInvalid(container, config) {
    Edit form builder (State 3)
    --------------------------------------------------------------- */
 
-function buildEditFormHTML(profile) {
+function buildEditFormHTML(profile, paused) {
   const specs = profile.specializations
     ? profile.specializations.split(', ').filter(Boolean)
     : [];
@@ -524,6 +524,8 @@ function buildEditFormHTML(profile) {
 
   return `
     <form class="icf-form" novalidate>
+      ${paused ? `<p class="icf-form__notice" role="status"
+        data-i18n="editPausedNotice">${esc(t('editPausedNotice'))}</p>` : ''}
       <!-- Section 1: Personal Info -->
       <div class="icf-form__section">
         <h3 class="icf-form__section-title"
@@ -990,8 +992,8 @@ function buildPreviewCard(data) {
    Edit form renderer (State 3)
    --------------------------------------------------------------- */
 
-function renderEditForm(container, profile, token, config) {
-  container.innerHTML = buildEditFormHTML(profile);
+function renderEditForm(container, profile, token, config, paused) {
+  container.innerHTML = buildEditFormHTML(profile, paused);
 
   const form = container.querySelector('.icf-form');
   if (!form) return;
@@ -1319,7 +1321,7 @@ export async function renderEditView(container, config) {
       return;
     }
 
-    renderEditForm(container, result.profile, token, config);
+    renderEditForm(container, result.profile, token, config, result.paused === true);
   } catch (_err) {
     renderTokenInvalid(container, config);
   }

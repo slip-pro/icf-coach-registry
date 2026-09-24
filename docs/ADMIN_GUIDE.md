@@ -75,6 +75,24 @@ If a coach leaves ICF Cyprus or asks to be removed:
 
 **Note**: Don't delete the row -- just change the status. This keeps a record.
 
+## When a coach's ICF membership ends
+
+You don't need to do anything. When the website's membership desk marks someone `left` in the
+**Members** tab, their card disappears from the catalogue (within about 5 minutes). The row in
+Submissions is untouched. When the desk marks them a member again, the card comes back by itself.
+
+A coach who opens their edit link while hidden sees a short note that the profile is paused until
+they renew; they can still edit it.
+
+Matching is by email. If a coach registered with a different address than the one ICF has:
+
+1. In the **Members** tab, find the person and copy their **Member ID**
+2. In **Submissions**, if there is no **Member ID** column yet, add one — type `Member ID` into the
+   first empty cell of row 1, **after the last column** (never between existing columns)
+3. Paste the ID into that coach's row
+
+A coach the Members tab does not know at all stays visible.
+
 ## Step-by-step: Edit a coach's profile
 
 1. Open your Google Sheet

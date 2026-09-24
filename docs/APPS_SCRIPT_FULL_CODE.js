@@ -285,12 +285,14 @@ function handleGetCoaches() {
   var headers = values[0].map(function (h) { return (h || '').toString().trim(); });
   var statusAt = columnIndex_(headers, ['Status']);
   var at = PUBLIC_COACH_COLUMNS.map(function (name) { return columnIndex_(headers, [name]); });
+  var leavers = membershipIndex_();
 
   var rows = [];
   for (var i = 1; i < values.length; i++) {
     // No Status column, or a blank status, has always meant "approved" here.
     var status = statusAt === -1 ? '' : (values[i][statusAt] || '').toString().trim().toLowerCase();
     if (status && status !== 'approved') continue;
+    if (membershipPaused_(leavers, headers, values[i])) continue;
     var row = at.map(function (index) {
       if (index === -1) return '';
       var v = values[i][index];
@@ -300,6 +302,40 @@ function handleGetCoaches() {
     rows.push(row);
   }
   return jsonResponse({ success: true, headers: PUBLIC_COACH_COLUMNS, rows: rows });
+}
+
+/*
+   A coach whose ICF membership ended is paused, not removed: the row, photo
+   and consents stay, and the card comes back by itself once the membership
+   desk marks them a member again. Deleting on a roster glitch and asking a
+   coach to register again is the failure this avoids.
+
+   Paused means the Members sheet has the coach with Status = left and no
+   current row for them. A coach the roster does not know at all stays
+   visible — a missing match is not evidence that somebody left.
+
+   Matching is by email. When a coach registered with a different address
+   than ICF has, type their Member ID (from the Members sheet) into an
+   optional "Member ID" column in Submissions; that wins over the email.
+*/
+function membershipIndex_() {
+  var index = { leftIds: {}, leftEmails: {}, currentIds: {}, currentEmails: {} };
+  readRoster_().forEach(function (row) {
+    var left = row.status.toLowerCase() === 'left';
+    if (row.memberId) index[left ? 'leftIds' : 'currentIds'][row.memberId] = true;
+    index[left ? 'leftEmails' : 'currentEmails'][row.email] = true;
+  });
+  return index;
+}
+
+/** True when this Submissions row belongs to a member who left. */
+function membershipPaused_(index, headers, row) {
+  var idAt = columnIndex_(headers, ['Member ID']);
+  var id = idAt === -1 ? '' : (row[idAt] || '').toString().trim().replace(/\.0+$/, '');
+  if (id) return !!index.leftIds[id] && !index.currentIds[id];
+  var emailAt = columnIndex_(headers, ['Email', 'E-mail']);
+  var email = emailAt === -1 ? '' : (row[emailAt] || '').toString().trim().toLowerCase();
+  return !!email && !!index.leftEmails[email] && !index.currentEmails[email];
 }
 
 // ==================== REGISTRATION ====================
@@ -557,6 +593,8 @@ function handleVerifyToken(data) {
         === 'approved') {
       return jsonResponse({
         success: true,
+        // The coach can still edit; the page tells them the card is hidden.
+        paused: membershipPaused_(membershipIndex_(), allData[0], row),
         profile: {
           name: row[1] || '',
           email: row[2] || '',
