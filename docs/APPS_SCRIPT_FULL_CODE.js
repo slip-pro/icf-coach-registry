@@ -170,6 +170,10 @@ function doPost(e) {
       return handleGetPeople(data);
     } else if (action === 'saveBoardProfile') {
       return handleSaveBoardProfile(data);
+    } else if (action === 'getRoster') {
+      return handleGetRoster(data);
+    } else if (action === 'saveRoster') {
+      return handleSaveRoster(data);
     } else if (action === 'getContent') {
       return handleGetContent(data);
     } else if (action === 'saveContent') {
@@ -775,7 +779,8 @@ function createSettingsSheet() {
 
    Sheets (created automatically on first call):
      "Board"    — Email | Name | Role | Expiration date | Photo | Bio
-     "Members"  — Email | Name | Member until
+     "Members"  — Email | Name | Member until, plus the membership desk's
+                  columns (see ROSTER_COLUMNS), added on its first write
 
    Photo and Bio are what the website shows on its board page; the
    admin writes them through saveBoardProfile. The other columns are
@@ -921,29 +926,168 @@ function handleSaveBoardProfile(data) {
   return jsonResponse({ success: false, error: 'Not on the board' });
 }
 
-/** ICF members and the date their membership runs out. */
+/**
+ * ICF members and the date their membership runs out — current members only.
+ * A row the membership desk marked `left` is history, not a member.
+ */
 function readMembers_() {
+  return readRoster_()
+    .filter(function (row) { return row.status !== 'left'; })
+    .map(function (row) {
+      return { email: row.email, name: row.name, until: row.memberUntil };
+    });
+}
+
+/*
+   The Members sheet as the membership desk keeps it (website BACKLOG #23).
+   The desk reads the ICF roster export in the browser, compares it with this
+   sheet and, once the director accepts, writes the result back here. Each
+   field has one column; columns the sheet lacks are added on first write, and
+   columns nobody here knows about are left alone.
+
+   Dates stay text (YYYY-MM-DD), except that a real date cell typed by hand is
+   read correctly. "Welcome sent" may also read "skipped".
+*/
+var ROSTER_COLUMNS = [
+  ['memberId', 'Member ID', ['Member ID']],
+  ['email', 'Email', ['Email', 'E-mail']],
+  ['name', 'Name', ['Name']],
+  ['firstName', 'First name', ['First name']],
+  ['memberUntil', 'Member until', ['Member until', 'Expiration date', 'Expires', 'Until']],
+  ['credential', 'Credential', ['Credential']],
+  ['credentialAwarded', 'Credential awarded', ['Credential awarded']],
+  ['teamCredential', 'Team credential', ['Team credential']],
+  ['role', 'ICF role', ['ICF role']],
+  ['autoRenewal', 'Auto renewal', ['Auto renewal']],
+  ['status', 'Status', ['Status']],
+  ['joinedOn', 'Joined on', ['Joined on']],
+  ['leftOn', 'Left on', ['Left on']],
+  ['welcomeSent', 'Welcome sent', ['Welcome sent']],
+  ['congratulatedFor', 'Congratulated for', ['Congratulated for']],
+  ['farewellSent', 'Farewell sent', ['Farewell sent']],
+  ['chatsRemoved', 'Removed from chats', ['Removed from chats']],
+];
+var ROSTER_DATE_FIELDS = { memberUntil: 1, credentialAwarded: 1, joinedOn: 1, leftOn: 1 };
+
+function rosterCell_(field, value) {
+  if (ROSTER_DATE_FIELDS[field]) return formatDate_(value);
+  if (Object.prototype.toString.call(value) === '[object Date]') return formatDate_(value);
+  return (value === null || value === undefined ? '' : value).toString().trim();
+}
+
+/** Every row of the Members sheet with every known field; blanks for missing columns. */
+function readRoster_() {
   var sheet = ensureSheet_(MEMBERS_SHEET, ['Email', 'Name', 'Member until']);
   var rows = sheet.getDataRange().getValues();
   if (rows.length === 0) return [];
-
   var headers = rows[0];
-  var emailAt = columnIndex_(headers, ['Email', 'E-mail']);
-  var nameAt = columnIndex_(headers, ['Name']);
-  var untilAt = columnIndex_(headers, ['Member until', 'Expiration date', 'Expires', 'Until']);
-  if (emailAt === -1) return [];
+  var at = {};
+  ROSTER_COLUMNS.forEach(function (c) { at[c[0]] = columnIndex_(headers, c[2]); });
+  if (at.email === -1) return [];
 
   var out = [];
   for (var i = 1; i < rows.length; i++) {
-    var email = (rows[i][emailAt] || '').toString().trim().toLowerCase();
+    var email = (rows[i][at.email] || '').toString().trim().toLowerCase();
     if (!email || email.indexOf('@') === -1) continue;
-    out.push({
-      email: email,
-      name: nameAt === -1 ? '' : (rows[i][nameAt] || '').toString().trim(),
-      until: untilAt === -1 ? '' : formatDate_(rows[i][untilAt]),
+    var row = {};
+    ROSTER_COLUMNS.forEach(function (c) {
+      row[c[0]] = at[c[0]] === -1 ? '' : rosterCell_(c[0], rows[i][at[c[0]]]);
     });
+    row.email = email;
+    row.memberId = row.memberId.replace(/\.0+$/, '');
+    out.push(row);
   }
   return out;
+}
+
+/**
+ * POST { action: 'getRoster', secret } — the whole Members sheet for the desk.
+ */
+function handleGetRoster(data) {
+  if (!contentSecretOk_(data)) {
+    return jsonResponse({ success: false, error: 'Forbidden' });
+  }
+  return jsonResponse({ success: true, rows: readRoster_() });
+}
+
+/**
+ * POST { action: 'saveRoster', secret, rows: [{ memberId, email?, ...fields }] }
+ *
+ * Upserts: a row is found by Member ID, or — for rows typed by hand before the
+ * desk existed — by email when the sheet row has no ID yet. Only the fields
+ * given are written, so marking a letter as sent touches one cell. A row that
+ * matches nothing is appended. Nothing is ever deleted: a member who left stays
+ * as a row with Status = left.
+ */
+function handleSaveRoster(data) {
+  if (!contentSecretOk_(data)) {
+    return jsonResponse({ success: false, error: 'Forbidden' });
+  }
+  var incoming = (data && data.rows) || [];
+  if (!incoming.length) return jsonResponse({ success: true, written: 0 });
+
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var sheet = ensureSheet_(MEMBERS_SHEET, ['Email', 'Name', 'Member until']);
+    var rows = sheet.getDataRange().getValues();
+    var headers = rows[0];
+    var at = {};
+    ROSTER_COLUMNS.forEach(function (c) { at[c[0]] = ensureColumn_(sheet, headers, c[2], c[1]); });
+    var width = headers.length;
+    // Rows read before columns were added are short; pad them to the new width.
+    var grid = rows.map(function (r) {
+      var copy = r.slice();
+      while (copy.length < width) copy.push('');
+      return copy;
+    });
+
+    var byId = {};
+    var byEmail = {};
+    for (var i = 1; i < grid.length; i++) {
+      var id = (grid[i][at.memberId] || '').toString().trim().replace(/\.0+$/, '');
+      var email = (grid[i][at.email] || '').toString().trim().toLowerCase();
+      if (id) byId[id] = i;
+      else if (email) byEmail[email] = i;
+    }
+
+    var written = 0;
+    incoming.forEach(function (row) {
+      var id = (row.memberId || '').toString().trim();
+      var email = (row.email || '').toString().trim().toLowerCase();
+      if (!id) return;
+      var index = byId[id];
+      if (index === undefined && email && byEmail[email] !== undefined) {
+        index = byEmail[email];
+        delete byEmail[email];
+      }
+      if (index === undefined) {
+        var blank = [];
+        for (var k = 0; k < width; k++) blank.push('');
+        grid.push(blank);
+        index = grid.length - 1;
+      }
+      byId[id] = index;
+      ROSTER_COLUMNS.forEach(function (c) {
+        if (row[c[0]] === undefined) return;
+        grid[index][at[c[0]]] = row[c[0]] === null ? '' : row[c[0]].toString();
+      });
+      written++;
+    });
+
+    // Text format first, so "2026-09-30" and member numbers are not re-typed
+    // by Sheets into dates and numbers on the way in.
+    var range = sheet.getRange(1, 1, grid.length, width);
+    range.setNumberFormat('@');
+    range.setValues(grid.map(function (r) {
+      return r.map(function (v) {
+        return Object.prototype.toString.call(v) === '[object Date]' ? formatDate_(v) : v;
+      });
+    }));
+    return jsonResponse({ success: true, written: written });
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 /**

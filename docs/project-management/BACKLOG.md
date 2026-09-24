@@ -191,6 +191,8 @@ to the existing `approved` status check. `docs/GOOGLE_SHEETS_SETUP.md` for the c
 
 ### F-027: A `Status` the site's membership desk can set
 **Priority**: Medium — after the site's membership desk exists (site backlog #23)
+**Unblocked 24 Sep 2026**: the desk exists. It already writes `Status` = `left` and `Member ID` into the
+`Members` tab of this same spreadsheet — the registry can read leavers from there by email.
 **Requested**: Owner, 23 Sep 2026
 
 **Description**: When the roster says a coach is no longer an ICF member, the site's membership
