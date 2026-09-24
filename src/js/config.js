@@ -25,7 +25,6 @@ let cachedConfig = null;
  * @property {string} registryName
  * @property {string} siteUrl
  * @property {string} editPage
- * @property {string} sheetId
  * @property {string} location
  * @property {string} countryCode
  * @property {{ primary: string, secondary: string,

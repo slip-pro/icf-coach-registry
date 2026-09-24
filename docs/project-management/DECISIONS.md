@@ -166,3 +166,21 @@
 **Rationale**: GitHub does not allow forking a repo into the same organization (`slip-pro`). Separate repos allow client-specific customizations (languages, currency, price ranges, location labels) without polluting the main codebase. Each client repo shares the same structure and can pull upstream changes manually.
 **Client customizations**: Languages (remove/add), currency symbol, price ranges, location labels, ICF credential naming, default bio language. All changes are localized to `src/js/i18n.js`, `src/js/filters.js`, `src/js/registration.js`, and `src/js/config.js`.
 **Trade-offs**: No automatic upstream sync — client repos must manually pull changes from the main repo. Risk of drift increases with more clients. Future consideration: extract shared core into an npm package or use git subtree.
+
+### D-023: The spreadsheet is private; the catalogue reads through the Apps Script
+**Date**: 2026-09-24
+**Incident**: The catalogue read the `Submissions` tab straight from Google (`gviz/tq?tqx=out:csv`),
+which only works while the spreadsheet is shared as "anyone with the link" — and link sharing is
+per file, not per tab. The sheet ID sat in the public `index.html`, so anyone could download
+**every** tab: pending and rejected applications with contacts, `EditTokens` (live magic links),
+`Board` and `Members` (names and emails of 76 ICF members, loaded the same day), and `Settings`
+including `PEOPLE_API_SECRET`, which authorises writes to the chapter website's content. Found
+24 Sep 2026 while planning G-029; checked by header row and row count only.
+**Decision**: New Apps Script action `getCoaches` returns approved coaches and only an allowlist of
+card columns; `/api/coaches` (Vercel, 5-minute edge cache) proxies it; the frontend calls that.
+`sheetId` removed from `index.html`, the embed example and `getConfig`. Then the spreadsheet goes
+to "Restricted", `PEOPLE_API_SECRET` is rotated and `EditTokens` is cleared.
+**Rule**: no Google file that holds anything private is link-shared — a public link on one tab is
+a public link on all of them. Anything public is served through an allowlist in the script.
+**Trade-offs**: One more hop on page load (cached at the edge, so rare). A newly approved coach
+appears within ~5 minutes instead of on the next page load.

@@ -40,7 +40,7 @@ import { fetchConfig, applyConfig } from './config.js';
 
 /**
  * @typedef {Object} RegistryConfig
- * @property {string} [sheetId] -- Google Sheet ID (omit for mock data)
+ * @property {boolean} [mock] -- use local mock coaches instead of the API (development)
  * @property {string} [containerId] -- custom container ID
  * @property {string} [scriptUrl] -- Google Apps Script web app URL
  * @property {boolean} [devMode] -- force dev mode for submissions
@@ -463,7 +463,10 @@ async function init(config = {}) {
   const [remoteConfig] = await Promise.all([
     fetchConfig(config.apiUrl),
     (startView === 'catalog' || !startView)
-      ? fetchCoaches(appConfig.sheetId)
+      ? fetchCoaches({
+          apiBase: config.apiUrl ? config.apiUrl.replace(/\/submit$/, '') : '/api',
+          mock: Boolean(config.mock),
+        })
           .then((data) => { coaches = data; })
           .catch(() => { coaches = []; })
       : Promise.resolve(),
@@ -478,10 +481,6 @@ async function init(config = {}) {
         registryName: remoteConfig.registryName,
         location: remoteConfig.location,
       });
-    }
-
-    if (remoteConfig.sheetId && !config.sheetId) {
-      appConfig.sheetId = remoteConfig.sheetId;
     }
 
 

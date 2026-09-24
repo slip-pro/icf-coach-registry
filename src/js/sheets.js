@@ -1,13 +1,13 @@
 /**
  * ICF Registry — Google Sheets Data Fetcher
  *
- * Fetches coach data from a published Google Sheet (CSV export).
- * Falls back to local mock data in development.
+ * Fetches the approved coaches through the registry's API (/api/coaches),
+ * which reads the spreadsheet on the server side. Mock data for development.
  *
  * Usage:
  *   import { fetchCoaches } from './sheets.js';
- *   const coaches = await fetchCoaches('SHEET_ID');
- *   // or for dev: const coaches = await fetchCoaches();
+ *   const coaches = await fetchCoaches({ apiBase: '/api' });
+ *   // or for dev: const coaches = await fetchCoaches({ mock: true });
  */
 
 /**
@@ -34,71 +34,6 @@
  * @property {string} facebook
  * @property {string} status — 'approved' | 'pending' | 'rejected'
  */
-
-/**
- * Build the public CSV export URL for a Google Sheet.
- * @param {string} sheetId
- * @returns {string}
- */
-function buildSheetURL(sheetId) {
-  return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&headers=1`;
-}
-
-/**
- * Parse a CSV string into an array of string arrays.
- * Handles quoted fields with commas and newlines.
- * @param {string} csv
- * @returns {string[][]}
- */
-function parseCSV(csv) {
-  const rows = [];
-  let current = '';
-  let inQuotes = false;
-  /** @type {string[]} */
-  let row = [];
-
-  for (let i = 0; i < csv.length; i++) {
-    const char = csv[i];
-    const next = csv[i + 1];
-
-    if (inQuotes) {
-      if (char === '"' && next === '"') {
-        // Escaped quote
-        current += '"';
-        i++;
-      } else if (char === '"') {
-        inQuotes = false;
-      } else {
-        current += char;
-      }
-    } else {
-      if (char === '"') {
-        inQuotes = true;
-      } else if (char === ',') {
-        row.push(current.trim());
-        current = '';
-      } else if (char === '\n' || (char === '\r' && next === '\n')) {
-        row.push(current.trim());
-        current = '';
-        if (row.length > 1 || row[0] !== '') {
-          rows.push(row);
-        }
-        row = [];
-        if (char === '\r') i++;
-      } else {
-        current += char;
-      }
-    }
-  }
-
-  // Last field / row
-  if (current || row.length > 0) {
-    row.push(current.trim());
-    rows.push(row);
-  }
-
-  return rows;
-}
 
 /**
  * Split a delimited string (comma or semicolon separated)
@@ -308,70 +243,39 @@ function filterApproved(coaches) {
 }
 
 /**
- * Fetch coaches from a published Google Sheet.
- * If no sheetId is provided, loads from local mock data.
+ * Fetch the approved coaches through the registry's own API (`/api/coaches`,
+ * which asks the Apps Script). The catalogue used to read the spreadsheet
+ * straight from Google as CSV, which required the whole spreadsheet — every
+ * tab, including private ones — to be shared as "anyone with the link".
  *
- * @param {string} [sheetId] — Google Sheet ID
+ * @param {object} [options]
+ * @param {string} [options.apiBase='/api'] — where the registry's API lives
+ * @param {boolean} [options.mock=false] — use local mock data (development)
  * @returns {Promise<Coach[]>}
- * @throws {Error} if fetch or parse fails
+ * @throws {Error} if the fetch or parse fails
  */
-export async function fetchCoaches(sheetId) {
-  if (!sheetId) {
+export async function fetchCoaches({ apiBase = '/api', mock = false } = {}) {
+  if (mock) {
     const allCoaches = await loadMockData();
     return filterApproved(allCoaches);
   }
 
-  const allCoaches = await fetchSheetTab(sheetId, 'Submissions');
-  return filterApproved(allCoaches);
-}
-
-/**
- * Fetch all submissions from a specific Google Sheet tab.
- * Returns ALL coaches regardless of status (for admin view).
- *
- * @param {string} sheetId — Google Sheet ID
- * @param {string} [tabName='Submissions'] — Sheet tab name
- * @returns {Promise<Coach[]>}
- * @throws {Error} if fetch or parse fails
- */
-export async function fetchSubmissions(sheetId, tabName = 'Submissions') {
-  if (!sheetId) {
-    throw new Error('Sheet ID is required for fetchSubmissions');
-  }
-  return fetchSheetTab(sheetId, tabName);
-}
-
-/**
- * Fetch and parse coach data from a specific Google Sheet tab.
- * @param {string} sheetId
- * @param {string} [tabName] — tab/sheet name (omit for default first tab)
- * @returns {Promise<Coach[]>}
- * @throws {Error} if fetch or parse fails
- */
-async function fetchSheetTab(sheetId, tabName) {
-  let url = buildSheetURL(sheetId);
-  if (tabName) {
-    url += `&sheet=${encodeURIComponent(tabName)}`;
-  }
-
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000);
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
   let response;
   try {
-    response = await fetch(url, { signal: controller.signal });
+    response = await fetch(`${apiBase.replace(/\/$/, '')}/coaches`, { signal: controller.signal });
   } finally {
     clearTimeout(timeoutId);
   }
-
   if (!response.ok) {
-    throw new Error(
-      `Failed to fetch sheet data: ${response.status} ${response.statusText}`
-    );
+    throw new Error(`Failed to fetch coaches: ${response.status} ${response.statusText}`);
   }
-
-  const csv = await response.text();
-  const rows = parseCSV(csv);
-  return csvToCoaches(rows);
+  const data = await response.json();
+  if (!data.success || !Array.isArray(data.headers) || !Array.isArray(data.rows)) {
+    throw new Error('Unexpected answer from /api/coaches');
+  }
+  return filterApproved(csvToCoaches([data.headers, ...data.rows]));
 }
 
 /**

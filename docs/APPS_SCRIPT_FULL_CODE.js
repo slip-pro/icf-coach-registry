@@ -170,6 +170,8 @@ function doPost(e) {
       return handleGetPeople(data);
     } else if (action === 'saveBoardProfile') {
       return handleSaveBoardProfile(data);
+    } else if (action === 'getCoaches') {
+      return handleGetCoaches();
     } else if (action === 'getRoster') {
       return handleGetRoster(data);
     } else if (action === 'saveRoster') {
@@ -231,7 +233,8 @@ function handleGetConfig() {
       registryName: settings.REGISTRY_NAME,
       siteUrl: settings.SITE_URL,
       editPage: settings.EDIT_PAGE,
-      sheetId: settings.SHEET_ID,
+      // No sheetId: the catalogue reads through getCoaches, and the
+      // spreadsheet's ID is nobody's business once it is private.
       location: settings.LOCATION,
       countryCode: settings.COUNTRY_CODE,
       logoUrl: settings.LOGO_URL,
@@ -247,6 +250,56 @@ function handleGetConfig() {
       },
     },
   });
+}
+
+// ==================== PUBLIC CATALOGUE ====================
+
+/*
+   The catalogue used to read the Submissions tab straight from Google as CSV,
+   which only works while the spreadsheet is shared as "anyone with the link" —
+   and that shares every tab: pending and rejected applications, edit tokens,
+   the member list, Settings with the API secret. So the catalogue asks here
+   instead, and the spreadsheet can stay private.
+
+   Only approved coaches, and only the columns a card shows. Anything not on
+   this list — status, ICF membership, submission time, columns added later —
+   never leaves the sheet.
+*/
+var PUBLIC_COACH_COLUMNS = [
+  'Name', 'Email', 'ICF Level', 'Photo', 'Specializations', 'Languages',
+  'Format', 'Price Min', 'Price Max', 'Bio 1', 'Bio 1 Language', 'Bio 2',
+  'Bio 2 Language', 'WhatsApp', 'Telegram', 'Instagram', 'LinkedIn', 'Facebook',
+];
+
+/**
+ * POST { action: 'getCoaches' } — no secret: this is what the public page shows.
+ * Returns { headers: [...], rows: [[...], ...] } in the column order above.
+ */
+function handleGetCoaches() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Submissions');
+  if (!sheet) return jsonResponse({ success: true, headers: PUBLIC_COACH_COLUMNS, rows: [] });
+
+  var values = sheet.getDataRange().getValues();
+  if (values.length < 2) return jsonResponse({ success: true, headers: PUBLIC_COACH_COLUMNS, rows: [] });
+
+  var headers = values[0].map(function (h) { return (h || '').toString().trim(); });
+  var statusAt = columnIndex_(headers, ['Status']);
+  var at = PUBLIC_COACH_COLUMNS.map(function (name) { return columnIndex_(headers, [name]); });
+
+  var rows = [];
+  for (var i = 1; i < values.length; i++) {
+    // No Status column, or a blank status, has always meant "approved" here.
+    var status = statusAt === -1 ? '' : (values[i][statusAt] || '').toString().trim().toLowerCase();
+    if (status && status !== 'approved') continue;
+    var row = at.map(function (index) {
+      if (index === -1) return '';
+      var v = values[i][index];
+      return v === null || v === undefined ? '' : v.toString();
+    });
+    if (!row[0].trim()) continue; // no name, no card
+    rows.push(row);
+  }
+  return jsonResponse({ success: true, headers: PUBLIC_COACH_COLUMNS, rows: rows });
 }
 
 // ==================== REGISTRATION ====================

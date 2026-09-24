@@ -20,7 +20,7 @@
     2. The widget script (placed before </body>):
        <script type="module">
          import { ICFRegistry } from '/path/to/js/app.js';
-         ICFRegistry.init({ sheetId: 'YOUR_GOOGLE_SHEET_ID' });
+         ICFRegistry.init({ apiUrl: 'https://coaches.icf-cyprus.com/api/submit' });
        </script>
 
     The widget loads its own CSS and fonts. All styles are
@@ -150,14 +150,14 @@
     ==================================================
     WIDGET INITIALIZATION
     Add this script before </body> in your WordPress page.
-    Replace 'YOUR_GOOGLE_SHEET_ID' with the actual Sheet ID.
+    apiUrl points the widget at the registry's API; the spreadsheet itself stays private.
     ==================================================
   -->
   <script type="module">
     import { ICFRegistry } from '../src/js/app.js';
 
     ICFRegistry.init({
-      sheetId: '1eloH2qMpKIDypcrbuA4L0Sav7qmGNKkRsLJJQHpUojM',
+      apiUrl: 'https://coaches.icf-cyprus.com/api/submit',
     });
   </script>
 

@@ -21,8 +21,8 @@ const SITE_URL = 'https://icf-cyprus-website.vercel.app';
 const NAV = [
   { href: '/about', label: 'About ICF & coaching' },
   { href: '/events', label: 'Events' },
-  { href: '/articles', label: 'Articles & blog' },
   { href: '/coaches', label: 'Find a coach', current: true },
+  { href: '/membership', label: 'Membership' },
   { href: '/friends', label: 'Friends of ICF' },
   { href: '/partnership', label: 'Partnership' },
 ];

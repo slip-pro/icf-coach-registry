@@ -82,56 +82,41 @@ for instructions on:
 
 ---
 
-## Step 4: Publish the Sheet
+## Step 4: Keep the Sheet private
 
-The widget reads the sheet as a CSV file. To enable this:
+**Do not publish the sheet and do not share it as "Anyone with the link".** Sharing is per
+file, not per tab: a public link exposes every tab — pending applications, edit tokens, the
+Settings tab with its API secret. (This happened once; see D-023 in `DECISIONS.md`.)
 
-1. Open your Google Sheet
-2. Go to **File** menu at the top
-3. Click **Share** > **Publish to web**
-4. In the popup:
-   - Under **Link**, select **Entire Document**
-   - Under **format**, select **Comma-separated values (.csv)**
-5. Click **Publish**
-6. Click **OK** on the confirmation dialog
+The widget does not read the sheet itself. It asks the registry's API (`/api/coaches`), which asks
+the Apps Script, which returns approved coaches and only the columns a card shows. So the sheet
+stays **Restricted** — shared only with the people who edit it.
 
-> **Note:** Publishing makes the data readable by anyone with the link.
-> Do not include private information (personal phone numbers, home addresses)
-> in the sheet unless you are comfortable with it being publicly accessible.
+Check both switches:
+1. **Share** → *General access* → **Restricted**.
+2. **File → Share → Publish to web** → if anything is published, **Stop publishing**.
 
 ---
 
-## Step 5: Get the Sheet ID
+## Step 5: Configure the Widget
 
-The Sheet ID is a long string of letters and numbers in the Google Sheet URL.
-
-For example, if your sheet URL is:
-```
-https://docs.google.com/spreadsheets/d/1aBcDeFgHiJkLmNoPqRsTuVwXyZ/edit
-```
-
-Then the Sheet ID is: `1aBcDeFgHiJkLmNoPqRsTuVwXyZ`
-
-It is the part between `/d/` and `/edit`.
-
----
-
-## Step 6: Configure the Widget
-
-In the HTML page where the widget is embedded, pass the Sheet ID when
-initializing:
+No Sheet ID goes into the page. On the registry's own site the widget finds its API at `/api`:
 
 ```html
 <div id="icf-coach-registry"></div>
 <script type="module">
   import { ICFRegistry } from './js/app.js';
-  ICFRegistry.init({
-    sheetId: 'YOUR_SHEET_ID_HERE'
-  });
+  ICFRegistry.init({});
 </script>
 ```
 
-Replace `YOUR_SHEET_ID_HERE` with the actual Sheet ID from Step 5.
+Embedded on another site (e.g. WordPress), point it at the registry's API:
+
+```js
+ICFRegistry.init({ apiUrl: 'https://coaches.icf-cyprus.com/api/submit' });
+```
+
+For local development without the API, `ICFRegistry.init({ mock: true })` uses `data/mock-coaches.json`.
 
 ---
 
@@ -140,19 +125,19 @@ Replace `YOUR_SHEET_ID_HERE` with the actual Sheet ID from Step 5.
 ### Coaches are not appearing
 
 1. **Check the Status column** -- only `approved` coaches are shown
-2. **Check that the sheet is published** -- File > Share > Publish to web
+2. **Open `/api/coaches`** on the registry site -- it should answer `"success": true` with rows.
+   An error there means the Apps Script is unreachable or out of date (redeploy: New version)
 3. **Check column headers** -- they must match the names listed above
-4. **Check the Sheet ID** -- make sure you copied it correctly
 
 ### Changes in the sheet are not reflected
 
-- Google Sheets publishing may take up to 5 minutes to update the CSV
+- `/api/coaches` is cached for 5 minutes
 - Try refreshing the page with Ctrl+Shift+R (hard refresh)
 
 ### The widget shows an error
 
 - Verify your internet connection
-- Check that the Google Sheet has not been deleted or unpublished
+- Check that the Google Sheet has not been deleted, and that `APPS_SCRIPT_URL` is set in Vercel
 - Open your browser console (F12) for detailed error messages
 
 ### Colors are wrong or missing
