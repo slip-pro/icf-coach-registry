@@ -187,7 +187,7 @@ to the existing `approved` status check. `docs/GOOGLE_SHEETS_SETUP.md` for the c
 
 ---
 
-## G-029: Membership ends, profile goes
+## G-029: Membership ends, profile goes — Done
 
 ### F-027: A `Status` the site's membership desk can set
 **Priority**: Medium — after the site's membership desk exists (site backlog #23)
@@ -234,7 +234,7 @@ right first step: it needs no code and reaches a person, which is the whole poin
 
 ---
 
-## G-031: Find a coach by what they work with
+## G-031: Find a coach by what they work with — way 1 done
 
 ### F-029: Keyword search — through the bio first, a keywords field if that is not enough
 **Priority**: Medium
@@ -264,3 +264,13 @@ index needed.
 results then need to say *why* a coach matched (name vs. bio), or a bio hit looks random.
 Name search stays as it is (script-independent, prefix-friendly); bio matching is a plain
 word match on top.
+
+**Way 1 built 24 Sep 2026** (`src/js/text-search.js`, tests `tests/text-search.test.mjs`). One box,
+placeholder "Name or topic, e.g. burnout". Name hits come first, then coaches whose bio 1, bio 2 or
+specialization labels (in all three UI languages) contain every word typed; case, accents and Greek
+tonos ignored; longer words match by their start minus a letter or two (выгоранием ↔ выгорание);
+words of up to three letters match whole words only (HR yes, "ann" ≠ annual). A bio hit shows an
+italic excerpt on the card with the word highlighted — that is the answer to "why did this coach
+turn up". Checked on the live 32: "карьера" 13, "team" 20, "выгорание" 1, "burnout" 0 — the
+language gap from the description is real. Way 2 (a `Keywords` field) stays open: decide after
+watching what people type.

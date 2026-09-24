@@ -766,6 +766,28 @@
   overflow: hidden;
 }
 
+/* Why a text search found this coach: the words around the hit */
+.icf-card__match {
+  margin-top: var(--icf-space-2);
+  font-size: 13px;
+  font-style: italic;
+  color: var(--icf-text-secondary);
+  line-height: 1.5;
+}
+
+.icf-card__match mark {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--icf-text-primary);
+  background: var(--icf-cta);
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+.icf-card:hover .icf-card__match {
+  color: rgba(255, 255, 255, 0.85);
+}
+
 .icf-card__read-more {
   background: none;
   border: none;

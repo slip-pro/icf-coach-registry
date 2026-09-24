@@ -374,10 +374,10 @@ function handleFilterChange(filteredCoaches, meta) {
     '#icf-grid-container'
   );
   if (gridContainer) {
-    // "Nobody by that name" is a different disappointment from
+    // "Nobody found for that" is a different disappointment from
     // "nobody matches these filters" — say which one it is.
     const emptyKey = meta?.nameQuery ? 'emptyStateName' : 'emptyState';
-    renderCards(filteredCoaches, gridContainer, { emptyKey });
+    renderCards(filteredCoaches, gridContainer, { emptyKey, excerpts: meta?.excerpts });
   }
 }
 

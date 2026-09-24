@@ -37,8 +37,9 @@ Configurable for any coaching organization — no code changes needed.
 │   │   ├── config.js                  # Remote config loader
 │   │   ├── i18n.js                    # Translations (EN/RU/EL)
 │   │   ├── cards.js                   # Coach card rendering
-│   │   ├── filters.js                 # Filter panel + name search box
+│   │   ├── filters.js                 # Filter panel + search box (name or topic)
 │   │   ├── name-search.js             # Script-independent name matching
+│   │   ├── text-search.js             # Search box: words in bios + specialization labels
 │   │   ├── registration.js            # Registration form
 │   │   ├── edit.js                    # Edit profile (magic link)
 │   │   ├── submit.js                  # Form submission
@@ -104,5 +105,7 @@ python3 server.py
 # Production — auto-deploys from main branch
 # https://coaches.icf-cyprus.com/
 
-# No lint/test/build commands — vanilla JS, no tooling
+# Tests (no lint/build — vanilla JS, no tooling)
+node tests/name-search.test.mjs
+node tests/text-search.test.mjs
 ```

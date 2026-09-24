@@ -16,15 +16,17 @@
  * @module filters
  */
 
-import { t } from './i18n.js';
+import { t, dictionary } from './i18n.js';
 import { matchesName } from './name-search.js';
+import { matchText } from './text-search.js';
 
 /** Track the current outside-click handler to prevent listener accumulation */
 let currentOutsideClickHandler = null;
 
 /**
  * @typedef {Object} FilterState
- * @property {string} name — search term typed by the visitor ('' = no search)
+ * @property {string} name — search term typed by the visitor ('' = no search):
+ *   a name, or words from what the coach works with
  * @property {Set<string>} specializations
  * @property {Set<string>} languages
  * @property {Set<string>} formats
@@ -80,6 +82,37 @@ const SPEC_I18N_MAP = {
 };
 
 /**
+ * A coach's specialization labels in every UI language, so a word typed in
+ * any of them finds the coach whatever language the page is in.
+ * @param {import('./sheets.js').Coach} coach
+ * @returns {string[]}
+ */
+function specializationLabels(coach) {
+  const labels = [];
+  for (const spec of coach.specializations) {
+    labels.push(spec);
+    const entry = dictionary[SPEC_I18N_MAP[spec]];
+    if (entry) labels.push(...Object.values(entry));
+  }
+  return labels;
+}
+
+/**
+ * How the search term found this coach: by name, by their text (with an
+ * excerpt when a bio holds the word), or not at all. No term finds everybody.
+ * Exported for testability.
+ *
+ * @param {import('./sheets.js').Coach} coach
+ * @param {string} term
+ * @returns {null | {by: 'name'} | {by: 'text', excerpt: null | {before: string, hit: string, after: string}}}
+ */
+export function searchCoach(coach, term) {
+  if (!term || matchesName(coach.name, term)) return { by: 'name' };
+  const hit = matchText(coach, specializationLabels(coach), term);
+  return hit ? { by: 'text', excerpt: hit.excerpt } : null;
+}
+
+/**
  * Create a fresh filter state with all selections empty.
  * @returns {FilterState}
  */
@@ -133,55 +166,71 @@ function extractLanguages(coaches) {
  * @returns {import('./sheets.js').Coach[]}
  */
 export function applyFilters(coaches, state) {
-  return coaches.filter((coach) => {
-    // Name: substring on a script-independent skeleton (see name-search.js)
-    if (state.name && !matchesName(coach.name, state.name)) return false;
+  const byName = [];
+  const byText = [];
+  for (const coach of coaches) {
+    if (!passesChips(coach, state)) continue;
+    // Name first (script-independent, see name-search.js), then bios and
+    // specialization labels (text-search.js). Name hits lead the list:
+    // somebody typing a name wants that person, not whoever mentions it.
+    const found = searchCoach(coach, state.name);
+    if (!found) continue;
+    (found.by === 'name' ? byName : byText).push(coach);
+  }
+  return byName.concat(byText);
+}
 
-    // Specialization: OR within group
-    if (state.specializations.size > 0) {
-      const match = coach.specializations.some(
-        (s) => state.specializations.has(s)
-      );
-      if (!match) return false;
-    }
+/**
+ * The chip filters — everything except the search box.
+ * @param {import('./sheets.js').Coach} coach
+ * @param {FilterState} state
+ * @returns {boolean}
+ */
+function passesChips(coach, state) {
+  // Specialization: OR within group
+  if (state.specializations.size > 0) {
+    const match = coach.specializations.some(
+      (s) => state.specializations.has(s)
+    );
+    if (!match) return false;
+  }
 
-    // Language: OR within group
-    if (state.languages.size > 0) {
-      const match = coach.languages.some(
-        (l) => state.languages.has(l)
-      );
-      if (!match) return false;
-    }
+  // Language: OR within group
+  if (state.languages.size > 0) {
+    const match = coach.languages.some(
+      (l) => state.languages.has(l)
+    );
+    if (!match) return false;
+  }
 
-    // Format: OR within group
-    // "both" coaches match any format selection
-    if (state.formats.size > 0) {
-      if (coach.format === 'both') {
-        // "both" coaches always pass format filter
-      } else if (!state.formats.has(coach.format)) {
-        // Also pass if "both" is selected in the filter
-        if (!state.formats.has('both')) {
-          return false;
-        }
+  // Format: OR within group
+  // "both" coaches match any format selection
+  if (state.formats.size > 0) {
+    if (coach.format === 'both') {
+      // "both" coaches always pass format filter
+    } else if (!state.formats.has(coach.format)) {
+      // Also pass if "both" is selected in the filter
+      if (!state.formats.has('both')) {
+        return false;
       }
     }
+  }
 
-    // ICF Level: OR within group
-    if (state.levels.size > 0) {
-      if (!state.levels.has(coach.icfLevel)) return false;
-    }
+  // ICF Level: OR within group
+  if (state.levels.size > 0) {
+    if (!state.levels.has(coach.icfLevel)) return false;
+  }
 
-    // Price Range: OR within group
-    if (state.priceRanges.size > 0) {
-      const match = PRICE_RANGES.some((range) => {
-        if (!state.priceRanges.has(range.key)) return false;
-        return coachMatchesPriceRange(coach, range);
-      });
-      if (!match) return false;
-    }
+  // Price Range: OR within group
+  if (state.priceRanges.size > 0) {
+    const match = PRICE_RANGES.some((range) => {
+      if (!state.priceRanges.has(range.key)) return false;
+      return coachMatchesPriceRange(coach, range);
+    });
+    if (!match) return false;
+  }
 
-    return true;
-  });
+  return true;
 }
 
 /**
@@ -254,9 +303,10 @@ function checkIcon() {
  *
  * @param {import('./sheets.js').Coach[]} coaches — full coach list
  * @param {HTMLElement} container — DOM element to render into
- * @param {function(import('./sheets.js').Coach[], {nameQuery: string}): void} onFilterChange
- *   — receives the filtered list and the active name search term, so the
- *   caller can tell "nobody by that name" from "nobody matches these filters"
+ * @param {function(import('./sheets.js').Coach[], {nameQuery: string, excerpts: Map}): void} onFilterChange
+ *   — receives the filtered list, the active search term (so the caller can
+ *   tell "nobody found for that" from "nobody matches these filters") and,
+ *   per coach found through a bio, the excerpt that matched
  * @returns {void}
  */
 export function renderFilters(coaches, container, onFilterChange) {
@@ -269,7 +319,16 @@ export function renderFilters(coaches, container, onFilterChange) {
   /** Re-apply filters and notify parent */
   function update() {
     const filtered = applyFilters(coaches, state);
-    onFilterChange(filtered, { nameQuery: state.name });
+    // Why a coach matched, for those found through their text: the card
+    // shows the excerpt, or a bio hit looks random.
+    const excerpts = new Map();
+    if (state.name) {
+      for (const coach of filtered) {
+        const found = searchCoach(coach, state.name);
+        if (found && found.by === 'text' && found.excerpt) excerpts.set(coach, found.excerpt);
+      }
+    }
+    onFilterChange(filtered, { nameQuery: state.name, excerpts });
     updateResultsCount(filtered.length, coaches.length);
     updateClearAllVisibility();
   }
@@ -304,8 +363,9 @@ export function renderFilters(coaches, container, onFilterChange) {
 
   // --- Build DOM ---
 
-  // 0. Name search — above the chips: finding *a particular* coach is a
-  //    different action from narrowing down by criteria.
+  // 0. Search — above the chips: finding a particular coach, or the ones
+  //    who work with a particular thing, is a different action from
+  //    narrowing down by criteria.
   const search = document.createElement('div');
   search.className = 'icf-search';
   search.innerHTML = `${searchIcon()}

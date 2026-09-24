@@ -310,11 +310,24 @@ function renderMeta(coach) {
    --------------------------------------------------------------- */
 
 /**
- * Render a single coach card.
- * @param {import('./sheets.js').Coach} coach
+ * The words around a search hit in the coach's bio — shown on cards found
+ * through their text rather than their name, so the match is not a mystery.
+ * @param {{before: string, hit: string, after: string}|undefined} excerpt
  * @returns {string} HTML
  */
-function renderCard(coach, index) {
+function renderExcerpt(excerpt) {
+  if (!excerpt) return '';
+  return `<p class="icf-card__match">${esc(excerpt.before)}<mark>${esc(excerpt.hit)}</mark>${esc(excerpt.after)}</p>`;
+}
+
+/**
+ * Render a single coach card.
+ * @param {import('./sheets.js').Coach} coach
+ * @param {number} index
+ * @param {{before: string, hit: string, after: string}} [excerpt]
+ * @returns {string} HTML
+ */
+function renderCard(coach, index, excerpt) {
   const contact = renderContactBlock(coach);
   const divider = contact ? '<hr class="icf-divider">' : '';
   const bio = getBioForLanguage(coach, getCurrentLanguage());
@@ -324,6 +337,7 @@ function renderCard(coach, index) {
       data-coach-index="${index}">
       ${renderCardTop(coach)}
       ${renderBio(bio)}
+      ${renderExcerpt(excerpt)}
       ${renderTags(coach.specializations)}
       ${renderMeta(coach)}
       ${divider}
@@ -426,8 +440,9 @@ document.addEventListener('keydown', (e) => {
  *
  * @param {import('./sheets.js').Coach[]} coaches
  * @param {HTMLElement} container
- * @param {{emptyKey?: string}} [options] — i18n key for the empty message
- *   (default 'emptyState'; 'emptyStateName' when a name search found nobody)
+ * @param {{emptyKey?: string, excerpts?: Map}} [options] — i18n key for the
+ *   empty message (default 'emptyState'; 'emptyStateName' when a search
+ *   found nobody), and bio excerpts for coaches found through their text
  * @returns {void}
  */
 export function renderCards(coaches, container, options = {}) {
@@ -445,7 +460,7 @@ export function renderCards(coaches, container, options = {}) {
   }
 
   container.innerHTML = coaches
-    .map((coach, i) => renderCard(coach, i))
+    .map((coach, i) => renderCard(coach, i, options.excerpts?.get(coach)))
     .join('');
 
   // Attach click delegation once per container
