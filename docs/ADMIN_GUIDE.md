@@ -128,6 +128,20 @@ To change the admin email:
 3. Find the row with Key = `ADMIN_EMAIL`
 4. Change the Value to the new email address
 
+## Event plan and event folders (for the chapter website)
+
+The same spreadsheet holds the chapter's event plan, in the `Event plan` tab, and the website reads
+it directly. The full how-to — what the Date column may say, what `Category` and `Always show` do,
+how to use each event's Drive folder — is in the website repository, `docs/CONTENT-FILL.md` §0.
+
+Two things belong to the script, not to people:
+- the `Folder` column of `Event plan` and `Events` — the link that ties a row to its folder;
+- the `Event media` tab — what the script last found in the folders. It is rewritten every 30
+  minutes; edits there are lost.
+
+The 30-minute timer is set by running `installEventSync` once from the Apps Script editor. It needs
+the `documents` and `script.scriptapp` permissions in `appsscript.json` (added 25 Sep 2026).
+
 ## FAQ
 
 **Q: How long until changes appear on the website?**
