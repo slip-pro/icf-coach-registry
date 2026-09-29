@@ -156,7 +156,7 @@ function getSettings() {
    so "is the new code live?" is a request, not a guess — pasting the code
    without deploying a New version leaves the old one answering.
 */
-var SCRIPT_VERSION = '2026-09-25 event-plan-4';
+var SCRIPT_VERSION = '2026-09-29 plan-only';
 
 // ==================== MAIN DISPATCHER ====================
 
@@ -202,6 +202,8 @@ function doPost(e) {
       return handleGetEventPlan(data);
     } else if (action === 'syncEventFolders') {
       return handleSyncEventFolders(data);
+    } else if (action === 'migrateEventsToPlan') {
+      return handleMigrateEventsToPlan(data);
     }
 
     return jsonResponse({
@@ -1672,7 +1674,12 @@ function formatDateTime_(value) {
      "Spring 2027", "2026/27 — TBC", anything else   not on the site yet
    "Status / Notes" is the director's own and never shown. "Category" is
    partner / members / blank (for everyone); partner events get their own
-   section on the site.
+   section on the site. "Summary", "Description" and "Tickets / link" (Fienta,
+   or a partner's event page) are what the event page says.
+
+   Since 29 Sep 2026 this tab is the only list of events, past ones included.
+   The old "Events" tab, filled by the website admin, was folded into it once
+   by migrateEventsToPlan and renamed "Events (old)".
 
    Every event the site shows gets a folder on the chapter's Drive:
 
@@ -1705,11 +1712,16 @@ var EVENT_PLAN_COLUMNS = {
   location:   { header: 'Format / Location', aliases: ['Format / Location', 'Location', 'Format'] },
   notes:      { header: 'Status / Notes',    aliases: ['Status / Notes', 'Notes', 'Status'] },
   category:   { header: 'Category',          aliases: ['Category', 'Type'] },
+  summary:    { header: 'Summary',           aliases: ['Summary'] },
+  description:{ header: 'Description',       aliases: ['Description'] },
+  link:       { header: 'Tickets / link',    aliases: ['Tickets / link', 'Tickets', 'Fienta URL', 'Fienta', 'Link'] },
   alwaysShow: { header: 'Always show',       aliases: ['Always show'] },
   folder:     { header: 'Folder',            aliases: ['Folder'] }
 };
 var EVENT_MEDIA_SHEET = 'Event media';
-var EVENT_MEDIA_HEADERS = ['Folder ID', 'Cover', 'Photos', 'Testimonials', 'Testimonials updated', 'Synced at'];
+// "Event" is the folder's name — date and title — so a person reading the tab
+// can tell which row is which. The script itself goes by Folder ID.
+var EVENT_MEDIA_HEADERS = ['Event', 'Folder ID', 'Cover', 'Photos', 'Testimonials', 'Testimonials updated', 'Synced at'];
 
 var PLAN_MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 
@@ -1794,6 +1806,22 @@ function planColumns_(sheet) {
   return at;
 }
 
+/**
+ * Put the plan's columns in their intended order. New columns are appended at
+ * the far right when they first appear, which leaves Category after Folder and
+ * so on; this moves each one into place. Columns somebody added of their own
+ * drift to the right, untouched.
+ */
+function orderPlanColumns_(sheet) {
+  var names = Object.keys(EVENT_PLAN_COLUMNS);
+  for (var target = 0; target < names.length; target++) {
+    var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    var current = columnIndex_(headers, EVENT_PLAN_COLUMNS[names[target]].aliases);
+    if (current === -1 || current === target) continue;
+    sheet.moveColumns(sheet.getRange(1, current + 1, sheet.getMaxRows(), 1), target + 1);
+  }
+}
+
 function planSheet_() {
   var headers = [];
   for (var name in EVENT_PLAN_COLUMNS) headers.push(EVENT_PLAN_COLUMNS[name].header);
@@ -1834,6 +1862,9 @@ function readEventPlan_() {
       speaker: (values[i][at.speaker] || '').toString().trim(),
       location: (values[i][at.location] || '').toString().trim(),
       category: (values[i][at.category] || '').toString().trim(),
+      summary: (values[i][at.summary] || '').toString().trim(),
+      description: (values[i][at.description] || '').toString().trim(),
+      link: (values[i][at.link] || '').toString().trim(),
       alwaysShow: always === true || /^(yes|y|true|x|✓|✔)$/i.test((always || '').toString().trim()),
       folderId: parseDriveFolderId((values[i][at.folder] || '').toString().trim()),
       row: i + 1
@@ -1842,19 +1873,36 @@ function readEventPlan_() {
   return out;
 }
 
-/** Folder ID → { cover, photos[], testimonials } from the last sync. */
+/**
+ * Folder ID → { cover, photos[], testimonials } from the last sync. Columns
+ * are found by header, so the tab written before the "Event" column existed
+ * still reads.
+ */
 function readEventMedia_() {
   var sheet = ensureSheet_(EVENT_MEDIA_SHEET, EVENT_MEDIA_HEADERS);
   var rows = sheet.getDataRange().getValues();
   var media = {};
+  if (rows.length < 2) return media;
+  var h = rows[0];
+  var col = {
+    id: columnIndex_(h, ['Folder ID']),
+    cover: columnIndex_(h, ['Cover']),
+    photos: columnIndex_(h, ['Photos']),
+    text: columnIndex_(h, ['Testimonials']),
+    updated: columnIndex_(h, ['Testimonials updated'])
+  };
+  if (col.id === -1) return media;
+  var cell = function (row, index) {
+    return index === -1 ? '' : (row[index] === undefined || row[index] === null ? '' : row[index].toString());
+  };
   for (var i = 1; i < rows.length; i++) {
-    var id = (rows[i][0] || '').toString().trim();
+    var id = cell(rows[i], col.id).trim();
     if (!id) continue;
     media[id] = {
-      cover: (rows[i][1] || '').toString().trim(),
-      photos: splitList_(rows[i][2]),
-      testimonials: (rows[i][3] || '').toString(),
-      testimonialsUpdated: (rows[i][4] || '').toString()
+      cover: cell(rows[i], col.cover).trim(),
+      photos: splitList_(cell(rows[i], col.photos)),
+      testimonials: cell(rows[i], col.text),
+      testimonialsUpdated: cell(rows[i], col.updated)
     };
   }
   return media;
@@ -2025,11 +2073,8 @@ function syncEventFolders() {
     var root = eventsRootFolder_(getSettings());
     var previous = readEventMedia_();
     var folders = {};      // folder id → Folder
-    // slug of a plan title + its date → folder id. The date is part of the key
-    // because a series (a breakfast every month) repeats one title.
-    var planByKey = {};
 
-    // 1. The plan. Its rows own their folders and name them.
+    // 1. The plan — every event, past and upcoming. Rows own their folders.
     var plan = planSheet_();
     var planAt = planColumns_(plan);
     var rows = readEventPlan_();
@@ -2040,40 +2085,23 @@ function syncEventFolders() {
         plan.getRange(r.row, planAt.folder + 1).setValue(folder.getUrl());
       }
       folders[folder.getId()] = folder;
-      if (r.date) planByKey[slugify_(r.title) + '|' + r.date] = folder.getId();
     }
 
-    // 2. Events added through the admin. One that is also in the plan shares
-    //    the plan's folder; the rest — past events mostly — get their own.
-    var spec = CONTENT_KINDS.events;
-    var sheet = ensureSheet_(spec.sheet, contentHeaders_(spec));
-    var at = contentColumns_(sheet, spec);
-    var events = sheet.getDataRange().getValues();
-    for (var e = 1; e < events.length; e++) {
-      var key = contentKeyOf_(spec, events[e], at, e);
-      if (!key) continue;
-      var title = (events[e][at.title] || '').toString().trim();
-      var stored = parseDriveFolderId((events[e][at.folder] || '').toString().trim());
-      var start = formatDateTime_(events[e][at.start]).slice(0, 10);
-      var shared = planByKey[slugify_(title) + '|' + start] || planByKey[key + '|' + start] || '';
-      var own = ensureEventFolder_(root, stored || shared, (start || 'TBC') + ' ' + title, !shared);
-      if (own.getId() !== stored) {
-        sheet.getRange(e + 1, at.folder + 1).setValue(own.getUrl());
-      }
-      folders[own.getId()] = own;
-    }
-
-    // 3. What is in each folder.
+    // 2. What is in each folder.
     var out = [];
     var now = new Date().toISOString();
     for (var id in folders) {
       var m = collectEventMedia_(folders[id], previous[id]);
-      out.push([id, m.cover, m.photos.join(', '), m.testimonials, m.testimonialsUpdated, now]);
+      out.push([folders[id].getName(), id, m.cover, m.photos.join(', '), m.testimonials, m.testimonialsUpdated, now]);
     }
+    // In date order: every folder name starts with its date.
+    out.sort(function (a, b) { return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0; });
     var media = ensureSheet_(EVENT_MEDIA_SHEET, EVENT_MEDIA_HEADERS);
-    if (media.getLastRow() > 1) {
-      media.getRange(2, 1, media.getLastRow() - 1, EVENT_MEDIA_HEADERS.length).clearContent();
-    }
+    // The whole tab is the script's: rewrite the headers too, so an older
+    // layout is brought up to date rather than read with columns shifted.
+    var width = Math.max(media.getLastColumn(), EVENT_MEDIA_HEADERS.length);
+    media.getRange(1, 1, Math.max(media.getLastRow(), 1), width).clearContent();
+    media.getRange(1, 1, 1, EVENT_MEDIA_HEADERS.length).setValues([EVENT_MEDIA_HEADERS]).setFontWeight('bold');
     if (out.length) {
       media.getRange(2, 1, out.length, EVENT_MEDIA_HEADERS.length).setNumberFormat('@').setValues(out);
     }
@@ -2081,4 +2109,140 @@ function syncEventFolders() {
   } finally {
     lock.releaseLock();
   }
+}
+
+/* ============================================================
+   ONE-OFF: FOLD THE OLD "Events" TAB INTO THE PLAN (29 Sep 2026)
+   ============================================================
+   Before the plan, events were added through the website admin into an
+   "Events" tab. The owner decided the plan is the only list. This moves each
+   of those rows into the plan — merged into a plan row with the same title
+   and date, or added as a new one — moves the cover and photos uploaded
+   through the admin into the event's folder, and renames the tab
+   "Events (old)" so nothing is lost before somebody has checked.
+
+   Safe to run again: with no "Events" tab left it does nothing.
+   ============================================================ */
+
+function handleMigrateEventsToPlan(data) {
+  if (!contentSecretOk_(data)) {
+    return jsonResponse({ success: false, error: 'Forbidden' });
+  }
+  try {
+    var result = migrateEventsToPlan();
+    result.sync = syncEventFolders();
+    return jsonResponse({ success: true, result: result });
+  } catch (err) {
+    return jsonResponse({ success: false, error: err.message });
+  }
+}
+
+function migrateEventsToPlan() {
+  var book = SpreadsheetApp.getActiveSpreadsheet();
+  var old = book.getSheetByName('Events');
+  var plan = planSheet_();
+  planColumns_(plan);
+  orderPlanColumns_(plan);
+  var at = planColumns_(plan);
+  if (!old) return { migrated: 0, note: 'no Events tab' };
+
+  var spec = CONTENT_KINDS.events;
+  var oldAt = contentColumns_(old, spec);
+  var rows = old.getDataRange().getValues();
+  var width = plan.getLastColumn();
+  var planValues = plan.getDataRange().getValues();
+  var planShown = plan.getDataRange().getDisplayValues();
+  var root = eventsRootFolder_(getSettings());
+  var report = [];
+
+  for (var i = 1; i < rows.length; i++) {
+    var title = (rows[i][oldAt.title] || '').toString().trim();
+    if (!title) continue;
+    var start = formatDateTime_(rows[i][oldAt.start]);
+    var end = formatDateTime_(rows[i][oldAt.end]);
+    var day = start.slice(0, 10);
+    var time = start.length >= 16 ? start.slice(11, 16) : '';
+    if (time && end.slice(0, 10) === day && end.length >= 16) time += '–' + end.slice(11, 16);
+
+    var fields = {
+      date: planDateText_(day),
+      time: time || 'TBC',
+      title: title,
+      location: (rows[i][oldAt.location] || '').toString().trim(),
+      category: (rows[i][oldAt.category] || '').toString().trim(),
+      summary: (rows[i][oldAt.summary] || '').toString().trim(),
+      description: (rows[i][oldAt.description] || '').toString().trim(),
+      link: (rows[i][oldAt.fientaUrl] || '').toString().trim(),
+      folder: (rows[i][oldAt.folder] || '').toString().trim(),
+      notes: 'Moved from the Events tab, 29 Sep 2026'
+    };
+
+    // The same event already in the plan: fill its blanks, keep what is there.
+    var target = -1;
+    for (var p = 1; p < planValues.length; p++) {
+      var when = planWhen_(planValues[p][at.date], planShown[p][at.date]);
+      var sameTitle = slugify_(planValues[p][at.title]) === slugify_(title);
+      if (sameTitle && when.date === day) { target = p; break; }
+    }
+
+    var row;
+    if (target !== -1) {
+      row = planValues[target].slice();
+      while (row.length < width) row.push('');
+      for (var name in fields) {
+        if (name === 'notes' || name === 'date' || name === 'time' || name === 'title') continue;
+        if (!(row[at[name]] || '').toString().trim()) row[at[name]] = fields[name];
+      }
+      plan.getRange(target + 1, 1, 1, width).setValues([row]);
+    } else {
+      row = [];
+      for (var c = 0; c < width; c++) row.push('');
+      for (var key in fields) row[at[key]] = fields[key];
+      var line = plan.getLastRow() + 1;
+      plan.getRange(line, 1, 1, 2).setNumberFormat('@');
+      plan.getRange(line, 1, 1, width).setValues([row]);
+      planValues.push(row);
+      planShown.push(row.map(function (v) { return (v || '').toString(); }));
+    }
+
+    // Pictures uploaded through the admin move into the event's folder.
+    // Into the folder the plan row ends up with — the plan's own, when the
+    // event was already there.
+    var moved = 0;
+    var folderId = parseDriveFolderId((row[at.folder] || '').toString().trim());
+    if (folderId) {
+      var folder = ensureEventFolder_(root, folderId, (day || 'TBC') + ' ' + title, false);
+      moved += moveDriveImages_([rows[i][oldAt.cover]], childFolder_(folder, 'Cover'));
+      moved += moveDriveImages_(splitList_(rows[i][oldAt.gallery]), childFolder_(folder, 'Photos'));
+    }
+    report.push(title + (target !== -1 ? ' (merged)' : ' (added)') + (moved ? ', ' + moved + ' pictures moved' : ''));
+  }
+
+  var name = book.getSheetByName('Events (old)')
+    ? 'Events (old ' + Utilities.formatDate(new Date(), 'Asia/Nicosia', 'yyyy-MM-dd HH:mm') + ')'
+    : 'Events (old)';
+  old.setName(name);
+  return { migrated: report.length, rows: report, renamedTo: name };
+}
+
+/** "2026-09-18" → "18 Sep 2026", the way the plan writes dates. */
+function planDateText_(iso) {
+  var m = (iso || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return '';
+  var name = PLAN_MONTHS[Number(m[2]) - 1];
+  return Number(m[3]) + ' ' + name.charAt(0).toUpperCase() + name.slice(1) + ' ' + m[1];
+}
+
+/** Move the Drive files behind these image links into `folder`. Other links are skipped. */
+function moveDriveImages_(urls, folder) {
+  var moved = 0;
+  for (var i = 0; i < urls.length; i++) {
+    var match = (urls[i] || '').toString().match(/(?:[?&]id=|\/file\/d\/|\/d\/)([A-Za-z0-9_-]{10,})/);
+    if (!match) continue;
+    try {
+      DriveApp.getFileById(match[1]).moveTo(folder);
+      moved++;
+    } catch (err) { /* not ours, or gone — leave it */ }
+  }
+  return moved;
 }
