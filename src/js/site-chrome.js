@@ -81,7 +81,7 @@ export function siteChromeHTML(logoUrl) {
           <img src="${logoUrl}" alt="${LOGO_ALT}" class="icf-site-footer__logo">
           <p>
             Demetras 9, Strovolos, 2058 Nicosia, Cyprus<br>
-            info.icf.cyprus@gmail.com
+            info@icf-cyprus.com
           </p>
           <p class="icf-site-footer__legal">
             &copy; ${new Date().getFullYear()} ICF Cyprus Chapter
