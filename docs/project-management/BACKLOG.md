@@ -162,7 +162,14 @@ See `docs/notes/G-027.md`.
 
 ---
 
-## G-028: Consent to publish, and to be featured
+## G-028: Consent to publish, and to be featured — Done 3 Oct 2026
+
+**Built 3 Oct 2026** (the owner: in the forms, not by sending files): a *Permissions* block in
+registration and edit (`src/js/consent.js`, EN/RU/EL). Publish is required; social media is
+optional and pre-filled on edit. The Apps Script writes the dates into `Publish consent` and
+`Social media consent` (columns added on first write), returns both to the edit form, and hides a
+card whose `Publish consent` is `no`. The catalogue goes through `getCoaches`, not the CSV, so the
+filter lives there. Tests: `node tests/apps-script-consent.test.mjs`. Admin: `docs/ADMIN_GUIDE.md`.
 
 ### F-026: Two consent checkboxes on registration and edit
 **Priority**: Medium

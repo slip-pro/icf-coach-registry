@@ -1574,6 +1574,15 @@
   user-select: none;
 }
 
+/* Consent boxes carry a sentence, not a word: tick at the top of the text. */
+.icf-form__checkbox-item--consent {
+  align-items: flex-start;
+}
+
+.icf-form__checkbox-item--consent .icf-form__checkbox-mark {
+  margin-top: 1px;
+}
+
 .icf-form__checkbox-item input[type="checkbox"] {
   position: absolute;
   opacity: 0;

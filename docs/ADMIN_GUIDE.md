@@ -93,6 +93,19 @@ Matching is by email. If a coach registered with a different address than the on
 
 A coach the Members tab does not know at all stays visible.
 
+## Permissions: listing and social media
+
+The registration and edit forms ask two things, and the script writes the answer into two columns
+at the end of **Submissions** (it adds them itself):
+
+- **Publish consent** — the date the coach agreed to be listed. The form will not send without it.
+  Blank means the coach registered before October 2026; they registered to be listed, so blank
+  counts as agreed. If a coach asks to be taken off, type `no` here — the card disappears within
+  about 5 minutes, and the row stays.
+- **Social media consent** — the date the coach allowed the chapter to post about them, using the
+  photo and description from their profile, or `no`. Blank means not asked yet; the edit form asks
+  the next time they open it. **Before any post about a coach, check that this cell has a date.**
+
 ## Step-by-step: Edit a coach's profile
 
 1. Open your Google Sheet

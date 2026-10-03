@@ -58,6 +58,8 @@ Add these headers in **Row 1**, one per column (A through U):
 | S | Facebook | No | Full profile URL |
 | T | ICF Membership | No | ICF membership number or registered email |
 | U | Submitted At | Auto | Date/time of submission (filled automatically) |
+| — | Publish consent | Auto | Date the coach agreed to be listed. Added by the script on the first registration after Oct 2026. Blank = registered before the box existed, counts as agreed. Type `no` to hide the card. |
+| — | Social media consent | Auto | Date the coach allowed social-media posts about them, or `no`. Blank = not asked yet. |
 
 **Important notes:**
 - The header names must match exactly (not case-sensitive, but spelling matters)

@@ -156,7 +156,7 @@ function getSettings() {
    so "is the new code live?" is a request, not a guess — pasting the code
    without deploying a New version leaves the old one answering.
 */
-var SCRIPT_VERSION = '2026-09-29 plan-only';
+var SCRIPT_VERSION = '2026-10-03 consents';
 
 // ==================== MAIN DISPATCHER ====================
 
@@ -314,6 +314,7 @@ function handleGetCoaches() {
     var status = statusAt === -1 ? '' : (values[i][statusAt] || '').toString().trim().toLowerCase();
     if (status && status !== 'approved') continue;
     if (membershipPaused_(leavers, headers, values[i])) continue;
+    if (consentAnswer_(headers, values[i], PUBLISH_CONSENT) === 'no') continue;
     var row = at.map(function (index) {
       if (index === -1) return '';
       var v = values[i][index];
@@ -359,6 +360,66 @@ function membershipPaused_(index, headers, row) {
   var emailAt = columnIndex_(headers, ['Email', 'E-mail']);
   var email = emailAt === -1 ? '' : (row[emailAt] || '').toString().trim().toLowerCase();
   return !!email && !!index.leftEmails[email] && !index.currentEmails[email];
+}
+
+// ==================== CONSENTS (G-028) ====================
+
+/*
+   Two permissions from the registration and edit forms, kept as the date each
+   was given — that date is the record GDPR asks for.
+
+   Publish consent: required by the form. "no" typed into the cell by hand hides
+   the card. A blank cell means a coach who registered before the box existed;
+   they registered in order to be listed, so blank counts as given.
+
+   Social media consent: the date, or "no". Blank = never asked; the edit form
+   asks the next time the coach opens it.
+*/
+var PUBLISH_CONSENT = ['Publish consent'];
+var SOCIAL_CONSENT = ['Social media consent'];
+
+function todayInSheetZone_() {
+  return Utilities.formatDate(new Date(),
+    SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), 'yyyy-MM-dd');
+}
+
+/** Writes the answers into row `rowNum` (1-based), adding the columns if the sheet lacks them. */
+function writeConsents_(sheet, rowNum, data) {
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0]
+    .map(function (h) { return (h || '').toString().trim(); });
+  var publishAt = ensureColumn_(sheet, headers, PUBLISH_CONSENT, PUBLISH_CONSENT[0]);
+  var socialAt = ensureColumn_(sheet, headers, SOCIAL_CONSENT, SOCIAL_CONSENT[0]);
+  var today = todayInSheetZone_();
+
+  // Keep the first date a permission was given; re-saving the form does not move it.
+  var publishCell = sheet.getRange(rowNum, publishAt + 1);
+  if (data.publishConsent === true) {
+    if (!/^\d{4}-\d{2}-\d{2}/.test(consentText_(publishCell.getValue()))) publishCell.setValue(today);
+  } else if (data.publishConsent === false) {
+    publishCell.setValue('no');
+  }
+
+  var socialCell = sheet.getRange(rowNum, socialAt + 1);
+  if (data.socialConsent === true) {
+    if (!/^\d{4}-\d{2}-\d{2}/.test(consentText_(socialCell.getValue()))) socialCell.setValue(today);
+  } else if (data.socialConsent === false) {
+    socialCell.setValue('no');
+  }
+}
+
+/** A consent cell as text: a date cell becomes YYYY-MM-DD. */
+function consentText_(value) {
+  if (Object.prototype.toString.call(value) === '[object Date]') return formatDate_(value);
+  return (value === null || value === undefined ? '' : value).toString().trim();
+}
+
+/** "yes", "no" or "" (never asked) — for the edit form. */
+function consentAnswer_(headers, row, names) {
+  var at = columnIndex_(headers, names);
+  if (at === -1) return '';
+  var text = consentText_(row[at]).toLowerCase();
+  if (!text) return '';
+  return text === 'no' ? 'no' : 'yes';
 }
 
 // ==================== REGISTRATION ====================
@@ -418,6 +479,7 @@ function handleRegister(data) {
   ]);
 
   var lastRow = sheet.getLastRow();
+  writeConsents_(sheet, lastRow, data);
   sheet.getRange(lastRow, 1, 1, sheet.getLastColumn())
     .setBackground('#fff2cc');
 
@@ -637,6 +699,8 @@ function handleVerifyToken(data) {
           instagram: row[16] || '',
           linkedin: row[17] || '',
           facebook: row[18] || '',
+          publishConsent: consentAnswer_(allData[0], row, PUBLISH_CONSENT),
+          socialConsent: consentAnswer_(allData[0], row, SOCIAL_CONSENT),
         },
       });
     }
@@ -768,6 +832,8 @@ function handleSaveProfile(data) {
     data.linkedin || '',
     data.facebook || '',
   ]]);
+
+  writeConsents_(sheet, coachRowNum, data);
 
   // Mark token as used
   tokensSheet.getRange(tokenRow + 1, 4).setValue(true);

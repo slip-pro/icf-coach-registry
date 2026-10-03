@@ -14,6 +14,7 @@
  */
 
 import { t } from './i18n.js';
+import { renderConsentSection, readConsents, checkConsents } from './consent.js';
 import { esc, compressImageToBase64 } from './utils.js';
 
 /* ---------------------------------------------------------------
@@ -728,6 +729,9 @@ function buildFormHTML() {
         })}
       </div>
 
+      <!-- Permissions (G-028) -->
+      ${renderConsentSection(uid)}
+
       <!-- Card Preview -->
       <div class="icf-form__preview">
         <h3 class="icf-form__section-title"
@@ -783,6 +787,7 @@ function collectFormData(form) {
   const byRequest = byRequestEl ? byRequestEl.checked : false;
 
   return {
+    ...readConsents(form, uid),
     name: val(uid('name')),
     specializations: checked(uid('specializations')),
     icfLevel: radio(uid('icf-level')),
@@ -961,6 +966,12 @@ function validateForm(form, data) {
     showError(form, uid('email'), 'regErrorEmail');
     valid = false;
     firstError = firstError || uid('email');
+  }
+
+  const consentError = checkConsents(form, uid, data);
+  if (consentError) {
+    valid = false;
+    firstError = firstError || consentError;
   }
 
   // Scroll to first error

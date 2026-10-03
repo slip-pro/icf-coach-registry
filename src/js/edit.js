@@ -17,6 +17,7 @@
  */
 
 import { t } from './i18n.js';
+import { renderConsentSection, readConsents, checkConsents } from './consent.js';
 import { esc, compressImageToBase64 } from './utils.js';
 
 /* ---------------------------------------------------------------
@@ -711,6 +712,9 @@ function buildEditFormHTML(profile, paused) {
         })}
       </div>
 
+      <!-- Permissions (G-028) -->
+      ${renderConsentSection(uid, { publish: profile.publishConsent !== 'no', social: profile.socialConsent === 'yes' })}
+
       <!-- Card Preview -->
       <div class="icf-form__preview">
         <h3 class="icf-form__section-title"
@@ -761,6 +765,7 @@ function collectEditFormData(form) {
   const byRequest = byRequestEl ? byRequestEl.checked : false;
 
   return {
+    ...readConsents(form, uid),
     name: val(uid('name')),
     specializations: checked(uid('specializations')),
     icfLevel: radio(uid('icf-level')),
@@ -896,6 +901,12 @@ function validateEditForm(form, data) {
     showError(form, uid('bio2'), 'regErrorBioTooLong');
     valid = false;
     firstError = firstError || uid('bio2');
+  }
+
+  const consentError = checkConsents(form, uid, data);
+  if (consentError) {
+    valid = false;
+    firstError = firstError || consentError;
   }
 
   if (firstError) {
