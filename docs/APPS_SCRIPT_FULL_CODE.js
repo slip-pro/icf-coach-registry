@@ -156,7 +156,7 @@ function getSettings() {
    so "is the new code live?" is a request, not a guess — pasting the code
    without deploying a New version leaves the old one answering.
 */
-var SCRIPT_VERSION = '2026-10-04 board since';
+var SCRIPT_VERSION = '2026-10-04 pending count';
 
 // ==================== MAIN DISPATCHER ====================
 
@@ -188,6 +188,8 @@ function doPost(e) {
       return handleGetCoaches();
     } else if (action === 'getRoster') {
       return handleGetRoster(data);
+    } else if (action === 'getPendingCoaches') {
+      return handleGetPendingCoaches(data);
     } else if (action === 'saveRoster') {
       return handleSaveRoster(data);
     } else if (action === 'getContent') {
@@ -1202,6 +1204,38 @@ function handleGetRoster(data) {
     return jsonResponse({ success: false, error: 'Forbidden' });
   }
   return jsonResponse({ success: true, rows: readRoster_() });
+}
+
+/**
+ * POST { action: 'getPendingCoaches', secret }
+ * → { pending: 3, sheetUrl } — directory applications waiting for approval,
+ * for the membership desk. Only the number leaves: no names, no emails.
+ */
+function handleGetPendingCoaches(data) {
+  if (!contentSecretOk_(data)) {
+    return jsonResponse({ success: false, error: 'Forbidden' });
+  }
+  var book = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = book.getSheetByName('Submissions');
+  var values = sheet ? sheet.getDataRange().getValues() : [];
+  return jsonResponse({
+    success: true,
+    pending: countPending_(values),
+    sheetUrl: book.getUrl() + (sheet ? '#gid=' + sheet.getSheetId() : ''),
+  });
+}
+
+/** Rows whose Status is "pending" — the first row is the header. */
+function countPending_(values) {
+  if (!values || values.length < 2) return 0;
+  var headers = values[0].map(function (h) { return (h || '').toString().trim(); });
+  var statusAt = columnIndex_(headers, ['Status']);
+  if (statusAt === -1) return 0;
+  var count = 0;
+  for (var i = 1; i < values.length; i++) {
+    if ((values[i][statusAt] || '').toString().trim().toLowerCase() === 'pending') count++;
+  }
+  return count;
 }
 
 /**
