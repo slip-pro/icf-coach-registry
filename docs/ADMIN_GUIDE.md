@@ -117,6 +117,14 @@ at the end of **Submissions** (it adds them itself):
 
 Coaches upload photos directly during registration (JPEG, PNG, WebP, max 5 MB). Photos are automatically saved to your Google Drive folder and displayed as thumbnails in the catalog. You do not need to do anything special with photos.
 
+**If photos show for you but not for visitors.** Each photo must be readable by anyone with its
+link. The script opens every uploaded file that way, but if Google refuses it says nothing — and
+you, signed in as the owner, still see the photo. On 4 Oct 2026, 30 of 32 directory photos were
+visible to nobody else. The fix that covers every file at once: in Google Drive, right-click the
+photo folder → **Share** → General access **"Anyone with the link"**, role **Viewer**. Do it for
+both photo folders (the old `Coach Photos` and the chapter's `Website/Coach photos`). To check,
+open the catalog in a private browser window.
+
 ## Coach self-editing
 
 Coaches can update their own profiles via a magic link:
@@ -133,7 +141,9 @@ Edit tokens are stored in a separate **EditTokens** tab (created automatically).
 
 ## Email notifications
 
-Email notifications are sent automatically when a coach submits a registration.
+Email notifications are sent automatically when a coach submits a registration — since
+4 Oct 2026 to the membership desk's address. The website's membership desk also shows how many
+applications are waiting for approval.
 To change the admin email:
 
 1. Open the Google Sheet
