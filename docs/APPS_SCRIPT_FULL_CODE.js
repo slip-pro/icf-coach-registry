@@ -156,7 +156,7 @@ function getSettings() {
    so "is the new code live?" is a request, not a guess — pasting the code
    without deploying a New version leaves the old one answering.
 */
-var SCRIPT_VERSION = '2026-10-03 consents';
+var SCRIPT_VERSION = '2026-10-04 board since';
 
 // ==================== MAIN DISPATCHER ====================
 
@@ -1024,6 +1024,17 @@ function ensureColumn_(sheet, headers, names, label) {
   return headers.length - 1;
 }
 
+/**
+ * "2023" from whatever the cell holds: a typed year, or a date Sheets made of
+ * it. A column added a moment ago has no cell yet — that is "".
+ */
+function boardYear_(value) {
+  if (value instanceof Date) return String(value.getFullYear());
+  var text = (value === undefined || value === null ? '' : value).toString();
+  var year = text.match(/\b(19|20)\d{2}\b/);
+  return year ? year[0] : '';
+}
+
 /** Board members who may sign in to the website admin. */
 function readBoard_() {
   var sheet = ensureSheet_(BOARD_SHEET, ['Email', 'Name', 'Role', 'Expiration date']);
@@ -1041,6 +1052,8 @@ function readBoard_() {
   );
   var photoAt = ensureColumn_(sheet, headers, ['Photo', 'Photo URL'], 'Photo');
   var bioAt = ensureColumn_(sheet, headers, ['Bio', 'About'], 'Bio');
+  // The year they joined the board, shown as "since 2023" on the About page.
+  var sinceAt = ensureColumn_(sheet, headers, ['Since', 'Board since', 'On the board since'], 'Since');
   if (emailAt === -1) return [];
 
   var out = [];
@@ -1055,6 +1068,7 @@ function readBoard_() {
       until: formatDate_(rows[i][untilAt]),
       photo: (rows[i][photoAt] || '').toString().trim(),
       bio: (rows[i][bioAt] || '').toString().trim(),
+      since: boardYear_(rows[i][sinceAt]),
     });
   }
   return out;
