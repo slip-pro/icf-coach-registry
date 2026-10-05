@@ -184,3 +184,11 @@ to "Restricted", `PEOPLE_API_SECRET` is rotated and `EditTokens` is cleared.
 a public link on all of them. Anything public is served through an allowlist in the script.
 **Trade-offs**: One more hop on page load (cached at the edge, so rare). A newly approved coach
 appears within ~5 minutes instead of on the next page load.
+
+### D-024: The coach catalogue stays open to search engines
+**Date**: 2026-10-05
+**Decision** (the owner): `coaches.icf-cyprus.com` is indexed — no `noindex`, no blocking
+`robots.txt`. Unlike the chapter site, which waits for launch behind `SITE_INDEXABLE`, the
+catalogue is meant to be found: a client searching for a coach in Cyprus should land on it.
+**Why it is safe**: the page shows only approved profiles of coaches who ticked *publish my
+profile* (G-028), through the script's allowlist (D-023). Nothing private is reachable.
