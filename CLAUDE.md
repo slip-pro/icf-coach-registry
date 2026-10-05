@@ -115,4 +115,5 @@ node tests/apps-script-plan.test.mjs      # Apps Script: event plan
 node tests/apps-script-data-files.test.mjs # Apps Script: three data files, secret, setupDataFiles
 node tests/apps-script-mail.test.mjs      # Apps Script: letters through Brevo, MailApp fallback
 node tests/apps-script-covers.test.mjs    # Apps Script: saveEventCover into an event's Cover folder
+node tests/api-coaches.test.mjs           # /api/coaches: second try alongside a hung one, last good copy
 ```

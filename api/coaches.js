@@ -8,39 +8,82 @@
  *
  * Cached at the edge for 5 minutes, like /api/config: a newly approved coach
  * appears within minutes, and the Apps Script is not asked on every visit.
+ * Past those 5 minutes the edge keeps serving the old copy for a day while it
+ * fetches a new one, so a slow Apps Script delays an update, not a visitor.
  *
  * URL: GET /api/coaches
  */
 
 const APPS_SCRIPT_URL = process.env.APPS_SCRIPT_URL;
 
+/** A normal run takes 2-4 s; past this, a hang is likelier than a slow run. */
+const HEDGE_AFTER_MS = 6000;
+const TRY_TIMEOUT_MS = 25000;
+const TRIES = 3;
+
+/** The last catalogue this instance got, for when the Apps Script does not answer. */
+let lastGood = null;
+
+/** One try. Resolves with the data, or undefined when worth asking again. */
+async function askOnce(signal) {
+  const response = await fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ action: 'getCoaches' }),
+    redirect: 'follow',
+    signal: AbortSignal.any([AbortSignal.timeout(TRY_TIMEOUT_MS), signal]),
+  });
+  if (!response.ok) return undefined;
+  const data = JSON.parse(await response.text());
+  if (data.success) return data;
+  // "Unknown action" is the redirect's second hop landing back on the script
+  // as a GET — nothing wrong with the request. Any other refusal is final.
+  if (String(data.error || '').startsWith('Unknown action')) return undefined;
+  throw Object.assign(new Error(data.error || 'refused'), { final: true });
+}
+
 /**
- * Apps Script answers a POST with a redirect whose second hop sometimes
- * fails or lands back on the script as a GET ("Unknown action"). Nothing is
- * wrong with the request, so ask again.
+ * Google sometimes holds a request 30-60 s around a 3-second run (the script's
+ * Executions, 5 Oct 2026), and a second request sent meanwhile usually goes
+ * straight through. So: if a try has not answered after HEDGE_AFTER_MS, start
+ * another alongside it; the first answer wins and the others are aborted. A try
+ * that fails fast starts the next one at once. (Same as the chapter site's
+ * lib/hedge.ts.)
  */
-async function askAppsScript() {
-  let lastError = 'no answer';
-  for (let attempt = 0; attempt < 3; attempt++) {
-    if (attempt > 0) await new Promise((wait) => setTimeout(wait, 400 * attempt));
-    try {
-      const response = await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action: 'getCoaches' }),
-        redirect: 'follow',
-        signal: AbortSignal.timeout(15000),
-      });
-      if (!response.ok) { lastError = `HTTP ${response.status}`; continue; }
-      const data = JSON.parse(await response.text());
-      if (data.success) return data;
-      lastError = data.error || 'refused';
-      if (!String(lastError).startsWith('Unknown action')) break;
-    } catch (err) {
-      lastError = err.message || String(err);
-    }
-  }
-  throw new Error(lastError);
+function askAppsScript({ ask = askOnce, hedgeMs = HEDGE_AFTER_MS } = {}) {
+  return new Promise((resolve, reject) => {
+    const controllers = [];
+    let started = 0, settled = 0, done = false, timer, lastError = 'no answer';
+    const finish = (fn, value, winner) => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      for (const c of controllers) if (c !== winner) c.abort();
+      fn(value);
+    };
+    const missed = () => {
+      settled++;
+      if (done) return;
+      if (started < TRIES) launch();
+      else if (settled >= started) finish(reject, new Error(lastError));
+    };
+    const launch = () => {
+      if (done || started >= TRIES) return;
+      started++;
+      clearTimeout(timer);
+      if (started < TRIES) timer = setTimeout(launch, hedgeMs);
+      const controller = new AbortController();
+      controllers.push(controller);
+      ask(controller.signal).then(
+        (data) => (data ? finish(resolve, data, controller) : missed()),
+        (err) => {
+          lastError = err.message || String(err);
+          return err.final ? finish(reject, err, controller) : missed();
+        }
+      );
+    };
+    launch();
+  });
 }
 
 export default async function handler(req, res) {
@@ -53,10 +96,18 @@ export default async function handler(req, res) {
 
   try {
     const data = await askAppsScript();
-    res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
-    return res.status(200).json({ success: true, headers: data.headers, rows: data.rows });
+    lastGood = { headers: data.headers, rows: data.rows };
+    res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400');
+    return res.status(200).json({ success: true, ...lastGood });
   } catch (err) {
     console.error('[api/coaches]', err.message);
+    if (lastGood) {
+      // Short cache, so the edge asks again soon instead of holding this for 5 minutes.
+      res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=86400');
+      return res.status(200).json({ success: true, ...lastGood });
+    }
     return res.status(502).json({ success: false, error: 'Could not load coaches' });
   }
 }
+
+export { askAppsScript };

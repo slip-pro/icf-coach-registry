@@ -1,4 +1,7 @@
 {
+  "functions": {
+    "api/coaches.js": { "maxDuration": 60 }
+  },
   "rewrites": [
     { "source": "/", "destination": "/src/index.html" },
     { "source": "/register", "destination": "/src/register.html" },
