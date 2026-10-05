@@ -25,6 +25,12 @@ Without them the script reads the spreadsheet it is bound to, which is how a sin
 still works. The sites' secret `PEOPLE_API_SECRET` is a Script Property too; a `Settings` row with
 that key is only a fallback for the old setup.
 
+**Letters** (the edit link to a coach, "new registration" to `ADMIN_EMAIL`) go through Brevo's
+transactional API when `BREVO_API_KEY` is set in Script Properties: from `SENDER_EMAIL` (Settings,
+default `info@icf-cyprus.com`, must be an authenticated sender in Brevo), replies to `REPLY_TO`
+(default `membership@icf-cyprus.com`). Without the key, or if Brevo refuses, MailApp sends instead —
+from the script owner's Google account, which for a domain address fails SPF and lands in spam.
+
 **Moving an instance from one file to three** (done once, in the new project, under the account
 that should own everything):
 1. Share the old spreadsheet with that account (viewer is enough).

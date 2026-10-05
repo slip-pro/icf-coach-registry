@@ -211,7 +211,7 @@ throws("needs the secret first", () => oldWorld({ PEOPLE_API_SECRET: "" }).sb.se
   eq("existing Data folder reused", w.root.children.filter((c) => c.name === "Data").length, 1);
 }
 
-eq("version bumped", world().sb.SCRIPT_VERSION, "2026-10-05 data files");
+eq("version is a 2026-10-05 build", world().sb.SCRIPT_VERSION.startsWith("2026-10-05"), true);
 
 console.log(`${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

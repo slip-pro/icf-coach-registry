@@ -239,6 +239,8 @@ function dataFolder_(source) {
 function getSettings() {
   var defaults = {
     SENDER_NAME: 'ICF Cyprus',
+    SENDER_EMAIL: 'info@icf-cyprus.com',
+    REPLY_TO: 'membership@icf-cyprus.com',
     ADMIN_EMAIL: '',
     SITE_URL: 'https://coaches.icf-cyprus.com',
     EDIT_PAGE: '/src/edit.html',
@@ -311,7 +313,52 @@ function getSettings() {
    so "is the new code live?" is a request, not a guess — pasting the code
    without deploying a New version leaves the old one answering.
 */
-var SCRIPT_VERSION = '2026-10-05 data files';
+var SCRIPT_VERSION = '2026-10-05 brevo mail';
+
+// ==================== MAIL ====================
+
+/*
+   Letters go out through Brevo, from SENDER_EMAIL. The chapter's domain is
+   authenticated there; sent by Google as info@ they fail SPF and land in
+   spam (5 Oct 2026), and MailApp garbled the dash in the subject. The key
+   is BREVO_API_KEY in Script Properties. Without it — or if Brevo refuses —
+   the letter still goes, through MailApp: a link in spam beats no link.
+*/
+function sendMail_(mail) {
+  var settings = getSettings();
+  var key = (PropertiesService.getScriptProperties().getProperty('BREVO_API_KEY') || '').trim();
+  if (key) {
+    var payload = {
+      sender: { name: settings.SENDER_NAME, email: settings.SENDER_EMAIL },
+      to: [{ email: mail.to }],
+      subject: mail.subject,
+      textContent: mail.body,
+    };
+    if (settings.REPLY_TO) payload.replyTo = { email: settings.REPLY_TO };
+    try {
+      var response = UrlFetchApp.fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'post',
+        contentType: 'application/json',
+        headers: { 'api-key': key, accept: 'application/json' },
+        payload: JSON.stringify(payload),
+        muteHttpExceptions: true,
+      });
+      var code = response.getResponseCode();
+      if (code >= 200 && code < 300) return 'brevo';
+      Logger.log('Brevo refused (' + code + '): ' + response.getContentText());
+    } catch (err) {
+      Logger.log('Brevo unreachable: ' + err.message);
+    }
+  }
+  MailApp.sendEmail({
+    to: mail.to,
+    name: settings.SENDER_NAME,
+    replyTo: settings.REPLY_TO || undefined,
+    subject: mail.subject,
+    body: mail.body,
+  });
+  return 'mailapp';
+}
 
 // ==================== MAIN DISPATCHER ====================
 
@@ -648,9 +695,8 @@ function handleRegister(data) {
   statusCell.setDataValidation(rule);
 
   if (settings.ADMIN_EMAIL) {
-    MailApp.sendEmail({
+    sendMail_({
       to: settings.ADMIN_EMAIL,
-      name: settings.SENDER_NAME,
       subject: 'New coach registration: '
         + (data.name || 'Unknown'),
       body: 'A new coach has submitted a registration:\n\n'
@@ -659,7 +705,8 @@ function handleRegister(data) {
         + 'ICF Level: ' + (data.icfLevel || '') + '\n'
         + 'Specializations: '
         + (data.specializations || []).join(', ') + '\n\n'
-        + 'Review in the "Submissions" tab.\n'
+        + 'Review in the "Submissions" tab:\n'
+        + bookFor_('Submissions').getUrl() + '\n\n'
         + settings.REGISTRY_NAME,
     });
   }
@@ -741,9 +788,8 @@ function handleRequestEditLink(data) {
   // Send email
   var editUrl = settings.SITE_URL
     + settings.EDIT_PAGE + '?token=' + token;
-  MailApp.sendEmail({
+  sendMail_({
     to: email,
-    name: settings.SENDER_NAME,
     subject: 'Edit your coach profile — '
       + settings.SENDER_NAME,
     body: 'Hello,\n\n'
