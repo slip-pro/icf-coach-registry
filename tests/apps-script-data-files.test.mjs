@@ -211,6 +211,22 @@ throws("needs the secret first", () => oldWorld({ PEOPLE_API_SECRET: "" }).sb.se
   eq("existing Data folder reused", w.root.children.filter((c) => c.name === "Data").length, 1);
 }
 
+// the timezone is asked once per run, not once per date cell (getRoster took 34 s, 5 Oct)
+{
+  const members = fakeSheet("Members", [["Member ID", "Email", "Name", "Member until", "Joined on"]]);
+  for (let i = 0; i < 50; i++) members.rows.push([String(i), `m${i}@x.org`, "M " + i, new Date(Date.UTC(2027, 2, 31)), "2026-09-24"]);
+  const reg = fakeBook("reg", [fakeSheet("Submissions"), members], "Asia/Nicosia");
+  let asked = 0;
+  const tz = reg.getSpreadsheetTimeZone.bind(reg);
+  reg.getSpreadsheetTimeZone = () => { asked++; return tz(); };
+  const { sb } = world({ props: { DATA_FILE_REGISTRY: reg.id }, books: { [reg.id]: reg } });
+  sb.Utilities = { formatDate: (d, zone) => zone === "Asia/Nicosia" ? d.toISOString().slice(0, 10) : "wrong zone" };
+  const rows = sb.readRoster_();
+  eq("roster read", rows.length, 50);
+  eq("dates still in the sheet's zone", rows[0].memberUntil, "2027-03-31");
+  eq("timezone asked once for 100 date cells", asked, 1);
+}
+
 eq("version is a 2026-10-05 build", world().sb.SCRIPT_VERSION.startsWith("2026-10-05"), true);
 
 console.log(`${passed} passed, ${failed} failed`);

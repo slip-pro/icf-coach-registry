@@ -128,9 +128,16 @@ function sheetFor_(tab) {
   return bookFor_(tab).getSheetByName(tab);
 }
 
-/** All three files share one timezone — setupDataFiles copies it from the old file. */
+var sheetZone__ = '';
+
+/**
+ * All three files share one timezone — setupDataFiles copies it from the old file.
+ * Asked once per run: every date cell goes through here, and each question is a
+ * round trip to Google — 76 members took 34 s and the membership desk gave up.
+ */
 function sheetZone_() {
-  return bookFor_('Submissions').getSpreadsheetTimeZone() || 'Etc/UTC';
+  if (!sheetZone__) sheetZone__ = bookFor_('Submissions').getSpreadsheetTimeZone() || 'Etc/UTC';
+  return sheetZone__;
 }
 
 /*
@@ -328,7 +335,7 @@ function getSettings() {
    so "is the new code live?" is a request, not a guess — pasting the code
    without deploying a New version leaves the old one answering.
 */
-var SCRIPT_VERSION = '2026-10-05 brevo mail';
+var SCRIPT_VERSION = '2026-10-05 zone once';
 
 // ==================== MAIL ====================
 
