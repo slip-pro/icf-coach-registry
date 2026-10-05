@@ -206,12 +206,27 @@ function setupDataFiles() {
   openBooks_ = {};
   // The old project's "On edit" trigger belonged to the old file; this one
   // colours rows in the new registry file when a Status is changed.
-  ScriptApp.newTrigger('colorByStatus').forSpreadsheet(made.registry.id).onEdit().create();
-  installEventSync();
+  installTriggers();
 
   var report = { folder: folder.getUrl(), files: made, notCopied: left };
   Logger.log(JSON.stringify(report, null, 2));
   return report;
+}
+
+/**
+ * Run from the editor if the project's Triggers list is empty (5 Oct 2026 it
+ * was emptied by mistake). Sets both timers again; running it twice is fine:
+ *   colorByStatus   — On edit of the registry file: rows turn green / red / yellow
+ *   syncEventFolders — every 30 minutes (installEventSync)
+ */
+function installTriggers() {
+  var registryId = PropertiesService.getScriptProperties().getProperty('DATA_FILE_REGISTRY');
+  if (!registryId) throw new Error('DATA_FILE_REGISTRY is not set: run setupDataFiles first');
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'colorByStatus') ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger('colorByStatus').forSpreadsheet(registryId).onEdit().create();
+  return installEventSync();
 }
 
 /**
