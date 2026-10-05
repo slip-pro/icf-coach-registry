@@ -360,6 +360,27 @@ function sendMail_(mail) {
   return 'mailapp';
 }
 
+/**
+ * Run from the editor when letters arrive through Google instead of Brevo.
+ * Sends nothing: asks Brevo whether it knows the key and whether the sender
+ * is allowed, and writes what it found to the execution log.
+ */
+function checkBrevo() {
+  var settings = getSettings();
+  var key = (PropertiesService.getScriptProperties().getProperty('BREVO_API_KEY') || '').trim();
+  Logger.log('BREVO_API_KEY: ' + (key ? key.length + ' characters, starts ' + key.slice(0, 8) : 'NOT SET'));
+  Logger.log('Sender: ' + settings.SENDER_NAME + ' <' + settings.SENDER_EMAIL + '>, reply-to ' + settings.REPLY_TO);
+  if (!key) return;
+  var account = UrlFetchApp.fetch('https://api.brevo.com/v3/account', {
+    headers: { 'api-key': key, accept: 'application/json' }, muteHttpExceptions: true,
+  });
+  Logger.log('Brevo /account: ' + account.getResponseCode() + ' ' + account.getContentText().slice(0, 300));
+  var senders = UrlFetchApp.fetch('https://api.brevo.com/v3/senders', {
+    headers: { 'api-key': key, accept: 'application/json' }, muteHttpExceptions: true,
+  });
+  Logger.log('Brevo /senders: ' + senders.getResponseCode() + ' ' + senders.getContentText().slice(0, 300));
+}
+
 // ==================== MAIN DISPATCHER ====================
 
 /**
