@@ -335,7 +335,7 @@ function getSettings() {
    so "is the new code live?" is a request, not a guess — pasting the code
    without deploying a New version leaves the old one answering.
 */
-var SCRIPT_VERSION = '2026-10-05 zone once';
+var SCRIPT_VERSION = '2026-10-05 event covers';
 
 // ==================== MAIL ====================
 
@@ -451,6 +451,8 @@ function doPost(e) {
       return handleSyncEventFolders(data);
     } else if (action === 'migrateEventsToPlan') {
       return handleMigrateEventsToPlan(data);
+    } else if (action === 'saveEventCover') {
+      return handleSaveEventCover(data);
     }
 
     return jsonResponse({
@@ -2319,6 +2321,47 @@ function eventsRootFolder_(settings) {
   var root = found.hasNext() ? found.next() : parent.createFolder('Events');
   props.setProperty('EVENTS_ROOT_FOLDER_ID', root.getId());
   return root;
+}
+
+/**
+ * POST { action: 'saveEventCover', secret, folderId, filename, base64 }
+ * → { saved: true } or { saved: false, reason: 'already there' }.
+ * Puts one picture into an event folder's Cover, as the script's owner (info@),
+ * so the chapter owns it. Only folders inside the events root are accepted, and
+ * a file of the same name already in Cover is left alone — a retry after a lost
+ * answer must not make a second copy.
+ */
+function handleSaveEventCover(data) {
+  if (!contentSecretOk_(data)) {
+    return jsonResponse({ success: false, error: 'Forbidden' });
+  }
+  try {
+    return jsonResponse(saveEventCover_(data));
+  } catch (err) {
+    return jsonResponse({ success: false, error: err.message });
+  }
+}
+
+function saveEventCover_(data) {
+  var filename = ((data && data.filename) || '').toString().trim();
+  var base64 = ((data && data.base64) || '').toString();
+  var type = /\.png$/i.test(filename) ? 'image/png' : /\.jpe?g$/i.test(filename) ? 'image/jpeg' : '';
+  if (!type || !base64) throw new Error('Need a .jpg or .png filename and the picture');
+
+  var rootId = PropertiesService.getScriptProperties().getProperty('EVENTS_ROOT_FOLDER_ID');
+  var folder = DriveApp.getFolderById(((data && data.folderId) || '').toString().trim());
+  var inside = false;
+  for (var parents = folder.getParents(); parents.hasNext();) {
+    if (parents.next().getId() === rootId) inside = true;
+  }
+  if (!rootId || !inside) throw new Error('Not an event folder');
+
+  var cover = childFolder_(folder, 'Cover');
+  for (var same = cover.getFilesByName(filename); same.hasNext();) {
+    if (!same.next().isTrashed()) return { success: true, saved: false, reason: 'already there' };
+  }
+  cover.createFile(Utilities.newBlob(Utilities.base64Decode(base64), type, filename));
+  return { success: true, saved: true };
 }
 
 function childFolder_(parent, name) {
