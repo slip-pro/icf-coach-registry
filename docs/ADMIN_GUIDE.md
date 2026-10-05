@@ -1,5 +1,26 @@
 # Admin Guide: Coach Moderation
 
+## Where the data lives (since 5 Oct 2026)
+
+Everything belongs to the chapter's Google account, **info@icf-cyprus.com**, in the Drive folder
+`ICF Cyprus / Data`. Three spreadsheets, one per desk:
+
+| File | Tabs | Who edits it |
+|---|---|---|
+| **Registry & membership** | `Submissions`, `EditTokens`, `Members` | the membership desk |
+| **Events & media** | `Event plan`, `Event media` | the events director |
+| **Board, partners & settings** | `Board`, `Partners`, `Articles`, `Settings` | the board |
+
+"The Google Sheet" below means the file that holds the tab in question. The old single spreadsheet
+in the owner's personal Drive is read-only and no longer read by either site.
+
+The Apps Script project is **ICF Cyprus data** under the same account. It sends its letters (edit
+links, new-registration notices) through Brevo from info@icf-cyprus.com, replies going to
+membership@. Its secrets (`PEOPLE_API_SECRET`, `BREVO_API_KEY`) are in the project's Script
+Properties, not in any sheet. With four Google accounts in one browser, open the project as
+`https://script.google.com/home?authuser=info@icf-cyprus.com`; a permission prompt that fails with
+"cannot open the file" works in a private window signed in as info@ only.
+
 ## How it works
 
 1. A coach fills out the registration form on the website
@@ -146,15 +167,15 @@ Email notifications are sent automatically when a coach submits a registration �
 applications are waiting for approval.
 To change the admin email:
 
-1. Open the Google Sheet
+1. Open **Board, partners & settings**
 2. Go to the **Settings** tab
 3. Find the row with Key = `ADMIN_EMAIL`
 4. Change the Value to the new email address
 
 ## Event plan and event folders (for the chapter website)
 
-The same spreadsheet holds the chapter's event plan, in the `Event plan` tab, and the website reads
-it directly. The full how-to — what the Date column may say, what `Category` and `Always show` do,
+The **Events & media** file holds the chapter's event plan, in the `Event plan` tab, and the website
+reads it through the script. The full how-to — what the Date column may say, what `Category` and `Always show` do,
 how to use each event's Drive folder — is in the website repository, `docs/CONTENT-FILL.md` §0.
 
 Two things belong to the script, not to people:
@@ -162,8 +183,8 @@ Two things belong to the script, not to people:
 - the `Event media` tab — what the script last found in the folders. It is rewritten every 30
   minutes; edits there are lost.
 
-The 30-minute timer is set by running `installEventSync` once from the Apps Script editor. It needs
-the `documents` and `script.scriptapp` permissions in `appsscript.json` (added 25 Sep 2026).
+The 30-minute timer was set by `setupDataFiles` in the new project (5 Oct 2026); `installEventSync`
+resets it if ever needed.
 
 ## FAQ
 
