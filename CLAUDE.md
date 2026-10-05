@@ -112,4 +112,5 @@ node tests/apps-script-consent.test.mjs   # Apps Script: consent columns
 node tests/apps-script-board.test.mjs     # Apps Script: Board "Since" year
 node tests/apps-script-pending.test.mjs   # Apps Script: pending applications count
 node tests/apps-script-plan.test.mjs      # Apps Script: event plan
+node tests/apps-script-data-files.test.mjs # Apps Script: three data files, secret, setupDataFiles
 ```

@@ -8,6 +8,7 @@ import vm from "node:vm";
 const code = readFileSync(new URL("../docs/APPS_SCRIPT_FULL_CODE.js", import.meta.url), "utf8");
 const sandbox = {
   SpreadsheetApp: { getActiveSpreadsheet: () => ({ getSpreadsheetTimeZone: () => "Asia/Nicosia" }) },
+  PropertiesService: { getScriptProperties: () => ({ getProperty: () => null }) },
   Utilities: {
     formatDate: (d, tz, fmt) => {
       const p = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" })

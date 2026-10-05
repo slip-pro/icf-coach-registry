@@ -8,6 +8,38 @@ coach registration, profile editing, and admin workflows.
 **`docs/APPS_SCRIPT_FULL_CODE.js`** — single file with all functions.
 Copy and paste the entire file into Apps Script.
 
+## Three data files, one standalone script (since 5 Oct 2026)
+
+ICF Cyprus no longer keeps everything in one spreadsheet bound to the script. The script is a
+standalone project owned by the chapter's Google account (`info@icf-cyprus.com`) and opens three
+spreadsheets in the chapter's `Data` folder:
+
+| File | Tabs |
+|---|---|
+| Registry & membership | `Submissions`, `EditTokens`, `Members` |
+| Events & media | `Event plan`, `Event media` |
+| Board, partners & settings | `Board`, `Partners`, `Articles`, `Settings` |
+
+Their IDs sit in Script Properties (`DATA_FILE_REGISTRY`, `DATA_FILE_EVENTS`, `DATA_FILE_BOARD`).
+Without them the script reads the spreadsheet it is bound to, which is how a single-file instance
+still works. The sites' secret `PEOPLE_API_SECRET` is a Script Property too; a `Settings` row with
+that key is only a fallback for the old setup.
+
+**Moving an instance from one file to three** (done once, in the new project, under the account
+that should own everything):
+1. Share the old spreadsheet with that account (viewer is enough).
+2. New Apps Script project → paste `APPS_SCRIPT_FULL_CODE.js` → Project Settings: time zone of the
+   chapter; Script Properties `SOURCE_SHEET` (old spreadsheet link) and `PEOPLE_API_SECRET` (new).
+3. Run `setupDataFiles`. It finds `Website` from `DRIVE_FOLDER_COACHES` in the old Settings, makes
+   `Data` beside it, creates the three files, copies the tabs, drops the secret row from the copied
+   Settings, and installs the status colouring (On edit of the registry file) and the event-folder
+   timer. It refuses a second run. The log lists the files and any tab no file claimed.
+4. Deploy → New deployment → Web app, Execute as Me, Anyone. Check `getConfig` returns the new
+   `version`, then point `APPS_SCRIPT_URL` (and the site's `PEOPLE_API_SECRET`) at it in both Vercel
+   projects and redeploy.
+5. Copy across any rows that reached the old file meanwhile; in the old project delete its
+   triggers and archive its deployment; set the old spreadsheet to view-only.
+
 ## Prerequisites
 
 - The same Google Sheet used for the coach directory

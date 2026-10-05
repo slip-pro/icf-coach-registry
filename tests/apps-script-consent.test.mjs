@@ -8,6 +8,7 @@ const code = readFileSync(new URL("../docs/APPS_SCRIPT_FULL_CODE.js", import.met
 const TODAY = "2026-10-03";
 const sandbox = {
   SpreadsheetApp: { getActiveSpreadsheet: () => ({ getSpreadsheetTimeZone: () => "Asia/Nicosia" }) },
+  PropertiesService: { getScriptProperties: () => ({ getProperty: () => null }) },
   Utilities: { formatDate: () => TODAY },
 };
 vm.createContext(sandbox);

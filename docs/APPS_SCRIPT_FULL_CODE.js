@@ -38,7 +38,12 @@
  * Значение — ссылка на папку или её ID, как и у DRIVE_FOLDER.
  *
  * ПАПКИ МЕРОПРИЯТИЙ: один раз выполнить функцию installEventSync из
- * редактора (Run) — она ставит обход папок раз в 15 минут.
+ * редактора (Run) — она ставит обход папок раз в 30 минут.
+ *
+ * ТРИ ФАЙЛА (с 5 Oct 2026): скрипт — отдельный проект под
+ * info@icf-cyprus.com, таблицы — три файла в папке Data. Первый запуск —
+ * функция setupDataFiles (см. её описание ниже); она же ставит обход папок.
+ * Секрет сайтов PEOPLE_API_SECRET — в Script Properties, не в Settings.
  * ============================================================
  */
 
@@ -80,6 +85,157 @@ function parseSheetId(value) {
   return value;
 }
 
+// ==================== DATA FILES ====================
+
+/*
+   Three spreadsheets, one per block of work (site BACKLOG #34), all in the
+   chapter's Data folder:
+     registry — the membership desk: applications, edit links, the member list
+     events   — the events director: the plan and its media
+     board    — the board: who sits on it, partners, articles, settings
+   The script is standalone and opens each file by the ID that setupDataFiles
+   stored in Script Properties. Before that has run — or in the old project,
+   bound to the one big spreadsheet — every tab comes from the active
+   spreadsheet, exactly as it always did.
+*/
+var DATA_FILES = {
+  registry: { name: 'Registry & membership', tabs: ['Submissions', 'EditTokens', 'Members'] },
+  events: { name: 'Events & media', tabs: ['Event plan', 'Event media', 'Events'] },
+  board: { name: 'Board, partners & settings', tabs: ['Board', 'Partners', 'Articles', 'Settings'] },
+};
+
+function fileForTab_(tab) {
+  for (var key in DATA_FILES) {
+    if (DATA_FILES[key].tabs.indexOf(tab) !== -1) return key;
+  }
+  return '';
+}
+
+var openBooks_ = {};
+
+/** The spreadsheet a tab lives in. Unknown tabs go with the board's file. */
+function bookFor_(tab) {
+  var key = fileForTab_(tab) || 'board';
+  if (openBooks_[key]) return openBooks_[key];
+  var id = PropertiesService.getScriptProperties().getProperty('DATA_FILE_' + key.toUpperCase());
+  var book = id ? SpreadsheetApp.openById(id) : SpreadsheetApp.getActiveSpreadsheet();
+  if (!book) throw new Error('No data file for "' + tab + '": run setupDataFiles first');
+  openBooks_[key] = book;
+  return book;
+}
+
+function sheetFor_(tab) {
+  return bookFor_(tab).getSheetByName(tab);
+}
+
+/** All three files share one timezone — setupDataFiles copies it from the old file. */
+function sheetZone_() {
+  return bookFor_('Submissions').getSpreadsheetTimeZone() || 'Etc/UTC';
+}
+
+/*
+   The secret the two sites send with every private request. It lives in
+   Script Properties, which only the script's owner sees; a Settings cell is
+   readable by anybody who can edit the board's file. The Settings row is
+   still honoured so the old project keeps working until it is archived.
+*/
+function peopleSecret_() {
+  var prop = PropertiesService.getScriptProperties().getProperty('PEOPLE_API_SECRET');
+  if (prop && prop.trim()) return prop.trim();
+  return (getSettings().PEOPLE_API_SECRET || '').toString().trim();
+}
+
+/**
+ * Run ONCE from the editor of the new project, under info@icf-cyprus.com
+ * (select setupDataFiles, press Run, allow access). Before running, in
+ * Project Settings → Script Properties:
+ *   SOURCE_SHEET       the old spreadsheet's link (shared with info@ to view)
+ *   PEOPLE_API_SECRET  the new secret, the same one that goes into Vercel
+ * Creates the Data folder next to Website, three spreadsheets in it, copies
+ * every tab across, and installs the event-folder timer. Refuses to run a
+ * second time, so a repeat cannot make a second set of files.
+ */
+function setupDataFiles() {
+  var props = PropertiesService.getScriptProperties();
+  for (var key in DATA_FILES) {
+    if (props.getProperty('DATA_FILE_' + key.toUpperCase())) {
+      throw new Error('Already done: DATA_FILE_' + key.toUpperCase() + ' is set. Nothing was changed.');
+    }
+  }
+  var sourceId = parseSheetId((props.getProperty('SOURCE_SHEET') || '').trim());
+  if (!sourceId) throw new Error('Set SOURCE_SHEET in Script Properties to the old spreadsheet link');
+  if (!(props.getProperty('PEOPLE_API_SECRET') || '').trim()) {
+    throw new Error('Set PEOPLE_API_SECRET in Script Properties first');
+  }
+  var source = SpreadsheetApp.openById(sourceId);
+  var folder = dataFolder_(source);
+
+  var made = {};
+  for (key in DATA_FILES) {
+    var spec = DATA_FILES[key];
+    var book = SpreadsheetApp.create(spec.name);
+    book.setSpreadsheetTimeZone(source.getSpreadsheetTimeZone());
+    var blank = book.getSheets()[0];
+    var copied = [];
+    spec.tabs.forEach(function (tab) {
+      var from = source.getSheetByName(tab);
+      if (!from) return;
+      from.copyTo(book).setName(tab);
+      copied.push(tab);
+    });
+    if (copied.length) book.deleteSheet(blank);
+    else blank.setName(spec.tabs[0]);
+    DriveApp.getFileById(book.getId()).moveTo(folder);
+    made[key] = { id: book.getId(), url: book.getUrl(), tabs: copied };
+  }
+
+  // The secret now lives in Script Properties; the copy in the board's file goes.
+  var settings = SpreadsheetApp.openById(made.board.id).getSheetByName('Settings');
+  if (settings) {
+    var keys = settings.getRange(1, 1, settings.getLastRow(), 1).getValues();
+    for (var r = keys.length - 1; r >= 0; r--) {
+      if ((keys[r][0] || '').toString().trim() === 'PEOPLE_API_SECRET') settings.deleteRow(r + 1);
+    }
+  }
+
+  // Tabs the old file had that none of the three claims — reported, not lost.
+  var left = source.getSheets().map(function (s) { return s.getName(); })
+    .filter(function (name) { return !fileForTab_(name); });
+
+  for (key in made) props.setProperty('DATA_FILE_' + key.toUpperCase(), made[key].id);
+  openBooks_ = {};
+  // The old project's "On edit" trigger belonged to the old file; this one
+  // colours rows in the new registry file when a Status is changed.
+  ScriptApp.newTrigger('colorByStatus').forSpreadsheet(made.registry.id).onEdit().create();
+  installEventSync();
+
+  var report = { folder: folder.getUrl(), files: made, notCopied: left };
+  Logger.log(JSON.stringify(report, null, 2));
+  return report;
+}
+
+/**
+ * The Data folder sits next to Website in the chapter's tree. Website is
+ * found from the coach-photo folder in the old Settings, so no folder ID has
+ * to be typed in; the folder is reused if it is already there.
+ */
+function dataFolder_(source) {
+  var rows = source.getSheetByName('Settings').getDataRange().getValues();
+  var photos = '';
+  for (var i = 1; i < rows.length; i++) {
+    var k = (rows[i][0] || '').toString().trim();
+    if (k === 'DRIVE_FOLDER_COACHES') photos = (rows[i][1] || '').toString().trim();
+  }
+  if (!photos) throw new Error('DRIVE_FOLDER_COACHES is not in the old Settings: cannot find the Website folder');
+  var website = DriveApp.getFolderById(parseDriveFolderId(photos)).getParents().next();
+  if (website.getName() !== 'Website') {
+    throw new Error('Expected the coach-photo folder inside "Website", found "' + website.getName() + '"');
+  }
+  var root = website.getParents().next();
+  var found = root.getFoldersByName('Data');
+  return found.hasNext() ? found.next() : root.createFolder('Data');
+}
+
 function getSettings() {
   var defaults = {
     SENDER_NAME: 'ICF Cyprus',
@@ -101,8 +257,7 @@ function getSettings() {
     LOGO_URL: '',
   };
 
-  var settingsSheet = SpreadsheetApp.getActiveSpreadsheet()
-    .getSheetByName('Settings');
+  var settingsSheet = sheetFor_('Settings');
 
   if (!settingsSheet) return defaults;
 
@@ -156,7 +311,7 @@ function getSettings() {
    so "is the new code live?" is a request, not a guess — pasting the code
    without deploying a New version leaves the old one answering.
 */
-var SCRIPT_VERSION = '2026-10-04 pending count';
+var SCRIPT_VERSION = '2026-10-05 data files';
 
 // ==================== MAIN DISPATCHER ====================
 
@@ -299,7 +454,7 @@ var PUBLIC_COACH_COLUMNS = [
  * Returns { headers: [...], rows: [[...], ...] } in the column order above.
  */
 function handleGetCoaches() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Submissions');
+  var sheet = sheetFor_('Submissions');
   if (!sheet) return jsonResponse({ success: true, headers: PUBLIC_COACH_COLUMNS, rows: [] });
 
   var values = sheet.getDataRange().getValues();
@@ -382,7 +537,7 @@ var SOCIAL_CONSENT = ['Social media consent'];
 
 function todayInSheetZone_() {
   return Utilities.formatDate(new Date(),
-    SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), 'yyyy-MM-dd');
+    sheetZone_(), 'yyyy-MM-dd');
 }
 
 /** Writes the answers into row `rowNum` (1-based), adding the columns if the sheet lacks them. */
@@ -431,8 +586,7 @@ function consentAnswer_(headers, row, names) {
  */
 function handleRegister(data) {
   var settings = getSettings();
-  var sheet = SpreadsheetApp.getActiveSpreadsheet()
-    .getSheetByName('Submissions');
+  var sheet = sheetFor_('Submissions');
 
   if (!sheet) {
     return jsonResponse({
@@ -526,8 +680,7 @@ function handleRequestEditLink(data) {
   var email = (data.email || '').trim().toLowerCase();
   if (!email) return jsonResponse({ success: true });
 
-  var sheet = SpreadsheetApp.getActiveSpreadsheet()
-    .getSheetByName('Submissions');
+  var sheet = sheetFor_('Submissions');
   if (!sheet) return jsonResponse({ success: true });
 
   // Find approved coach by email
@@ -548,11 +701,9 @@ function handleRequestEditLink(data) {
   }
 
   // Get or create EditTokens tab
-  var tokensSheet = SpreadsheetApp.getActiveSpreadsheet()
-    .getSheetByName('EditTokens');
+  var tokensSheet = sheetFor_('EditTokens');
   if (!tokensSheet) {
-    tokensSheet = SpreadsheetApp.getActiveSpreadsheet()
-      .insertSheet('EditTokens');
+    tokensSheet = bookFor_('EditTokens').insertSheet('EditTokens');
     tokensSheet.appendRow([
       'Email', 'Token', 'ExpiresAt', 'Used',
     ]);
@@ -624,8 +775,7 @@ function handleVerifyToken(data) {
     });
   }
 
-  var tokensSheet = SpreadsheetApp.getActiveSpreadsheet()
-    .getSheetByName('EditTokens');
+  var tokensSheet = sheetFor_('EditTokens');
   if (!tokensSheet) {
     return jsonResponse({
       success: false,
@@ -669,8 +819,7 @@ function handleVerifyToken(data) {
   }
 
   // Find coach in Submissions
-  var sheet = SpreadsheetApp.getActiveSpreadsheet()
-    .getSheetByName('Submissions');
+  var sheet = sheetFor_('Submissions');
   var allData = sheet.getDataRange().getValues();
   for (var j = 1; j < allData.length; j++) {
     var row = allData[j];
@@ -729,8 +878,7 @@ function handleSaveProfile(data) {
     });
   }
 
-  var tokensSheet = SpreadsheetApp.getActiveSpreadsheet()
-    .getSheetByName('EditTokens');
+  var tokensSheet = sheetFor_('EditTokens');
   if (!tokensSheet) {
     return jsonResponse({
       success: false,
@@ -774,8 +922,7 @@ function handleSaveProfile(data) {
   }
 
   // Find coach row
-  var sheet = SpreadsheetApp.getActiveSpreadsheet()
-    .getSheetByName('Submissions');
+  var sheet = sheetFor_('Submissions');
   var allData = sheet.getDataRange().getValues();
   var coachRowNum = -1;
   for (var j = 1; j < allData.length; j++) {
@@ -876,8 +1023,7 @@ function colorByStatus(e) {
  * Run manually if colors get out of sync.
  */
 function colorAllRows() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet()
-    .getSheetByName('Submissions');
+  var sheet = sheetFor_('Submissions');
   if (!sheet) return;
 
   var lastRow = sheet.getLastRow();
@@ -904,8 +1050,7 @@ function colorAllRows() {
  * Run once during initial setup.
  */
 function addStatusDropdown() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet()
-    .getSheetByName('Submissions');
+  var sheet = sheetFor_('Submissions');
   if (!sheet) return;
 
   var lastRow = sheet.getLastRow();
@@ -923,7 +1068,7 @@ function addStatusDropdown() {
  * Run once during initial setup.
  */
 function createSettingsSheet() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = bookFor_('Settings');
   var existing = ss.getSheetByName('Settings');
   if (existing) return;
 
@@ -968,8 +1113,7 @@ function createSettingsSheet() {
    admin writes them through saveBoardProfile. The other columns are
    the board's to edit by hand.
 
-   Requires a row in Settings:
-     PEOPLE_API_SECRET | <a long random string>
+   Requires PEOPLE_API_SECRET in Script Properties (see peopleSecret_).
    The /exec URL is public and these are email addresses, so the
    endpoint refuses any request without the matching secret.
    ============================================================ */
@@ -979,16 +1123,15 @@ var MEMBERS_SHEET = 'Members';
 
 /**
  * Returns the board access list and the member roster.
- * Requires the shared secret from the Settings sheet.
+ * Requires the shared secret (peopleSecret_).
  */
 function handleGetPeople(data) {
-  var settings = getSettings();
-  var expected = (settings.PEOPLE_API_SECRET || '').toString().trim();
+  var expected = peopleSecret_();
 
   if (!expected) {
     return jsonResponse({
       success: false,
-      error: 'PEOPLE_API_SECRET is not set in the Settings sheet',
+      error: 'PEOPLE_API_SECRET is not set (Script Properties)',
     });
   }
   if (((data && data.secret) || '').toString().trim() !== expected) {
@@ -1215,7 +1358,7 @@ function handleGetPendingCoaches(data) {
   if (!contentSecretOk_(data)) {
     return jsonResponse({ success: false, error: 'Forbidden' });
   }
-  var book = SpreadsheetApp.getActiveSpreadsheet();
+  var book = bookFor_('Submissions');
   var sheet = book.getSheetByName('Submissions');
   var values = sheet ? sheet.getDataRange().getValues() : [];
   return jsonResponse({
@@ -1328,7 +1471,7 @@ function handleSaveRoster(data) {
  */
 function formatDate_(value) {
   if (!value) return '';
-  var tz = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone() || 'Etc/UTC';
+  var tz = sheetZone_();
   if (Object.prototype.toString.call(value) === '[object Date]') {
     return Utilities.formatDate(value, tz, 'yyyy-MM-dd');
   }
@@ -1343,7 +1486,7 @@ function formatDate_(value) {
 
 /** Create the sheet with headers if somebody has not made it yet. */
 function ensureSheet_(name, headers) {
-  var book = SpreadsheetApp.getActiveSpreadsheet();
+  var book = bookFor_(name);
   var sheet = book.getSheetByName(name);
   if (!sheet) {
     sheet = book.insertSheet(name);
@@ -1537,7 +1680,7 @@ var CONTENT_KINDS = {
 
 /** The content endpoints share the board list's secret — same trust boundary. */
 function contentSecretOk_(data) {
-  var expected = (getSettings().PEOPLE_API_SECRET || '').toString().trim();
+  var expected = peopleSecret_();
   if (!expected) return false;
   return ((data && data.secret) || '').toString().trim() === expected;
 }
@@ -1770,7 +1913,7 @@ function splitList_(value) {
 function formatDateTime_(value) {
   if (!value) return '';
   if (Object.prototype.toString.call(value) === '[object Date]') {
-    var tz = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone() || 'Etc/UTC';
+    var tz = sheetZone_();
     return Utilities.formatDate(value, tz, "yyyy-MM-dd'T'HH:mm:ssXXX");
   }
   return value.toString().trim();
@@ -1939,7 +2082,7 @@ function orderPlanColumns_(sheet) {
 function planSheet_() {
   var headers = [];
   for (var name in EVENT_PLAN_COLUMNS) headers.push(EVENT_PLAN_COLUMNS[name].header);
-  var isNew = !SpreadsheetApp.getActiveSpreadsheet().getSheetByName(EVENT_PLAN_SHEET);
+  var isNew = !sheetFor_(EVENT_PLAN_SHEET);
   var sheet = ensureSheet_(EVENT_PLAN_SHEET, headers);
   // Date and Time stay text, so a pasted "Oct 2026" is not turned into the
   // 1st of October. planWhen_ copes if it is, but text is what was meant.
@@ -2252,7 +2395,7 @@ function handleMigrateEventsToPlan(data) {
 }
 
 function migrateEventsToPlan() {
-  var book = SpreadsheetApp.getActiveSpreadsheet();
+  var book = bookFor_('Events');
   var old = book.getSheetByName('Events');
   var plan = planSheet_();
   planColumns_(plan);
