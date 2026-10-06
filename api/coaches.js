@@ -24,6 +24,59 @@ const TRIES = 3;
 /** The last catalogue this instance got, for when the Apps Script does not answer. */
 let lastGood = null;
 
+/**
+ * The same catalogue kept in Vercel Blob, outside this instance. A deploy wipes
+ * the edge cache and starts fresh instances with no lastGood, so on 6 Oct 2026
+ * a hung Apps Script right after a push left the page with nothing to show.
+ * The saved copy survives deploys. With no Blob store connected to the
+ * project both calls do nothing.
+ */
+const SAVED_PATH = 'catalogue/coaches.json';
+const SAVED_TIMEOUT_MS = 5000;
+let savedJson = null;
+
+/** Connecting a store sets the token, or the store id on newer setups. */
+const blobConnected = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID);
+
+const savedCopy = {
+  // Private store: the rows carry coaches' emails, so no public URL for them.
+  async read() {
+    if (!blobConnected()) return null;
+    const { get } = await import('@vercel/blob');
+    const result = await get(SAVED_PATH, {
+      access: 'private',
+      useCache: false,
+      abortSignal: AbortSignal.timeout(SAVED_TIMEOUT_MS),
+    });
+    if (!result || !result.stream) return null;
+    const data = await new Response(result.stream).json();
+    return Array.isArray(data.rows) ? data : null;
+  },
+  async write(json) {
+    if (!blobConnected()) return;
+    const { put } = await import('@vercel/blob');
+    await put(SAVED_PATH, json, {
+      access: 'private',
+      addRandomSuffix: false,
+      allowOverwrite: true,
+      contentType: 'application/json',
+      abortSignal: AbortSignal.timeout(SAVED_TIMEOUT_MS),
+    });
+  },
+};
+
+/** Saves the catalogue when it differs from what this instance saved last. */
+async function save(catalogue) {
+  const json = JSON.stringify(catalogue);
+  if (json === savedJson) return;
+  try {
+    await savedCopy.write(json);
+    savedJson = json;
+  } catch (err) {
+    console.error('[api/coaches] save:', err.message);
+  }
+}
+
 /** One try. Resolves with the data, or undefined when worth asking again. */
 async function askOnce(signal) {
   const response = await fetch(APPS_SCRIPT_URL, {
@@ -97,10 +150,19 @@ export default async function handler(req, res) {
   try {
     const data = await askAppsScript();
     lastGood = { headers: data.headers, rows: data.rows };
+    await save(lastGood);
     res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400');
     return res.status(200).json({ success: true, ...lastGood });
   } catch (err) {
     console.error('[api/coaches]', err.message);
+    if (!lastGood) {
+      try {
+        const saved = await savedCopy.read();
+        if (saved) lastGood = { headers: saved.headers, rows: saved.rows };
+      } catch (readErr) {
+        console.error('[api/coaches] saved copy:', readErr.message);
+      }
+    }
     if (lastGood) {
       // Short cache, so the edge asks again soon instead of holding this for 5 minutes.
       res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=86400');
@@ -110,4 +172,4 @@ export default async function handler(req, res) {
   }
 }
 
-export { askAppsScript };
+export { askAppsScript, savedCopy };

@@ -69,6 +69,36 @@ const realFetch = globalThis.fetch;
   const r2 = fakeRes(); await handler({ method: "GET" }, r2);
   eq("script down: last good, short cache", [r2.code, r2.body.rows, r2.headers["Cache-Control"]], [200, [["live"]], "public, s-maxage=30, stale-while-revalidate=86400"]);
 }
+
+// a fresh instance (a deploy, a cold start) with the script down: the saved copy
+{
+  const cold = await import("../api/coaches.js?cold");
+  const writes = [];
+  cold.savedCopy.write = async (json) => { writes.push(json); };
+  cold.savedCopy.read = async () => ({ headers: ["Name"], rows: [["saved"]] });
+  globalThis.fetch = async () => ({ ok: false, status: 404 });
+  const r = fakeRes(); await cold.default({ method: "GET" }, r);
+  eq("cold, script down: saved copy, short cache", [r.code, r.body.rows, r.headers["Cache-Control"]], [200, [["saved"]], "public, s-maxage=30, stale-while-revalidate=86400"]);
+
+  globalThis.fetch = async () => ({ ok: true, text: async () => JSON.stringify(ok("new")) });
+  await cold.default({ method: "GET" }, fakeRes());
+  await cold.default({ method: "GET" }, fakeRes());
+  eq("live answer saved once while unchanged", writes, [JSON.stringify({ headers: ["Name"], rows: [["new"]] })]);
+}
+{
+  const cold = await import("../api/coaches.js?cold-nothing");
+  cold.savedCopy.read = async () => { throw new Error("no store"); };
+  globalThis.fetch = async () => ({ ok: false, status: 404 });
+  const r = fakeRes(); await cold.default({ method: "GET" }, r);
+  eq("cold, script down, no saved copy: 502", r.code, 502);
+}
+{
+  const cold = await import("../api/coaches.js?cold-failing-save");
+  cold.savedCopy.write = async () => { throw new Error("store down"); };
+  globalThis.fetch = async () => ({ ok: true, text: async () => JSON.stringify(ok("live")) });
+  const r = fakeRes(); await cold.default({ method: "GET" }, r);
+  eq("save fails: page still served", [r.code, r.body.rows], [200, [["live"]]]);
+}
 globalThis.fetch = realFetch;
 
 console.log(`${passed} passed, ${failed} failed`);
