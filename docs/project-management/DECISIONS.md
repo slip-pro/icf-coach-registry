@@ -207,3 +207,16 @@ it as CSV when `CATALOGUE_SHEET_ID` is set, and falls back to the last good copy
 the registry and the other data files stay restricted.
 **Trade-offs**: an edit made through the edit page reaches the catalogue within ~10 minutes plus
 the 5-minute edge cache. `getCoaches` stays as the fallback for an instance without the file.
+
+### D-026: Coaching projects run on the registry, not on a new catalogue
+**Date**: 2026-10-08 (site BACKLOG #57, the owner)
+**Decision**: A partner coaching project (first: WIT Cyprus) is a row in a *Projects* file. The
+participant pays first (a Fienta ticket), then chooses her coach in the registry's **project mode**
+(`?project=<slug>`): the same cards and filters, only the lead's accepted coaches, a random order
+per visitor and visible places per coach (even load without taking the choice away), contacts
+hidden behind a "Choose" button. The Apps Script checks the ticket in Fienta and marks it used, so
+a forwarded link lets nobody in. No chemistry call; changing a coach is a manual exception. The
+partner sees totals only. Stage 1 is run in the sheet; sessions, the closing survey and /admin are
+stage 2.
+**Trade-offs**: the choice is a write through the Apps Script, which can be slow; the page retries
+(the same ticket always gets the same coach) and the read side (places) comes from the open file.
