@@ -139,6 +139,46 @@ The web app URL must match in all Vercel API files:
 - `api/save-profile.js`
 - `api/config.js`
 
+## Two more files: the open catalogue and Projects (since 8 Oct 2026)
+
+| File | Tabs | Shared | Made by |
+|---|---|---|---|
+| Coach catalogue (public) | `Catalogue`, `Project places` | anyone with the link can **view** | `setupCatalogue` |
+| Projects | `Projects`, `Project coaches`, `Matches` | restricted (participants' data) | `setupProjects` |
+
+Script Properties: `CATALOGUE_FILE`, `PROJECTS_FILE` (set by the two setups), `FIENTA_API_KEY`
+(Fienta → Settings → Integration; pasted by the owner, needed for paid projects).
+
+**Open catalogue (D-025).** The Apps Script sometimes kept a 3-second run 30+ s in Google's queue,
+and the first visitor after a quiet night saw an error. So `publishCatalogue` copies the catalogue
+— the `PUBLIC_COACH_COLUMNS`, for approved, still-member, consenting coaches — into its own file,
+on every edit of the registry file and every 10 minutes, writing only when something changed. The
+registry's `/api/coaches` reads it as CSV when the registry's Vercel has `CATALOGUE_SHEET_ID`, and
+falls back to the last good copy in Vercel Blob. `getCoaches` stays for an instance without it.
+
+**Projects (site BACKLOG #57).** Coaching projects with partners; the first is WIT Cyprus (`wit`).
+- `Projects`: one row per project — `Slug`, `Name`, `Partner`, `Lead name`, `Lead email` (replies
+  to every project letter go there), `Status` (`draft` / `open` / `closed`), `Fienta event ID`
+  (the number from the event's edit page in Fienta; empty = a free project, no ticket asked),
+  `Sessions`, `Session minutes`, `Places per coach` (default), `Description`.
+- `Project coaches`: `joinProject` adds an approved registry coach as `pending` and writes to the
+  lead and the coach; the lead sets `accepted` / `declined`, and `Places` (empty = the default).
+- `Matches`: `chooseCoach` writes one row per participant. A match that is not `cancelled` or
+  `replaced` holds a place. Changing a coach is an exception: edit the row by hand.
+- `chooseCoach` checks the Fienta ticket (`GET /tickets/{code}`: this event, status `UNUSED`),
+  re-checks places under the script lock, writes the match, marks the ticket `USED`
+  (`PUT /tickets/{code}`), refreshes `Project places` and sends the introduction letter to the
+  participant and the coach. A ticket already in `Matches` is answered at once with that coach,
+  before the lock, so repeating a request never makes a second match.
+- `Project places` (in the open file): slug, name, status, accepted coach emails, places left —
+  nothing about participants. Refreshed on every edit of the Projects file, after each choice and
+  with `publishCatalogue`. The registry's `/api/project` reads it, so the choice page does not
+  wait on the script.
+
+Triggers (all reset by `installTriggers` or by re-running a setup): `colorByStatus` and
+`publishCatalogueOnEdit` (edit of the registry file), `publishCatalogue` (10 min),
+`publishProjectPlacesOnEdit` (edit of the Projects file), `syncEventFolders` (30 min).
+
 ## Functions Reference
 
 | Function | Purpose | Trigger |
@@ -164,6 +204,12 @@ The web app URL must match in all Vercel API files:
 | `colorAllRows` | Recolor all rows | Manual |
 | `addStatusDropdown` | Add dropdown to Status cells | Manual (once) |
 | `createSettingsSheet` | Create Settings sheet with defaults | Manual (once) |
+| `setupCatalogue` | Make, share and fill the open catalogue file; set its triggers | Manual (once) |
+| `publishCatalogue` | Copy the catalogue (and project places) into the open file | 10-min timer, registry edits |
+| `setupProjects` | Make the Projects file with its tabs and a draft WIT row | Manual (once) |
+| `handleJoinProject` | A registry coach asks to take part in a project | `action: 'joinProject'` |
+| `handleChooseCoach` | A participant chooses her coach (Fienta ticket check) | `action: 'chooseCoach'` |
+| `publishProjectPlaces_` | Coaches and places left into `Project places` | Projects edits, after a choice |
 
 ## Sheets Structure
 

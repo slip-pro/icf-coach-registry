@@ -10,6 +10,12 @@ Everything belongs to the chapter's Google account, **info@icf-cyprus.com**, in 
 | **Registry & membership** | `Submissions`, `EditTokens`, `Members` | the membership desk |
 | **Events & media** | `Event plan`, `Event media` | the events director |
 | **Board, partners & settings** | `Board`, `Partners`, `Articles`, `Settings` | the board |
+| **Coach catalogue (public)** | `Catalogue`, `Project places` | nobody — the script rewrites it |
+| **Projects** | `Projects`, `Project coaches`, `Matches` | each project's lead |
+
+The open catalogue file is shared with anyone who has the link: the site reads coaches from it.
+It holds only what the cards already show. **Do not edit it** — every change in the registry
+reaches it within minutes, and anything typed there by hand is overwritten.
 
 "The Google Sheet" below means the file that holds the tab in question. The old single spreadsheet
 in the owner's personal Drive is read-only and no longer read by either site.
@@ -185,6 +191,39 @@ Two things belong to the script, not to people:
 
 The 30-minute timer was set by `setupDataFiles` in the new project (5 Oct 2026); `installEventSync`
 resets it if ever needed.
+
+## Running a coaching project (WIT Cyprus and the next ones)
+
+Everything for a project is in the **Projects** file (`Data` folder). In stage 1 the lead works in
+the file itself; a project page in /admin comes later.
+
+**Setting up a project** — one row on the `Projects` tab:
+1. `Slug` — a short code for the address (`wit`); the choice page is
+   `coaches.icf-cyprus.com/?project=<slug>`.
+2. `Name`, `Partner`, `Lead name`, **`Lead email`** — participants' and coaches' replies go there.
+3. Paid project: create the event in Fienta; put the choice page link into the ticket text; copy
+   the number from the event's edit page address (`fienta.com/my/events/<number>/…`) into
+   **`Fienta event ID`** — digits only. Free project: leave it empty, no ticket is asked.
+4. `Places per coach` — how many participants a coach takes by default.
+5. `Status`: `draft` while preparing, **`open`** to take coaches and participants, `closed` after.
+
+**Coaches** — send the project page (for WIT: `icf-cyprus.com/projects/wit`) to the chapter chat.
+A coach leaves the email of their registry profile; a `pending` row appears on `Project coaches`
+and you get a letter. Set `Status` to **`accepted`** (or `declined`). `Places` empty = the default;
+type a number to give a coach more or fewer. Only accepted coaches appear on the choice page.
+
+**Participants** — they buy a ticket, open the link in it, choose a coach and enter the ticket
+number. The site checks the ticket in Fienta, marks it used, adds a row to `Matches` and sends an
+introduction letter to both. The page shows places left; a full coach shows "Fully booked".
+
+**Changing a coach (exception)** — on `Matches`, set the old row's `Status` to `replaced` and type
+the new coach's email and name into a new row (or simply change `Coach email` / `Coach name` in
+the row). Write to both coaches and the participant yourself — no letters go out for hand edits.
+
+**Cancelling a participant** — `Status` → `cancelled`; the coach's place is free again.
+
+**What WIT (the partner) gets** — totals only: participants, sessions, average rating. Never the
+`Matches` tab.
 
 ## FAQ
 
