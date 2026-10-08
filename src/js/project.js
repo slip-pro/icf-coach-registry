@@ -86,12 +86,11 @@ export function renderProjectAction(coach, index) {
     </button>`;
 }
 
-/** The lines under the header: what the page is for. */
+/** The line under the header (which carries the project's name): what the page is for. */
 export function renderProjectIntro(project) {
   const closed = project.status !== 'open';
   return `
     <section class="icf-project-intro">
-      <h2 class="icf-project-intro__name">${esc(project.name)}</h2>
       <p>${esc(t(closed ? 'projectClosedNote' : 'projectIntro'))}</p>
     </section>`;
 }

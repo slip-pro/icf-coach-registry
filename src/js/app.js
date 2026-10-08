@@ -127,9 +127,10 @@ function findContainer(containerId) {
  * language switcher (right) on one line, white background.
  * @param {string} [titleKey='pageTitle'] — i18n key for title
  * @param {string} [highlightKey='pageTitleHighlight'] — i18n key for highlight
+ * @param {string} [plainTitle] — in project mode, the project's name in place of both
  * @returns {string} HTML string
  */
-function renderHeader(titleKey = 'pageTitle', highlightKey = 'pageTitleHighlight') {
+function renderHeader(titleKey = 'pageTitle', highlightKey = 'pageTitleHighlight', plainTitle = '') {
   const lang = getCurrentLanguage();
   const langButtons = SUPPORTED_LANGS
     .map((code) => {
@@ -155,9 +156,9 @@ function renderHeader(titleKey = 'pageTitle', highlightKey = 'pageTitleHighlight
       <div class="icf-header__brand">
         ${logoHTML}
       </div>
-      <h1 class="icf-page-title">
+      <h1 class="icf-page-title">${plainTitle ? esc(plainTitle) : `
         <span data-i18n="${titleKey}">${esc(t(titleKey))}</span>
-        <span class="icf-page-title__highlight" data-i18n="${highlightKey}">${esc(t(highlightKey))}</span>
+        <span class="icf-page-title__highlight" data-i18n="${highlightKey}">${esc(t(highlightKey))}</span>`}
       </h1>
       <nav class="icf-lang-switch" role="group"
            aria-label="Language">
@@ -297,7 +298,7 @@ function renderCatalog(state, errorMessage) {
 
   containerEl.innerHTML = `
     ${renderDecorations()}
-    ${renderHeader()}
+    ${renderHeader('pageTitle', 'pageTitleHighlight', project ? project.name : '')}
     ${project && state === 'ready' ? renderProjectIntro(project) : ''}
     ${bodyHTML}
   `;
@@ -542,6 +543,8 @@ async function init(config = {}) {
         + (suffix[config.view] || '');
     }
   }
+
+  if (project) document.title = project.name;
 
   // Re-render with real data (config applied, coaches loaded)
   if (startView === 'catalog' || !startView) {

@@ -1994,12 +1994,6 @@
   color: var(--icf-text-primary);
 }
 
-.icf-project-intro__name {
-  font-family: var(--icf-font-heading);
-  font-size: 24px;
-  margin: 0 0 var(--icf-space-3);
-}
-
 .icf-project-intro p {
   margin: 0 auto;
   max-width: 640px;
