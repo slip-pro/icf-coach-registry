@@ -37,6 +37,9 @@ import { renderRegistrationForm } from './registration.js';
 import { submitRegistration } from './submit.js';
 import { renderEditView } from './edit.js';
 import { fetchConfig, applyConfig } from './config.js';
+import {
+  projectSlug, fetchProject, projectCoaches, renderProjectIntro, openChooseForm,
+} from './project.js';
 
 /**
  * @typedef {Object} RegistryConfig
@@ -59,6 +62,42 @@ let containerEl = null;
 
 /** @type {RegistryConfig} */
 let appConfig = {};
+
+/**
+ * Project mode (?project=wit, site BACKLOG #57): the project as /api/project
+ * gives it, or null on the plain catalogue. `allCoaches` keeps the full
+ * catalogue so the places can be refreshed after a choice.
+ */
+let project = null;
+let projectSlugValue = '';
+let allCoaches = [];
+
+/** The registry's API base, as fetchCoaches is given it. */
+function apiBase() {
+  return appConfig.apiUrl ? appConfig.apiUrl.replace(/\/submit$/, '') : '/api';
+}
+
+/** The project's choice form for this coach; places are re-read after a choice. */
+function chooseCoach(coach) {
+  openChooseForm(coach, {
+    apiBase: apiBase(),
+    slug: projectSlugValue,
+    // After a choice the places changed: re-read them, redraw once the form is closed.
+    onDone: async () => {
+      const fresh = await fetchProject(apiBase(), projectSlugValue);
+      if (fresh) {
+        project = fresh;
+        coaches = projectCoaches(allCoaches, project);
+      }
+    },
+    onClose: (chosen) => { if (chosen) renderCatalog('ready'); },
+  });
+}
+
+/** In project mode, cards get the Choose button — only while the project is open. */
+function cardOptions() {
+  return project && project.status === 'open' ? { onChoose: chooseCoach } : {};
+}
 
 /**
  * Current view: 'catalog', 'registration', or 'edit'.
@@ -259,6 +298,7 @@ function renderCatalog(state, errorMessage) {
   containerEl.innerHTML = `
     ${renderDecorations()}
     ${renderHeader()}
+    ${project && state === 'ready' ? renderProjectIntro(project) : ''}
     ${bodyHTML}
   `;
 
@@ -277,7 +317,7 @@ function renderCatalog(state, errorMessage) {
       renderFilters(coaches, filtersContainer, handleFilterChange);
     }
     if (gridContainer) {
-      renderCards(coaches, gridContainer);
+      renderCards(coaches, gridContainer, cardOptions());
     }
   }
 }
@@ -377,7 +417,7 @@ function handleFilterChange(filteredCoaches, meta) {
     // "Nobody found for that" is a different disappointment from
     // "nobody matches these filters" — say which one it is.
     const emptyKey = meta?.nameQuery ? 'emptyStateName' : 'emptyState';
-    renderCards(filteredCoaches, gridContainer, { emptyKey, excerpts: meta?.excerpts });
+    renderCards(filteredCoaches, gridContainer, { emptyKey, excerpts: meta?.excerpts, ...cardOptions() });
   }
 }
 
@@ -459,18 +499,26 @@ async function init(config = {}) {
     renderCatalog('loading');
   }
 
-  // Load remote config and coach data in parallel
-  const [remoteConfig] = await Promise.all([
+  // Load remote config, coach data and (in project mode) the project in parallel
+  const inCatalog = startView === 'catalog' || !startView;
+  projectSlugValue = inCatalog ? projectSlug() : '';
+  const [remoteConfig, projectData] = await Promise.all([
     fetchConfig(config.apiUrl),
-    (startView === 'catalog' || !startView)
+    projectSlugValue ? fetchProject(apiBase(), projectSlugValue) : Promise.resolve(null),
+    inCatalog
       ? fetchCoaches({
-          apiBase: config.apiUrl ? config.apiUrl.replace(/\/submit$/, '') : '/api',
+          apiBase: apiBase(),
           mock: Boolean(config.mock),
         })
           .then((data) => { coaches = data; })
           .catch(() => { coaches = []; })
       : Promise.resolve(),
   ]);
+  if (projectSlugValue) {
+    project = projectData;
+    allCoaches = coaches;
+    coaches = project ? projectCoaches(allCoaches, project) : [];
+  }
 
   // Apply remote config after hero is already visible
   if (remoteConfig) {
@@ -497,7 +545,9 @@ async function init(config = {}) {
 
   // Re-render with real data (config applied, coaches loaded)
   if (startView === 'catalog' || !startView) {
-    if (coaches.length > 0) {
+    if (projectSlugValue && !project) {
+      renderCatalog('error', esc(t('projectNotFound')));
+    } else if (coaches.length > 0 || (project && allCoaches.length > 0)) {
       renderCatalog('ready');
     } else {
       renderCatalog('error', esc(t('errorState')));

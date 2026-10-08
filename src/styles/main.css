@@ -1981,3 +1981,123 @@
     padding: var(--icf-space-8) var(--icf-space-7);
   }
 }
+
+
+/* --- Project mode (?project=…, site BACKLOG #57) --- */
+
+.icf-project-intro {
+  max-width: var(--icf-max-width);
+  margin: 0 auto var(--icf-space-8);
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: var(--icf-text-primary);
+}
+
+.icf-project-intro__name {
+  font-family: var(--icf-font-heading);
+  font-size: 24px;
+  margin: 0 0 var(--icf-space-3);
+}
+
+.icf-project-intro p {
+  margin: 0 auto;
+  max-width: 640px;
+  color: var(--icf-text-tertiary);
+  line-height: 1.5;
+}
+
+.icf-project-places {
+  margin: 0;
+  font-size: 14px;
+  color: var(--icf-text-secondary);
+  font-weight: 600;
+}
+
+.icf-project-places--full {
+  color: var(--icf-text-muted);
+}
+
+.icf-project-choose {
+  width: 100%;
+  background: var(--icf-cta);
+  color: var(--icf-text-primary);
+  border: none;
+  border-radius: var(--icf-radius-btn);
+  padding: 12px var(--icf-space-7);
+  font-family: var(--icf-font);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.icf-project-choose:hover {
+  background: var(--icf-cta-hover);
+}
+
+.icf-project-choose:focus-visible {
+  outline: 2px solid var(--icf-accent);
+  outline-offset: 2px;
+}
+
+.icf-project-choose:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.icf-choose-form__title {
+  font-family: var(--icf-font-heading);
+  font-size: 22px;
+  margin: 0;
+  color: var(--icf-text-primary);
+}
+
+.icf-choose-form__coach {
+  margin: 0;
+  font-weight: 600;
+  color: var(--icf-text-secondary);
+}
+
+.icf-choose-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--icf-text-primary);
+}
+
+.icf-choose-form__field input {
+  font: inherit;
+  font-weight: 400;
+  padding: 10px 12px;
+  border: 1px solid var(--icf-border-input);
+  border-radius: var(--icf-radius-input);
+}
+
+.icf-choose-form__field small {
+  font-weight: 400;
+  color: var(--icf-text-tertiary);
+}
+
+.icf-choose-form__consent {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--icf-text-tertiary);
+}
+
+.icf-choose-form__consent input {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.icf-choose-form__message {
+  margin: 0;
+  min-height: 1.4em;
+  font-size: 14px;
+  color: var(--icf-text-secondary);
+}

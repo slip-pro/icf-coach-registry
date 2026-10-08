@@ -171,6 +171,133 @@ const dictionary = {
     el: 'Κλείσιμο',
   },
 
+  // Project mode (?project=…): a coaching project's choice page
+  projectIntro: {
+    en: 'Choose your coach. The order is different for every visitor; each coach takes a limited number of participants.',
+    ru: 'Выберите своего коуча. Порядок карточек у каждого свой; у каждого коуча ограниченное число мест.',
+    el: 'Επιλέξτε τον coach σας. Η σειρά είναι διαφορετική για κάθε επισκέπτη· κάθε coach δέχεται περιορισμένο αριθμό συμμετεχόντων.',
+  },
+  projectClosedNote: {
+    en: 'Sign-up for this project is closed.',
+    ru: 'Запись в этот проект закрыта.',
+    el: 'Οι εγγραφές για αυτό το έργο έχουν κλείσει.',
+  },
+  projectNotFound: {
+    en: 'This project was not found. Check the link in your ticket.',
+    ru: 'Проект не найден. Проверьте ссылку в билете.',
+    el: 'Το έργο δεν βρέθηκε. Ελέγξτε τον σύνδεσμο στο εισιτήριό σας.',
+  },
+  projectPlacesLeft: {
+    en: 'Places left: {n}',
+    ru: 'Осталось мест: {n}',
+    el: 'Διαθέσιμες θέσεις: {n}',
+  },
+  projectFull: {
+    en: 'Fully booked',
+    ru: 'Набор закрыт',
+    el: 'Πλήρες',
+  },
+  projectChoose: {
+    en: 'Choose this coach',
+    ru: 'Выбрать этого коуча',
+    el: 'Επιλογή αυτού του coach',
+  },
+  projectChooseTitle: {
+    en: 'Your coach',
+    ru: 'Ваш коуч',
+    el: 'Ο coach σας',
+  },
+  projectYourName: {
+    en: 'Your name',
+    ru: 'Ваше имя',
+    el: 'Το όνομά σας',
+  },
+  projectYourEmail: {
+    en: 'Your email',
+    ru: 'Ваш email',
+    el: 'Το email σας',
+  },
+  projectTicket: {
+    en: 'Ticket number',
+    ru: 'Номер билета',
+    el: 'Αριθμός εισιτηρίου',
+  },
+  projectTicketHint: {
+    en: 'It is on your Fienta ticket, e.g. CA4HRIOPQ0.',
+    ru: 'Он есть в билете Fienta, например CA4HRIOPQ0.',
+    el: 'Βρίσκεται στο εισιτήριο Fienta, π.χ. CA4HRIOPQ0.',
+  },
+  projectConsent: {
+    en: 'I agree that ICF Cyprus and my coach keep my name and email for this project. The partner receives totals only, never personal data.',
+    ru: 'Даю согласие, чтобы ICF Cyprus и мой коуч хранили моё имя и email для этого проекта. Партнёр получает только итоговые цифры, без личных данных.',
+    el: 'Συμφωνώ το ICF Cyprus και ο coach μου να διατηρούν το όνομα και το email μου για αυτό το έργο. Ο συνεργάτης λαμβάνει μόνο συνολικά στοιχεία, ποτέ προσωπικά δεδομένα.',
+  },
+  projectSubmit: {
+    en: 'Confirm my choice',
+    ru: 'Подтвердить выбор',
+    el: 'Επιβεβαίωση επιλογής',
+  },
+  projectSending: {
+    en: 'Checking your ticket…',
+    ru: 'Проверяем билет…',
+    el: 'Ελέγχουμε το εισιτήριό σας…',
+  },
+  projectDoneTitle: {
+    en: 'Done!',
+    ru: 'Готово!',
+    el: 'Έτοιμο!',
+  },
+  projectDone: {
+    en: 'Your coach is {coach}. We have sent an introduction letter to you both; your coach will write to arrange the sessions.',
+    ru: 'Ваш коуч — {coach}. Мы отправили вам обоим письмо-знакомство; коуч напишет, чтобы договориться о сессиях.',
+    el: 'Ο coach σας είναι {coach}. Στείλαμε ένα email γνωριμίας και στους δύο· ο coach θα σας γράψει για να κανονίσετε τις συνεδρίες.',
+  },
+  projectAlready: {
+    en: 'This ticket has already been used to choose {coach}. If that is a mistake, reply to the introduction letter.',
+    ru: 'По этому билету уже выбран коуч: {coach}. Если это ошибка, ответьте на письмо-знакомство.',
+    el: 'Με αυτό το εισιτήριο έχει ήδη επιλεγεί: {coach}. Αν πρόκειται για λάθος, απαντήστε στο email γνωριμίας.',
+  },
+  projectErrTicketNotFound: {
+    en: 'We could not find this ticket. Check the number on your Fienta ticket.',
+    ru: 'Билет не найден. Проверьте номер в билете Fienta.',
+    el: 'Δεν βρέθηκε αυτό το εισιτήριο. Ελέγξτε τον αριθμό στο εισιτήριο Fienta.',
+  },
+  projectErrTicketUsed: {
+    en: 'This ticket has already been used.',
+    ru: 'Этот билет уже использован.',
+    el: 'Αυτό το εισιτήριο έχει ήδη χρησιμοποιηθεί.',
+  },
+  projectErrTicketOther: {
+    en: 'This ticket is for a different event.',
+    ru: 'Этот билет на другое мероприятие.',
+    el: 'Αυτό το εισιτήριο είναι για άλλη εκδήλωση.',
+  },
+  projectErrTicketRequired: {
+    en: 'Please enter your ticket number.',
+    ru: 'Введите номер билета.',
+    el: 'Συμπληρώστε τον αριθμό εισιτηρίου.',
+  },
+  projectErrCoachFull: {
+    en: 'This coach has just been fully booked. Please choose another one.',
+    ru: 'У этого коуча только что закончились места. Выберите, пожалуйста, другого.',
+    el: 'Αυτός ο coach μόλις γέμισε. Παρακαλούμε επιλέξτε άλλον.',
+  },
+  projectErrConsent: {
+    en: 'Please tick the consent box.',
+    ru: 'Отметьте, пожалуйста, согласие.',
+    el: 'Παρακαλούμε επιλέξτε τη συγκατάθεση.',
+  },
+  projectErrNameEmail: {
+    en: 'Please enter your name and a valid email.',
+    ru: 'Введите имя и корректный email.',
+    el: 'Συμπληρώστε το όνομά σας και ένα έγκυρο email.',
+  },
+  projectErrGeneric: {
+    en: 'Something went wrong. Please try again in a minute.',
+    ru: 'Что-то пошло не так. Попробуйте через минуту.',
+    el: 'Κάτι πήγε στραβά. Δοκιμάστε ξανά σε ένα λεπτό.',
+  },
+
   // Meta
   metaPerSession: {
     en: '/ session',

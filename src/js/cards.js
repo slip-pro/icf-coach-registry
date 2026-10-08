@@ -15,6 +15,7 @@
 
 import { t, getCurrentLanguage } from './i18n.js';
 import { renderContactBlock, isSafeUrl } from './contacts.js';
+import { renderProjectAction } from './project.js';
 
 /* ---------------------------------------------------------------
    SVG Icons (inline, 14-16px, used in meta row and contacts)
@@ -328,7 +329,7 @@ function renderExcerpt(excerpt) {
  * @returns {string} HTML
  */
 function renderCard(coach, index, excerpt) {
-  const contact = renderContactBlock(coach);
+  const contact = bottomOfCard(coach, index);
   const divider = contact ? '<hr class="icf-divider">' : '';
   const bio = getBioForLanguage(coach, getCurrentLanguage());
 
@@ -357,14 +358,22 @@ function renderCard(coach, index, excerpt) {
 /** @type {import('./sheets.js').Coach[]|null} */
 let currentCoaches = null;
 
+/** In project mode: called with the coach whose "Choose" button was pressed. */
+let onChoose = null;
+
+/** Contacts on the plain catalogue; places and a Choose button in project mode. */
+function bottomOfCard(coach, index) {
+  return onChoose ? renderProjectAction(coach, index) : renderContactBlock(coach);
+}
+
 /**
  * Render the modal HTML for a coach.
  * @param {import('./sheets.js').Coach} coach
  * @returns {string} HTML
  */
-function renderModal(coach) {
+function renderModal(coach, index) {
   const bio = getBioForLanguage(coach, getCurrentLanguage());
-  const contact = renderContactBlock(coach);
+  const contact = bottomOfCard(coach, index);
   const divider = contact ? '<hr class="icf-divider">' : '';
 
   return `
@@ -393,7 +402,7 @@ function openModal(index) {
 
   const coach = currentCoaches[index];
   const wrapper = document.createElement('div');
-  wrapper.innerHTML = renderModal(coach);
+  wrapper.innerHTML = renderModal(coach, index);
   const overlay = wrapper.firstElementChild;
   const registry = document.querySelector('.icf-registry')
     || document.body;
@@ -403,6 +412,12 @@ function openModal(index) {
   requestAnimationFrame(() => overlay.classList.add('is-visible'));
 
   overlay.addEventListener('click', (e) => {
+    const choose = e.target.closest('[data-choose-index]');
+    if (choose && onChoose) {
+      closeModal();
+      onChoose(currentCoaches[Number(choose.dataset.chooseIndex)]);
+      return;
+    }
     if (e.target === overlay
       || e.target.closest('.icf-modal__close')) {
       closeModal();
@@ -440,14 +455,16 @@ document.addEventListener('keydown', (e) => {
  *
  * @param {import('./sheets.js').Coach[]} coaches
  * @param {HTMLElement} container
- * @param {{emptyKey?: string, excerpts?: Map}} [options] — i18n key for the
+ * @param {{emptyKey?: string, excerpts?: Map, onChoose?: Function}} [options] — i18n key for the
  *   empty message (default 'emptyState'; 'emptyStateName' when a search
- *   found nobody), and bio excerpts for coaches found through their text
+ *   found nobody), bio excerpts for coaches found through their text, and
+ *   in project mode the handler of the "Choose this coach" button
  * @returns {void}
  */
 export function renderCards(coaches, container, options = {}) {
   container.innerHTML = '';
   currentCoaches = coaches;
+  onChoose = options.onChoose || null;
 
   if (!coaches || coaches.length === 0) {
     const emptyKey = options.emptyKey || 'emptyState';
@@ -467,6 +484,11 @@ export function renderCards(coaches, container, options = {}) {
   if (!container._icfModalBound) {
     container._icfModalBound = true;
     container.addEventListener('click', (e) => {
+      const choose = e.target.closest('[data-choose-index]');
+      if (choose && onChoose) {
+        onChoose(currentCoaches[Number(choose.dataset.chooseIndex)]);
+        return;
+      }
       // Skip clicks on links/buttons inside the card
       if (e.target.closest('a, .icf-contact-link, .icf-social-icon'))
         return;

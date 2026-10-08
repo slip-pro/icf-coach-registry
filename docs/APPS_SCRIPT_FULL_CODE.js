@@ -2909,7 +2909,10 @@ function publishProjectPlaces_() {
   var table = [['Project', 'Project name', 'Project status', 'Coach email', 'Places left']];
   projects.forEach(function (p) {
     if (!p.Slug) return;
-    projectPlaces_(p, coaches, matches).forEach(function (c) {
+    var accepted = projectPlaces_(p, coaches, matches);
+    // No coaches accepted yet: one row, so the page still knows the project.
+    if (!accepted.length) table.push([lower_(p.Slug), p.Name, lower_(p.Status), '', '0']);
+    accepted.forEach(function (c) {
       table.push([lower_(p.Slug), p.Name, lower_(p.Status), c.email, String(c.placesLeft)]);
     });
   });
