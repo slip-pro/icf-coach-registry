@@ -123,6 +123,33 @@ const realFetch = globalThis.fetch;
   const r = fakeRes(); await cold.default({ method: "GET" }, r, { serveSavedAfterMs: 50 });
   eq("slow script, nothing saved: waits for it", [r.code, r.body.rows], [200, [["late"]]]);
 }
+// the open catalogue file (CATALOGUE_SHEET_ID): CSV parsing and reading
+{
+  const { parseCsv } = await import("../api/coaches.js");
+  eq("csv: plain", parseCsv("Name,Email\nAnna,a@x\n"), [["Name", "Email"], ["Anna", "a@x"]]);
+  eq("csv: quoted comma, line break, quote", parseCsv('Name,Bio\r\n"Anna","Hi, I\'m\n""Anna"""\r\n'), [["Name", "Bio"], ["Anna", 'Hi, I\'m\n"Anna"']]);
+  eq("csv: empty cells", parseCsv("Name,A,B\nX,,\n"), [["Name", "A", "B"], ["X", "", ""]]);
+
+  process.env.CATALOGUE_SHEET_ID = "cat-id";
+  const file = await import("../api/coaches.js?file");
+  file.savedCopy.write = async () => {};
+  let asked = "";
+  globalThis.fetch = async (url) => {
+    asked = url;
+    return { ok: true, headers: new Map([["content-type", "text/csv"]]), text: async () => "Name,Email\nAnna,a@x\n,\n" };
+  };
+  const r = fakeRes(); await file.default({ method: "GET" }, r);
+  eq("file: read from Google as CSV", asked, "https://docs.google.com/spreadsheets/d/cat-id/export?format=csv");
+  eq("file: rows, blank ones dropped", [r.code, r.body.headers, r.body.rows], [200, ["Name", "Email"], [["Anna", "a@x"]]]);
+
+  const notShared = await import("../api/coaches.js?file-not-shared");
+  notShared.savedCopy.read = async () => ({ headers: ["Name"], rows: [["saved"]] });
+  let tries = 0;
+  globalThis.fetch = async () => { tries++; return { ok: true, headers: new Map([["content-type", "text/html"]]), text: async () => "<html>" }; };
+  const r2 = fakeRes(); await notShared.default({ method: "GET" }, r2);
+  eq("file not shared: one try, saved copy", [tries, r2.code, r2.body.rows], [1, 200, [["saved"]]]);
+  delete process.env.CATALOGUE_SHEET_ID;
+}
 globalThis.fetch = realFetch;
 
 console.log(`${passed} passed, ${failed} failed`);

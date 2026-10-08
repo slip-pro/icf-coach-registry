@@ -192,3 +192,18 @@ appears within ~5 minutes instead of on the next page load.
 catalogue is meant to be found: a client searching for a coach in Cyprus should land on it.
 **Why it is safe**: the page shows only approved profiles of coaches who ticked *publish my
 profile* (G-028), through the script's allowlist (D-023). Nothing private is reachable.
+
+### D-025: The catalogue lives in an open file of its own
+**Date**: 2026-10-08
+**Incident**: Since D-023 every catalogue load that missed the edge cache waited on the Apps
+Script. A 3-second run sometimes sat 30+ s in Google's queue (measured 8 Oct 2026, also from
+outside Vercel), and the first visitor after a quiet night saw an error until they refreshed.
+**Decision** (the owner): the script copies the catalogue — D-023's allowlist of card columns, for
+approved coaches who agreed to be published — into a separate spreadsheet, *Coach catalogue
+(public)*, shared as "anyone with the link can view". It is refreshed on every edit of the
+registry file and every 10 minutes (`setupCatalogue`, `publishCatalogue`). `/api/coaches` reads
+it as CSV when `CATALOGUE_SHEET_ID` is set, and falls back to the last good copy in Vercel Blob.
+**Why it fits D-023**: the open file holds nothing the page does not already show to everybody;
+the registry and the other data files stay restricted.
+**Trade-offs**: an edit made through the edit page reaches the catalogue within ~10 minutes plus
+the 5-minute edge cache. `getCoaches` stays as the fallback for an instance without the file.

@@ -227,7 +227,7 @@ throws("needs the secret first", () => oldWorld({ PEOPLE_API_SECRET: "" }).sb.se
   eq("timezone asked once for 100 date cells", asked, 1);
 }
 
-eq("version is a 2026-10-05 build", world().sb.SCRIPT_VERSION.startsWith("2026-10-05"), true);
+eq("version is a dated build, 2026-10-05 or later", /^\d{4}-\d{2}-\d{2} /.test(world().sb.SCRIPT_VERSION) && world().sb.SCRIPT_VERSION >= "2026-10-05", true);
 
 console.log(`${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

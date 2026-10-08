@@ -1,10 +1,11 @@
 /**
  * Vercel Serverless Function -- the public coach catalogue.
  *
- * Asks the Apps Script for approved coaches (only the columns a card shows),
- * so the spreadsheet itself can stay private. Before this, the page read the
- * sheet straight from Google as CSV, which only works when the whole
- * spreadsheet — every tab — is shared with anyone who has the link.
+ * Reads approved coaches (only the columns a card shows) from the open
+ * catalogue file the Apps Script keeps, or asks the script itself when
+ * CATALOGUE_SHEET_ID is not set. Either way the registry stays private:
+ * until Sept 2026 the page read the registry itself as CSV, which meant
+ * sharing every tab of it with anyone who had the link.
  *
  * Cached at the edge for 5 minutes, like /api/config: a newly approved coach
  * appears within minutes, and the Apps Script is not asked on every visit.
@@ -15,6 +16,13 @@
  */
 
 const APPS_SCRIPT_URL = process.env.APPS_SCRIPT_URL;
+
+/**
+ * The open copy of the catalogue that the Apps Script keeps (setupCatalogue,
+ * 8 Oct 2026). Read straight from Google, it answers in under a second; the
+ * script itself sometimes sat 30 s in Google's queue. Without it, the script.
+ */
+const CATALOGUE_SHEET_ID = process.env.CATALOGUE_SHEET_ID;
 
 /** A normal run takes 2-4 s; past this, a hang is likelier than a slow run. */
 const HEDGE_AFTER_MS = 6000;
@@ -93,6 +101,44 @@ async function askOnce(signal) {
   // as a GET — nothing wrong with the request. Any other refusal is final.
   if (String(data.error || '').startsWith('Unknown action')) return undefined;
   throw Object.assign(new Error(data.error || 'refused'), { final: true });
+}
+
+/** RFC 4180: quoted cells may hold commas, line breaks (bios) and doubled quotes. */
+function parseCsv(text) {
+  const rows = [];
+  let row = [], cell = '', quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (quoted) {
+      if (ch === '"' && text[i + 1] === '"') { cell += '"'; i++; }
+      else if (ch === '"') quoted = false;
+      else cell += ch;
+    } else if (ch === '"') quoted = true;
+    else if (ch === ',') { row.push(cell); cell = ''; }
+    else if (ch === '\n' || ch === '\r') {
+      if (ch === '\r' && text[i + 1] === '\n') i++;
+      row.push(cell); rows.push(row); row = []; cell = '';
+    } else cell += ch;
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows;
+}
+
+/** One try at the open file. Same contract as askOnce. */
+async function askCatalogueFile(signal) {
+  const url = `https://docs.google.com/spreadsheets/d/${CATALOGUE_SHEET_ID}/export?format=csv`;
+  const response = await fetch(url, {
+    redirect: 'follow',
+    signal: AbortSignal.any([AbortSignal.timeout(TRY_TIMEOUT_MS), signal]),
+  });
+  if (!response.ok) return undefined;
+  // A file that is not shared answers with Google's sign-in page, not a CSV.
+  if (!String(response.headers.get('content-type') || '').includes('text/csv')) {
+    throw Object.assign(new Error('Catalogue file is not shared with anyone with the link'), { final: true });
+  }
+  const [headers, ...rows] = parseCsv(await response.text());
+  if (!headers || headers[0] !== 'Name') return undefined;
+  return { success: true, headers, rows: rows.filter((r) => r.some((v) => v !== '')) };
 }
 
 /**
@@ -178,7 +224,7 @@ export default async function handler(req, res, { serveSavedAfterMs = SERVE_SAVE
     return res.status(500).json({ success: false, error: 'APPS_SCRIPT_URL environment variable is not set' });
   }
 
-  const live = askAppsScript().then(async (data) => {
+  const live = askAppsScript({ ask: CATALOGUE_SHEET_ID ? askCatalogueFile : askOnce }).then(async (data) => {
     lastGood = { headers: data.headers, rows: data.rows };
     await save(lastGood);
     return lastGood;
@@ -220,4 +266,4 @@ export default async function handler(req, res, { serveSavedAfterMs = SERVE_SAVE
   return res.status(502).json({ success: false, error: 'Could not load coaches' });
 }
 
-export { askAppsScript, savedCopy };
+export { askAppsScript, savedCopy, parseCsv };

@@ -166,6 +166,10 @@ https://script.google.com/macros/s/AKfycb.../exec
    - **Value**: the Web app URL from step 2.7
    - **Environments**: ✅ Production, ✅ Preview, ✅ Development
 3. Click **Save**
+4. Recommended — the catalogue from an open file, so a slow Apps Script never holds up the page:
+   in the Apps Script editor select `setupCatalogue` and press **Run**. The log shows
+   `CATALOGUE_SHEET_ID`; add it here the same way (**Name** `CATALOGUE_SHEET_ID`, **Value** that ID).
+   Without it the catalogue asks the Apps Script directly, as before.
 
 ### 4.3 Redeploy
 
@@ -255,6 +259,6 @@ Your Settings sheet and env var stay unchanged.
 
 All instance-specific config is in two places:
 1. **Settings sheet** (17 keys — branding, colors, emails)
-2. **Vercel env var** (`APPS_SCRIPT_URL` — 1 variable)
+2. **Vercel env vars** (`APPS_SCRIPT_URL`, and `CATALOGUE_SHEET_ID` from `setupCatalogue`)
 
 No code changes needed to deploy a new instance.

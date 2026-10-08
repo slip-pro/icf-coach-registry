@@ -222,9 +222,10 @@ function setupDataFiles() {
 
 /**
  * Run from the editor if the project's Triggers list is empty (5 Oct 2026 it
- * was emptied by mistake). Sets both timers again; running it twice is fine:
+ * was emptied by mistake). Sets the triggers again; running it twice is fine:
  *   colorByStatus   — On edit of the registry file: rows turn green / red / yellow
  *   syncEventFolders — every 30 minutes (installEventSync)
+ *   publishCatalogue — every 10 minutes and on edit, once setupCatalogue has run
  */
 function installTriggers() {
   var registryId = PropertiesService.getScriptProperties().getProperty('DATA_FILE_REGISTRY');
@@ -233,6 +234,7 @@ function installTriggers() {
     if (t.getHandlerFunction() === 'colorByStatus') ScriptApp.deleteTrigger(t);
   });
   ScriptApp.newTrigger('colorByStatus').forSpreadsheet(registryId).onEdit().create();
+  if (PropertiesService.getScriptProperties().getProperty('CATALOGUE_FILE')) installCatalogueTriggers_();
   return installEventSync();
 }
 
@@ -335,7 +337,7 @@ function getSettings() {
    so "is the new code live?" is a request, not a guess — pasting the code
    without deploying a New version leaves the old one answering.
 */
-var SCRIPT_VERSION = '2026-10-05 event covers';
+var SCRIPT_VERSION = '2026-10-08 open catalogue';
 
 // ==================== MAIL ====================
 
@@ -544,13 +546,21 @@ var PUBLIC_COACH_COLUMNS = [
 /**
  * POST { action: 'getCoaches' } — no secret: this is what the public page shows.
  * Returns { headers: [...], rows: [[...], ...] } in the column order above.
+ * Since 8 Oct 2026 the page reads the open Catalogue file instead; this stays
+ * for a Vercel without CATALOGUE_SHEET_ID.
  */
 function handleGetCoaches() {
-  var sheet = sheetFor_('Submissions');
-  if (!sheet) return jsonResponse({ success: true, headers: PUBLIC_COACH_COLUMNS, rows: [] });
+  return jsonResponse({
+    success: true, version: SCRIPT_VERSION, headers: PUBLIC_COACH_COLUMNS, rows: publicCoachRows_(),
+  });
+}
 
+/** The catalogue's rows: approved, still members, consenting, with a name. */
+function publicCoachRows_() {
+  var sheet = sheetFor_('Submissions');
+  if (!sheet) return [];
   var values = sheet.getDataRange().getValues();
-  if (values.length < 2) return jsonResponse({ success: true, headers: PUBLIC_COACH_COLUMNS, rows: [] });
+  if (values.length < 2) return [];
 
   var headers = values[0].map(function (h) { return (h || '').toString().trim(); });
   var statusAt = columnIndex_(headers, ['Status']);
@@ -572,9 +582,119 @@ function handleGetCoaches() {
     if (!row[0].trim()) continue; // no name, no card
     rows.push(row);
   }
-  return jsonResponse({
-    success: true, version: SCRIPT_VERSION, headers: PUBLIC_COACH_COLUMNS, rows: rows,
+  return rows;
+}
+
+// ==================== OPEN CATALOGUE FILE ====================
+
+/*
+   Asking this script for the catalogue made the page wait on Google: a
+   3-second run sometimes sat in Google's queue for 30 s and more (8 Oct 2026),
+   and the first morning visitor saw an error. So the catalogue is copied into
+   a file of its own, shared as "anyone with the link can view", and the site
+   reads that file the way it read the old spreadsheet — fast, and without
+   this script in the way.
+
+   The file holds only what the page already shows to everybody: the columns
+   above, for coaches who are approved and agreed to be published. The
+   registry itself stays private.
+
+   The copy is refreshed after every edit in the registry file and every
+   10 minutes (membership changes, coaches' own edits from the edit page).
+*/
+var CATALOGUE_FILE_NAME = 'Coach catalogue (public)';
+
+/**
+ * Run ONCE from the editor (select setupCatalogue, press Run). Makes the open
+ * file next to the three data files, shares it, sets its two triggers and
+ * fills it. Running it again reuses the file and only resets the triggers.
+ * The log shows the file's ID — that goes into Vercel as CATALOGUE_SHEET_ID.
+ */
+function setupCatalogue() {
+  var props = PropertiesService.getScriptProperties();
+  var id = props.getProperty('CATALOGUE_FILE');
+  if (!id) {
+    var registryId = props.getProperty('DATA_FILE_REGISTRY');
+    if (!registryId) throw new Error('DATA_FILE_REGISTRY is not set: run setupDataFiles first');
+    var folder = DriveApp.getFileById(registryId).getParents().next();
+    var book = SpreadsheetApp.create(CATALOGUE_FILE_NAME);
+    book.getSheets()[0].setName('Catalogue');
+    DriveApp.getFileById(book.getId()).moveTo(folder);
+    id = book.getId();
+    props.setProperty('CATALOGUE_FILE', id);
+  }
+
+  var shared = 'yes';
+  try {
+    DriveApp.getFileById(id).setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  } catch (err) {
+    shared = 'NO — share it by hand: Share → General access → Anyone with the link → Viewer (' + err.message + ')';
+  }
+
+  installCatalogueTriggers_();
+  var result = publishCatalogue();
+
+  var report = {
+    CATALOGUE_SHEET_ID: id,
+    url: 'https://docs.google.com/spreadsheets/d/' + id + '/edit',
+    sharedWithAnyoneWithLink: shared,
+    published: result,
+  };
+  Logger.log(JSON.stringify(report, null, 2));
+  return report;
+}
+
+/** Both triggers, replacing earlier ones, so running it twice does no harm. */
+function installCatalogueTriggers_() {
+  var registryId = PropertiesService.getScriptProperties().getProperty('DATA_FILE_REGISTRY');
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    var fn = t.getHandlerFunction();
+    if (fn === 'publishCatalogue' || fn === 'publishCatalogueOnEdit') ScriptApp.deleteTrigger(t);
   });
+  ScriptApp.newTrigger('publishCatalogue').timeBased().everyMinutes(10).create();
+  if (registryId) {
+    ScriptApp.newTrigger('publishCatalogueOnEdit').forSpreadsheet(registryId).onEdit().create();
+  }
+}
+
+/** An edit in the registry file: only Submissions and Members change the catalogue. */
+function publishCatalogueOnEdit(e) {
+  var tab = e && e.range ? e.range.getSheet().getName() : '';
+  if (tab && tab !== 'Submissions' && tab !== 'Members') return;
+  publishCatalogue();
+}
+
+/**
+ * Copies the catalogue rows into the open file. Writes only when something
+ * changed, so the file's history is not one entry every 10 minutes.
+ * Returns 'written N', 'unchanged', 'busy' or 'no file'.
+ */
+function publishCatalogue() {
+  var id = PropertiesService.getScriptProperties().getProperty('CATALOGUE_FILE');
+  if (!id) return 'no file';
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(20000)) return 'busy';
+  try {
+    var table = [PUBLIC_COACH_COLUMNS].concat(publicCoachRows_());
+    var sheet = SpreadsheetApp.openById(id).getSheets()[0];
+    if (!catalogueChanged_(sheet.getDataRange().getDisplayValues(), table)) return 'unchanged';
+    sheet.clearContents();
+    // Plain text, so "+357 99…" stays a phone number and not a sum.
+    sheet.getRange(1, 1, table.length, table[0].length).setNumberFormat('@').setValues(table);
+    return 'written ' + (table.length - 1);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** True when the file's cells differ from the table that should be there. */
+function catalogueChanged_(current, table) {
+  var trim = function (rows) {
+    return rows
+      .map(function (r) { return r.map(function (v) { return (v === null || v === undefined ? '' : v).toString(); }); })
+      .filter(function (r) { return r.some(function (v) { return v !== ''; }); });
+  };
+  return JSON.stringify(trim(current)) !== JSON.stringify(trim(table));
 }
 
 /*
