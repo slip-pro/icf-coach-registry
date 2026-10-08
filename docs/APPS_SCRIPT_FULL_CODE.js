@@ -337,7 +337,7 @@ function getSettings() {
    so "is the new code live?" is a request, not a guess — pasting the code
    without deploying a New version leaves the old one answering.
 */
-var SCRIPT_VERSION = '2026-10-08 open catalogue';
+var SCRIPT_VERSION = '2026-10-08 projects';
 
 // ==================== MAIL ====================
 
@@ -358,7 +358,8 @@ function sendMail_(mail) {
       subject: mail.subject,
       textContent: mail.body,
     };
-    if (settings.REPLY_TO) payload.replyTo = { email: settings.REPLY_TO };
+    var replyTo = mail.replyTo || settings.REPLY_TO;
+    if (replyTo) payload.replyTo = { email: replyTo };
     try {
       var response = UrlFetchApp.fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'post',
@@ -377,7 +378,7 @@ function sendMail_(mail) {
   MailApp.sendEmail({
     to: mail.to,
     name: settings.SENDER_NAME,
-    replyTo: settings.REPLY_TO || undefined,
+    replyTo: mail.replyTo || settings.REPLY_TO || undefined,
     subject: mail.subject,
     body: mail.body,
   });
@@ -455,6 +456,10 @@ function doPost(e) {
       return handleMigrateEventsToPlan(data);
     } else if (action === 'saveEventCover') {
       return handleSaveEventCover(data);
+    } else if (action === 'joinProject') {
+      return handleJoinProject(data);
+    } else if (action === 'chooseCoach') {
+      return handleChooseCoach(data);
     }
 
     return jsonResponse({
@@ -655,6 +660,13 @@ function installCatalogueTriggers_() {
   if (registryId) {
     ScriptApp.newTrigger('publishCatalogueOnEdit').forSpreadsheet(registryId).onEdit().create();
   }
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'publishProjectPlacesOnEdit') ScriptApp.deleteTrigger(t);
+  });
+  var projectsId = PropertiesService.getScriptProperties().getProperty('PROJECTS_FILE');
+  if (projectsId) {
+    ScriptApp.newTrigger('publishProjectPlacesOnEdit').forSpreadsheet(projectsId).onEdit().create();
+  }
 }
 
 /** An edit in the registry file: only Submissions and Members change the catalogue. */
@@ -683,6 +695,7 @@ function publishCatalogue() {
     sheet.getRange(1, 1, table.length, table[0].length).setNumberFormat('@').setValues(table);
     return 'written ' + (table.length - 1);
   } finally {
+    try { publishProjectPlaces_(); } catch (err) { Logger.log('places: ' + err.message); }
     lock.releaseLock();
   }
 }
@@ -2754,4 +2767,360 @@ function moveDriveImages_(urls, folder) {
     } catch (err) { /* not ours, or gone — leave it */ }
   }
   return moved;
+}
+
+// ==================== PROJECTS (site BACKLOG #57) ====================
+
+/*
+   Coaching projects with partner organisations — the first is WIT Cyprus.
+   One file, *Projects*, in the Data folder, with three tabs:
+     Projects         one row per project; the lead fills it in
+     Project coaches  who asked to take part; the lead accepts and sets places
+     Matches          one row per participant and her coach
+   In stage 1 the lead runs the project in this file: accepting a coach is
+   one cell, changing a coach (an exception) is editing one Matches row.
+
+   A participant pays first (a Fienta ticket), then chooses her coach in the
+   registry's project mode. Her ticket is checked in Fienta here, so the
+   check cannot be skipped by calling this script directly, and the ticket is
+   marked used. A project without a Fienta event is free: no ticket asked.
+*/
+var PROJECT_TABS = {
+  'Projects': ['Slug', 'Name', 'Partner', 'Lead name', 'Lead email', 'Status', 'Fienta event ID',
+    'Sessions', 'Session minutes', 'Places per coach', 'Description'],
+  'Project coaches': ['Project', 'Coach email', 'Coach name', 'Status', 'Places', 'Joined at'],
+  'Matches': ['Project', 'Ticket', 'Participant name', 'Participant email', 'Coach email',
+    'Coach name', 'Chosen at', 'Consent', 'Status', 'Notes'],
+};
+var PROJECT_PLACES_TAB = 'Project places';
+
+var projectsBook__ = null;
+
+/** The Projects file, or null before setupProjects has run. */
+function projectsBook_() {
+  if (projectsBook__) return projectsBook__;
+  var id = PropertiesService.getScriptProperties().getProperty('PROJECTS_FILE');
+  if (!id) return null;
+  projectsBook__ = SpreadsheetApp.openById(id);
+  return projectsBook__;
+}
+
+/**
+ * Run ONCE from the editor (select setupProjects, press Run). Makes the
+ * Projects file in the Data folder with its three tabs and a draft WIT Cyprus
+ * row, and adds its edit trigger. Running it again only adds missing tabs.
+ */
+function setupProjects() {
+  var props = PropertiesService.getScriptProperties();
+  var book = projectsBook_();
+  if (!book) {
+    var registryId = props.getProperty('DATA_FILE_REGISTRY');
+    if (!registryId) throw new Error('DATA_FILE_REGISTRY is not set: run setupDataFiles first');
+    var folder = DriveApp.getFileById(registryId).getParents().next();
+    book = SpreadsheetApp.create('Projects');
+    book.setSpreadsheetTimeZone(sheetZone_());
+    DriveApp.getFileById(book.getId()).moveTo(folder);
+    props.setProperty('PROJECTS_FILE', book.getId());
+    projectsBook__ = book;
+  }
+  var blank = book.getSheets().length === 1 && book.getSheets()[0].getLastRow() === 0
+    ? book.getSheets()[0] : null;
+  for (var tab in PROJECT_TABS) {
+    if (book.getSheetByName(tab)) continue;
+    var sheet = book.insertSheet(tab);
+    sheet.getRange(1, 1, 1, PROJECT_TABS[tab].length).setValues([PROJECT_TABS[tab]]).setFontWeight('bold');
+    sheet.setFrozenRows(1);
+    if (tab === 'Projects') {
+      sheet.appendRow(['wit', 'Coaching with WIT Cyprus', 'WIT Cyprus', 'Aleksandra Lipchanskaya', '',
+        'draft', '', 3, 60, 3, '']);
+    }
+  }
+  if (blank) book.deleteSheet(blank);
+  if (props.getProperty('CATALOGUE_FILE')) installCatalogueTriggers_();
+  publishProjectPlaces_();
+  var report = { PROJECTS_FILE: book.getId(), url: book.getUrl() };
+  Logger.log(JSON.stringify(report, null, 2));
+  return report;
+}
+
+/** A tab as objects keyed by header, each with its sheet row number in `_row`. */
+function readTable_(tab) {
+  var book = projectsBook_();
+  var sheet = book && book.getSheetByName(tab);
+  if (!sheet) return { sheet: null, headers: PROJECT_TABS[tab], rows: [] };
+  var values = sheet.getDataRange().getValues();
+  var headers = (values[0] || []).map(function (h) { return (h || '').toString().trim(); });
+  var rows = [];
+  for (var i = 1; i < values.length; i++) {
+    var row = { _row: i + 1 };
+    headers.forEach(function (h, j) {
+      var v = values[i][j];
+      row[h] = v === null || v === undefined ? '' : v instanceof Date ? v : v.toString().trim();
+    });
+    rows.push(row);
+  }
+  return { sheet: sheet, headers: headers, rows: rows };
+}
+
+/** Appends an object as a row, in the tab's own column order. */
+function appendObject_(table, obj) {
+  table.sheet.appendRow(table.headers.map(function (h) { return obj[h] === undefined ? '' : obj[h]; }));
+}
+
+var lower_ = function (v) { return (v || '').toString().trim().toLowerCase(); };
+
+function findProject_(slug) {
+  return readTable_('Projects').rows.filter(function (p) { return lower_(p.Slug) === lower_(slug); })[0] || null;
+}
+
+/** A match that holds a place: anything but cancelled or replaced. */
+function matchCounts_(row) {
+  var s = lower_(row.Status);
+  return s !== 'cancelled' && s !== 'replaced';
+}
+
+/** Accepted coaches of a project with places left, from the three tabs. */
+function projectPlaces_(project, coaches, matches) {
+  var byDefault = Number(project['Places per coach']) || 0;
+  return coaches
+    .filter(function (c) { return lower_(c.Project) === lower_(project.Slug) && lower_(c.Status) === 'accepted'; })
+    .map(function (c) {
+      var places = c.Places === '' ? byDefault : Number(c.Places) || 0;
+      var taken = matches.filter(function (m) {
+        return lower_(m.Project) === lower_(project.Slug) && lower_(m['Coach email']) === lower_(c['Coach email'])
+          && matchCounts_(m);
+      }).length;
+      return { email: lower_(c['Coach email']), name: c['Coach name'], placesLeft: Math.max(0, places - taken) };
+    });
+}
+
+/**
+ * Writes every project's coaches and places left into the open catalogue
+ * file's second tab, so the registry's project mode reads them as fast as
+ * the catalogue itself. Only slugs, coach emails (already on the cards) and
+ * numbers — nothing about participants.
+ */
+function publishProjectPlaces_() {
+  var id = PropertiesService.getScriptProperties().getProperty('CATALOGUE_FILE');
+  if (!id || !projectsBook_()) return 'no file';
+  var projects = readTable_('Projects').rows;
+  var coaches = readTable_('Project coaches').rows;
+  var matches = readTable_('Matches').rows;
+  var table = [['Project', 'Project name', 'Project status', 'Coach email', 'Places left']];
+  projects.forEach(function (p) {
+    if (!p.Slug) return;
+    projectPlaces_(p, coaches, matches).forEach(function (c) {
+      table.push([lower_(p.Slug), p.Name, lower_(p.Status), c.email, String(c.placesLeft)]);
+    });
+  });
+  var book = SpreadsheetApp.openById(id);
+  var sheet = book.getSheetByName(PROJECT_PLACES_TAB) || book.insertSheet(PROJECT_PLACES_TAB);
+  if (!catalogueChanged_(sheet.getDataRange().getDisplayValues(), table)) return 'unchanged';
+  sheet.clearContents();
+  sheet.getRange(1, 1, table.length, table[0].length).setNumberFormat('@').setValues(table);
+  return 'written ' + (table.length - 1);
+}
+
+/** An approved coach in the registry, by email; null otherwise. */
+function registryCoach_(email) {
+  var sheet = sheetFor_('Submissions');
+  if (!sheet) return null;
+  var values = sheet.getDataRange().getValues();
+  var headers = values[0].map(function (h) { return (h || '').toString().trim(); });
+  var statusAt = columnIndex_(headers, ['Status']);
+  var nameAt = columnIndex_(headers, ['Name']);
+  var emailAt = columnIndex_(headers, ['Email', 'E-mail']);
+  for (var i = 1; i < values.length; i++) {
+    if (lower_(values[i][emailAt]) !== lower_(email)) continue;
+    var status = statusAt === -1 ? '' : lower_(values[i][statusAt]);
+    if (status && status !== 'approved') continue;
+    return { name: (values[i][nameAt] || '').toString().trim(), email: lower_(email) };
+  }
+  return null;
+}
+
+/** Where a project's letters go back to: its lead, else the chapter's reply-to. */
+function leadEmail_(project) {
+  return (project['Lead email'] || '').toString().trim() || getSettings().REPLY_TO;
+}
+
+/**
+ * POST { action: 'joinProject', project, email } — a coach asks to take part.
+ * Only approved registry coaches; the lead accepts in the Project coaches tab.
+ */
+function handleJoinProject(data) {
+  var email = lower_(data.email);
+  var project = findProject_(data.project);
+  if (!project || lower_(project.Status) !== 'open') return jsonResponse({ success: false, error: 'project_closed' });
+  if (!email) return jsonResponse({ success: false, error: 'email_required' });
+  var coach = registryCoach_(email);
+  if (!coach) return jsonResponse({ success: false, error: 'not_in_registry' });
+
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(20000)) return jsonResponse({ success: false, error: 'busy' });
+  try {
+    var table = readTable_('Project coaches');
+    var already = table.rows.filter(function (c) {
+      return lower_(c.Project) === lower_(project.Slug) && lower_(c['Coach email']) === email;
+    })[0];
+    if (already) return jsonResponse({ success: true, status: lower_(already.Status) || 'pending' });
+    appendObject_(table, {
+      'Project': lower_(project.Slug), 'Coach email': email, 'Coach name': coach.name,
+      'Status': 'pending', 'Places': '', 'Joined at': new Date(),
+    });
+  } finally {
+    lock.releaseLock();
+  }
+
+  var settings = getSettings();
+  sendMail_({
+    to: leadEmail_(project),
+    subject: coach.name + ' wants to join ' + project.Name,
+    body: coach.name + ' (' + email + ') asked to take part in ' + project.Name + '.\n\n'
+      + 'To accept, open the Projects file, tab "Project coaches", and set Status to "accepted"'
+      + ' (Places: leave empty for ' + (project['Places per coach'] || 'the default') + ', or type a number).\n',
+  });
+  sendMail_({
+    to: email,
+    replyTo: leadEmail_(project),
+    subject: 'You asked to join ' + project.Name + ' — ' + settings.SENDER_NAME,
+    body: 'Hello ' + coach.name + ',\n\n'
+      + 'Thank you for joining ' + project.Name + '. ' + (project['Lead name'] || 'The project lead')
+      + ' will confirm your place and let you know how many participants you can take.\n\n'
+      + 'If it was not you, just ignore this letter.\n\n' + settings.SENDER_NAME + '\n',
+  });
+  return jsonResponse({ success: true, status: 'pending' });
+}
+
+/**
+ * Asks Fienta about a ticket. Returns { ok, error, email }: ok only for a
+ * ticket of this event that has not been used.
+ */
+function checkFientaTicket_(code, eventId) {
+  var key = (PropertiesService.getScriptProperties().getProperty('FIENTA_API_KEY') || '').trim();
+  if (!key) return { ok: false, error: 'fienta_not_configured' };
+  var response = UrlFetchApp.fetch('https://fienta.com/api/v1/tickets/' + encodeURIComponent(code), {
+    headers: { Authorization: 'Bearer ' + key, accept: 'application/json' },
+    muteHttpExceptions: true,
+  });
+  var status = response.getResponseCode();
+  if (status === 404) return { ok: false, error: 'ticket_not_found' };
+  if (status !== 200) {
+    Logger.log('Fienta ' + status + ': ' + response.getContentText().slice(0, 300));
+    return { ok: false, error: 'fienta_unavailable' };
+  }
+  var ticket = JSON.parse(response.getContentText()).ticket || {};
+  if (String(ticket.event_id) !== String(eventId).trim()) return { ok: false, error: 'ticket_other_event' };
+  if (ticket.status !== 'UNUSED') return { ok: false, error: 'ticket_used' };
+  return { ok: true, email: lower_(ticket.order_email) };
+}
+
+/** Marks a ticket used in Fienta. A failure is logged: the Matches row already stops a second use. */
+function markFientaTicketUsed_(code) {
+  var key = (PropertiesService.getScriptProperties().getProperty('FIENTA_API_KEY') || '').trim();
+  try {
+    var response = UrlFetchApp.fetch('https://fienta.com/api/v1/tickets/' + encodeURIComponent(code), {
+      method: 'put',
+      contentType: 'application/json',
+      headers: { Authorization: 'Bearer ' + key, accept: 'application/json' },
+      payload: JSON.stringify({
+        status: 'USED',
+        used_at: Utilities.formatDate(new Date(), 'Etc/UTC', 'yyyy-MM-dd HH:mm:ss'),
+      }),
+      muteHttpExceptions: true,
+    });
+    if (response.getResponseCode() !== 200) {
+      Logger.log('Fienta mark used ' + response.getResponseCode() + ': ' + response.getContentText().slice(0, 300));
+    }
+  } catch (err) {
+    Logger.log('Fienta mark used: ' + err.message);
+  }
+}
+
+/**
+ * POST { action: 'chooseCoach', project, coachEmail, name, email, ticket, consent }
+ * A participant chooses her coach. The same ticket asked twice returns the
+ * first match, so a retry after a slow answer cannot make a second one.
+ */
+function handleChooseCoach(data) {
+  var project = findProject_(data.project);
+  if (!project || lower_(project.Status) !== 'open') return jsonResponse({ success: false, error: 'project_closed' });
+  var name = (data.name || '').toString().trim();
+  var email = lower_(data.email);
+  var coachEmail = lower_(data.coachEmail);
+  var paid = !!(project['Fienta event ID'] || '').toString().trim();
+  var ticket = (data.ticket || '').toString().trim().toUpperCase();
+  if (!name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return jsonResponse({ success: false, error: 'name_email_required' });
+  if (data.consent !== true) return jsonResponse({ success: false, error: 'consent_required' });
+  if (paid && !ticket) return jsonResponse({ success: false, error: 'ticket_required' });
+  // A free project has no ticket: one choice per email.
+  var key = paid ? ticket : 'email:' + email;
+
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(25000)) return jsonResponse({ success: false, error: 'busy' });
+  var coach;
+  try {
+    var matches = readTable_('Matches');
+    var earlier = matches.rows.filter(function (m) {
+      return lower_(m.Project) === lower_(project.Slug) && (m.Ticket || '').toString().toUpperCase() === key.toUpperCase();
+    })[0];
+    if (earlier) return jsonResponse({ success: true, already: true, coachName: earlier['Coach name'] });
+
+    coach = projectPlaces_(project, readTable_('Project coaches').rows, matches.rows)
+      .filter(function (c) { return c.email === coachEmail; })[0];
+    if (!coach) return jsonResponse({ success: false, error: 'coach_not_in_project' });
+    if (coach.placesLeft < 1) return jsonResponse({ success: false, error: 'coach_full' });
+
+    if (paid) {
+      var check = checkFientaTicket_(ticket, project['Fienta event ID']);
+      if (!check.ok) return jsonResponse({ success: false, error: check.error });
+    }
+    appendObject_(matches, {
+      'Project': lower_(project.Slug), 'Ticket': key, 'Participant name': name, 'Participant email': email,
+      'Coach email': coach.email, 'Coach name': coach.name, 'Chosen at': new Date(),
+      'Consent': formatDate_(new Date()), 'Status': 'active',
+    });
+    if (paid) markFientaTicketUsed_(ticket);
+  } finally {
+    lock.releaseLock();
+  }
+
+  try { publishProjectPlaces_(); } catch (err) { Logger.log('places: ' + err.message); }
+  sendIntroduction_(project, coach, name, email);
+  return jsonResponse({ success: true, coachName: coach.name });
+}
+
+/** The introduction letter, to the participant and to the coach; replies go to the lead. */
+function sendIntroduction_(project, coach, name, email) {
+  var settings = getSettings();
+  var sessions = project.Sessions ? project.Sessions + ' sessions' : 'your sessions';
+  var lead = (project['Lead name'] || 'the project lead') + ' (' + leadEmail_(project) + ')';
+  sendMail_({
+    to: email,
+    replyTo: leadEmail_(project),
+    subject: 'Your coach in ' + project.Name + ': ' + coach.name,
+    body: 'Hello ' + name + ',\n\n'
+      + 'Thank you for choosing your coach in ' + project.Name + '. Your coach is ' + coach.name
+      + ', ' + coach.email + '.\n\n'
+      + coach.name + ' has your email and will write to you to arrange ' + sessions + '. '
+      + 'You can also write first.\n\n'
+      + 'Questions about the programme: ' + lead + ' — just reply to this letter.\n\n'
+      + settings.SENDER_NAME + '\n',
+  });
+  sendMail_({
+    to: coach.email,
+    replyTo: leadEmail_(project),
+    subject: 'New participant in ' + project.Name + ': ' + name,
+    body: 'Hello ' + coach.name + ',\n\n'
+      + name + ' (' + email + ') chose you as their coach in ' + project.Name + '. '
+      + (project['Fienta event ID'] ? 'The programme is already paid. ' : '')
+      + 'Please write to them to arrange ' + sessions + '.\n\n'
+      + 'Questions: ' + lead + ' — reply to this letter.\n\n'
+      + settings.SENDER_NAME + '\n',
+  });
+}
+
+/** An edit in the Projects file: refresh the places in the open file. */
+function publishProjectPlacesOnEdit() {
+  publishProjectPlaces_();
 }
