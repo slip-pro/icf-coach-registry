@@ -95,6 +95,9 @@ export function renderProjectIntro(project) {
     </section>`;
 }
 
+/** Answers that mean "ask again", not "no". */
+const RETRY_ERRORS = ['busy', 'timeout', 'unavailable'];
+
 const ERROR_KEYS = {
   ticket_not_found: 'projectErrTicketNotFound',
   ticket_used: 'projectErrTicketUsed',
@@ -155,19 +158,28 @@ export function openChooseForm(coach, { apiBase, slug, paid = true, onDone, onCl
     if (!fields.consent) { message.textContent = t('projectErrConsent'); return; }
     submit.disabled = true;
     message.textContent = t('projectSending');
+    const body = JSON.stringify({
+      action: 'chooseCoach', project: slug, coachEmail: coach.email,
+      name: fields.name, email: fields.email, ticket: fields.ticket || '', consent: true,
+    });
+    // Google sometimes keeps the script waiting. Asking again is safe — the
+    // same ticket gets the same coach — so a slow or busy answer is retried
+    // before the visitor is told anything went wrong.
     let data = null;
-    try {
-      const response = await fetch(`${apiBase.replace(/\/$/, '')}/project`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'chooseCoach', project: slug, coachEmail: coach.email,
-          name: fields.name, email: fields.email, ticket: fields.ticket || '', consent: true,
-        }),
-      });
-      data = await response.json();
-    } catch (_err) {
-      data = null;
+    for (let tries = 0; tries < 3; tries++) {
+      try {
+        const response = await fetch(`${apiBase.replace(/\/$/, '')}/project`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+          signal: AbortSignal.timeout(65000),
+        });
+        data = await response.json();
+      } catch (_err) {
+        data = null;
+      }
+      if (data && (data.success || !RETRY_ERRORS.includes(data.error))) break;
+      if (tries === 0) message.textContent = t('projectStillChecking');
     }
     if (data && data.success) {
       form.innerHTML = `

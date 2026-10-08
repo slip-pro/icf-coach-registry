@@ -337,7 +337,7 @@ function getSettings() {
    so "is the new code live?" is a request, not a guess — pasting the code
    without deploying a New version leaves the old one answering.
 */
-var SCRIPT_VERSION = '2026-10-08 projects';
+var SCRIPT_VERSION = '2026-10-08 projects 2';
 
 // ==================== MAIL ====================
 
@@ -3059,14 +3059,21 @@ function handleChooseCoach(data) {
   // A free project has no ticket: one choice per email.
   var key = paid ? ticket : 'email:' + email;
 
+  var earlierMatch = function (rows) {
+    return rows.filter(function (m) {
+      return lower_(m.Project) === lower_(project.Slug) && (m.Ticket || '').toString().toUpperCase() === key.toUpperCase();
+    })[0];
+  };
+  // A ticket already used answers at once, without queueing behind other choices.
+  var seen = earlierMatch(readTable_('Matches').rows);
+  if (seen) return jsonResponse({ success: true, already: true, coachName: seen['Coach name'] });
+
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(25000)) return jsonResponse({ success: false, error: 'busy' });
   var coach;
   try {
     var matches = readTable_('Matches');
-    var earlier = matches.rows.filter(function (m) {
-      return lower_(m.Project) === lower_(project.Slug) && (m.Ticket || '').toString().toUpperCase() === key.toUpperCase();
-    })[0];
+    var earlier = earlierMatch(matches.rows);
     if (earlier) return jsonResponse({ success: true, already: true, coachName: earlier['Coach name'] });
 
     coach = projectPlaces_(project, readTable_('Project coaches').rows, matches.rows)

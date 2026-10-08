@@ -1,11 +1,28 @@
 {
   "functions": {
-    "api/coaches.js": { "maxDuration": 60 }
+    "api/coaches.js": {
+      "maxDuration": 60
+    },
+    "api/project.js": {
+      "maxDuration": 60
+    }
   },
   "rewrites": [
-    { "source": "/", "destination": "/src/index.html" },
-    { "source": "/register", "destination": "/src/register.html" },
-    { "source": "/edit", "destination": "/src/edit.html" },
-    { "source": "/success", "destination": "/src/success.html" }
+    {
+      "source": "/",
+      "destination": "/src/index.html"
+    },
+    {
+      "source": "/register",
+      "destination": "/src/register.html"
+    },
+    {
+      "source": "/edit",
+      "destination": "/src/edit.html"
+    },
+    {
+      "source": "/success",
+      "destination": "/src/success.html"
+    }
   ]
 }

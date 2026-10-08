@@ -242,6 +242,11 @@ const dictionary = {
     ru: 'Проверяем билет…',
     el: 'Ελέγχουμε το εισιτήριό σας…',
   },
+  projectStillChecking: {
+    en: 'Still checking — Google is slow right now. Please keep this window open.',
+    ru: 'Всё ещё проверяем — Google сейчас медленный. Не закрывайте окно, пожалуйста.',
+    el: 'Ακόμη ελέγχουμε — το Google είναι αργό αυτή τη στιγμή. Μην κλείσετε το παράθυρο.',
+  },
   projectDoneTitle: {
     en: 'Done!',
     ru: 'Готово!',
