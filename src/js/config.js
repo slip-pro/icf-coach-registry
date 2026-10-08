@@ -15,6 +15,7 @@
 
 const CACHE_KEY = 'icf_registry_config';
 const CACHE_TTL_MS = 5 * 60 * 1000;
+const CONFIG_TIMEOUT_MS = 6000;
 
 /** @type {RemoteConfig|null} */
 let cachedConfig = null;
@@ -88,7 +89,9 @@ export async function fetchConfig(apiBase = '') {
     const url = apiBase
       ? `${apiBase.replace(/\/submit$/, '')}/config`
       : '/api/config';
-    const response = await fetch(url);
+    // The catalogue waits for this, and only the brand colours depend on it:
+    // past a few seconds the page goes on with the defaults.
+    const response = await fetch(url, { signal: AbortSignal.timeout(CONFIG_TIMEOUT_MS) });
     if (!response.ok) return null;
     const data = await response.json();
     if (data.success && data.config) {

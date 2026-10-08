@@ -261,7 +261,10 @@ export async function fetchCoaches({ apiBase = '/api', mock = false } = {}) {
   }
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
+  // Longer than the server's worst case (three tries, about 37 s, when the
+  // Apps Script hangs and nothing is saved yet), so the page never gives up
+  // on an answer that is still coming. Usually it takes under a second.
+  const timeoutId = setTimeout(() => controller.abort(), 45000);
   let response;
   try {
     response = await fetch(`${apiBase.replace(/\/$/, '')}/coaches`, { signal: controller.signal });

@@ -139,7 +139,38 @@ function askAppsScript({ ask = askOnce, hedgeMs = HEDGE_AFTER_MS } = {}) {
   });
 }
 
-export default async function handler(req, res) {
+/**
+ * How long a visitor waits for the Apps Script when a saved copy is at hand.
+ * The edge cache does not always survive a quiet night: on 8 Oct 2026 the
+ * first morning visit missed it, the Apps Script hung through all three tries
+ * (37 s) and the page gave up at 15 s, so a refresh was needed. Past this,
+ * the visitor gets the saved copy and the ask goes on in the background.
+ */
+const SERVE_SAVED_AFTER_MS = 8000;
+
+/** This instance's last good catalogue, else the saved one; null when neither. */
+async function lastGoodOrSaved() {
+  if (lastGood) return lastGood;
+  try {
+    const saved = await savedCopy.read();
+    if (saved && !lastGood) lastGood = { headers: saved.headers, rows: saved.rows };
+  } catch (err) {
+    console.error('[api/coaches] saved copy:', err.message);
+  }
+  return lastGood;
+}
+
+/** Keeps the function alive for `promise` after the answer is sent. Off Vercel, does nothing. */
+async function inBackground(promise) {
+  try {
+    const { waitUntil } = await import('@vercel/functions');
+    waitUntil(promise);
+  } catch {
+    // Not on Vercel (tests, local server): the promise just runs on.
+  }
+}
+
+export default async function handler(req, res, { serveSavedAfterMs = SERVE_SAVED_AFTER_MS } = {}) {
   if (req.method !== 'GET') {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
@@ -147,29 +178,46 @@ export default async function handler(req, res) {
     return res.status(500).json({ success: false, error: 'APPS_SCRIPT_URL environment variable is not set' });
   }
 
-  try {
-    const data = await askAppsScript();
+  const live = askAppsScript().then(async (data) => {
     lastGood = { headers: data.headers, rows: data.rows };
     await save(lastGood);
+    return lastGood;
+  });
+  const fallback = lastGoodOrSaved();
+
+  let timer;
+  const first = await Promise.race([
+    live.then((catalogue) => ({ catalogue }), (err) => ({ err })),
+    new Promise((resolve) => { timer = setTimeout(() => resolve({ late: true }), serveSavedAfterMs); }),
+  ]);
+  clearTimeout(timer);
+
+  if (first.catalogue) {
     res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400');
-    return res.status(200).json({ success: true, ...lastGood });
-  } catch (err) {
-    console.error('[api/coaches]', err.message);
-    if (!lastGood) {
-      try {
-        const saved = await savedCopy.read();
-        if (saved) lastGood = { headers: saved.headers, rows: saved.rows };
-      } catch (readErr) {
-        console.error('[api/coaches] saved copy:', readErr.message);
-      }
-    }
-    if (lastGood) {
-      // Short cache, so the edge asks again soon instead of holding this for 5 minutes.
-      res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=86400');
-      return res.status(200).json({ success: true, ...lastGood });
-    }
-    return res.status(502).json({ success: false, error: 'Could not load coaches' });
+    return res.status(200).json({ success: true, ...first.catalogue });
   }
+  if (first.err) console.error('[api/coaches]', first.err.message);
+
+  const saved = await fallback;
+  if (saved) {
+    // The ask is still on: let it finish and save, so the next visit gets it.
+    if (first.late) await inBackground(live.catch((err) => console.error('[api/coaches]', err.message)));
+    // Short cache, so the edge asks again soon instead of holding this for 5 minutes.
+    res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=86400');
+    return res.status(200).json({ success: true, ...saved });
+  }
+
+  // Nothing saved yet: all that is left is to wait for the Apps Script.
+  if (first.late) {
+    try {
+      const catalogue = await live;
+      res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400');
+      return res.status(200).json({ success: true, ...catalogue });
+    } catch (err) {
+      console.error('[api/coaches]', err.message);
+    }
+  }
+  return res.status(502).json({ success: false, error: 'Could not load coaches' });
 }
 
 export { askAppsScript, savedCopy };

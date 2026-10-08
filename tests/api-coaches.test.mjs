@@ -99,6 +99,30 @@ const realFetch = globalThis.fetch;
   const r = fakeRes(); await cold.default({ method: "GET" }, r);
   eq("save fails: page still served", [r.code, r.body.rows], [200, [["live"]]]);
 }
+// a hung script on a cold instance: the saved copy right away, the live answer saved later
+{
+  const cold = await import("../api/coaches.js?cold-hung");
+  const writes = [];
+  cold.savedCopy.write = async (json) => { writes.push(json); };
+  cold.savedCopy.read = async () => ({ headers: ["Name"], rows: [["saved"]] });
+  globalThis.fetch = () => new Promise((resolve) =>
+    setTimeout(() => resolve({ ok: true, text: async () => JSON.stringify(ok("late")) }), 300));
+  const t = Date.now();
+  const r = fakeRes(); await cold.default({ method: "GET" }, r, { serveSavedAfterMs: 50 });
+  eq("hung script: saved copy, short cache", [r.code, r.body.rows, r.headers["Cache-Control"]], [200, [["saved"]], "public, s-maxage=30, stale-while-revalidate=86400"]);
+  eq("…without waiting for it", Date.now() - t < 250, true);
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  eq("…its late answer still saved", writes, [JSON.stringify({ headers: ["Name"], rows: [["late"]] })]);
+}
+{
+  const cold = await import("../api/coaches.js?cold-hung-nothing");
+  cold.savedCopy.read = async () => null;
+  cold.savedCopy.write = async () => {};
+  globalThis.fetch = () => new Promise((resolve) =>
+    setTimeout(() => resolve({ ok: true, text: async () => JSON.stringify(ok("late")) }), 150));
+  const r = fakeRes(); await cold.default({ method: "GET" }, r, { serveSavedAfterMs: 50 });
+  eq("slow script, nothing saved: waits for it", [r.code, r.body.rows], [200, [["late"]]]);
+}
 globalThis.fetch = realFetch;
 
 console.log(`${passed} passed, ${failed} failed`);

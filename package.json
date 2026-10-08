@@ -2,6 +2,7 @@
   "name": "coach-registry",
   "private": true,
   "dependencies": {
-    "@vercel/blob": "^2.8.1"
+    "@vercel/blob": "^2.8.1",
+    "@vercel/functions": "^3.9.0"
   }
 }
