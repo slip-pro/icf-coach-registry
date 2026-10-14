@@ -281,3 +281,26 @@ italic excerpt on the card with the word highlighted — that is the answer to "
 turn up". Checked on the live 32: "карьера" 13, "team" 20, "выгорание" 1, "burnout" 0 — the
 language gap from the description is real. Way 2 (a `Keywords` field) stays open: decide after
 watching what people type.
+
+---
+
+## G-032: The registry matches the chapter's members
+
+### F-030: Check every listed coach against the `Members` roster
+**Priority**: Medium
+**Requested**: Owner, 14 Oct 2026
+
+**Description**: A one-time reconciliation of the coaches in the registry (`Submissions` in
+*Registry & membership*) against the chapter roster (the `Members` tab of the same file). G-029
+hides only coaches the roster marks `left`; a coach the roster does not know at all stays visible.
+So nobody has yet checked that the catalogue and the membership list agree.
+
+The result is a list for the owner to decide on, not automatic changes:
+- listed coaches not found in `Members` — not a member, or registered under another email
+  (the fix for the latter is the `Member ID` column in `Submissions`);
+- listed coaches whose `Member until` has passed but whose status is not `left`;
+- a mismatch between the `ICF Level` the coach chose and the roster's `Credential`;
+- members with a credential who are not in the registry — people who could be invited to register.
+
+**Open**: after the first pass, whether this becomes a regular check (e.g. a monthly letter to the
+admin) or stays manual.
