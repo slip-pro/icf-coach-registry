@@ -13,10 +13,10 @@
  */
 
 /**
- * The main ICF Cyprus website. Update here when the custom domain is
- * attached — this is the only place the address appears.
+ * The main ICF Cyprus website. Update here if the site ever moves —
+ * this is the only place the address appears.
  */
-const SITE_URL = 'https://icf-cyprus-website.vercel.app';
+const SITE_URL = 'https://icf-cyprus.com';
 
 const NAV = [
   { href: '/about', label: 'About ICF & coaching' },
