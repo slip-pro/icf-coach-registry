@@ -323,4 +323,5 @@ owner in chat; names stay out of the repo. What it found:
 `getCoaches` carries no `Member ID`, so a coach already linked by ID could only be matched by email
 or name here; the coaches that turned up by name are exactly the ones worth linking.
 
-Still open: one-off or a regular (e.g. monthly) check — the owner decides after acting on this list.
+**Decided 22 Oct 2026**: the check stays one-off; the owner repeats it by hand when needed. No
+regular letter.
