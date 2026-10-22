@@ -323,5 +323,11 @@ owner in chat; names stay out of the repo. What it found:
 `getCoaches` carries no `Member ID`, so a coach already linked by ID could only be matched by email
 or name here; the coaches that turned up by name are exactly the ones worth linking.
 
+**Owner's answer, 22 Oct 2026**: all of them are the chapter's. The shortened name and the other
+surname are the same people as in the roster, so 7 coaches in all want a `Member ID` in
+`Submissions`. The two "non-members" belong to other ICF chapters and stay in the registry. A
+repeat check will flag them again as "not in `Members`"; that is expected. G-029 hides only `left`,
+so they stay visible without any change.
+
 **Decided 22 Oct 2026**: the check stays one-off; the owner repeats it by hand when needed. No
 regular letter.
