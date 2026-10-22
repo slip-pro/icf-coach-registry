@@ -304,3 +304,23 @@ The result is a list for the owner to decide on, not automatic changes:
 
 **Open**: after the first pass, whether this becomes a regular check (e.g. a monthly letter to the
 admin) or stays manual.
+
+**First pass done 22 Oct 2026** — a script outside the repo read both tabs through the Apps Script
+(`getCoaches` for the 34 listed coaches, `getRoster` for the 78 roster rows, 77 not `left`), matched
+by email, then by name (`nameSkeleton` from `src/js/name-search.js`). The list itself went to the
+owner in chat; names stay out of the repo. What it found:
+- 4 listed coaches with no email match and no clear name match. One is the same person under a
+  shortened name and another email (MCC); one may be a member under another surname; two look
+  like non-members.
+- 5 more matched only by name — same person, different email. These are the rows that want a
+  `Member ID` in `Submissions`.
+- 2 listed coaches whose `Member until` (30 Sep 2026) has passed, auto-renewal off, status still
+  `active`. Two more roster rows like that are not in the registry.
+- 1 level mismatch: the registry says ACC, the roster has no credential.
+- 22–23 members with a credential (ACC/PCC/MCC, three with ACTC) not in the registry — the
+  invitation list.
+
+`getCoaches` carries no `Member ID`, so a coach already linked by ID could only be matched by email
+or name here; the coaches that turned up by name are exactly the ones worth linking.
+
+Still open: one-off or a regular (e.g. monthly) check — the owner decides after acting on this list.
