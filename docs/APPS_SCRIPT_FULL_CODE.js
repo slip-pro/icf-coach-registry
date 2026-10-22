@@ -337,7 +337,7 @@ function getSettings() {
    so "is the new code live?" is a request, not a guess — pasting the code
    without deploying a New version leaves the old one answering.
 */
-var SCRIPT_VERSION = '2026-10-08 projects 2';
+var SCRIPT_VERSION = '2026-10-22 cover folder';
 
 // ==================== MAIL ====================
 
@@ -2202,7 +2202,7 @@ var EVENT_PLAN_COLUMNS = {
 var EVENT_MEDIA_SHEET = 'Event media';
 // "Event" is the folder's name — date and title — so a person reading the tab
 // can tell which row is which. The script itself goes by Folder ID.
-var EVENT_MEDIA_HEADERS = ['Event', 'Folder ID', 'Cover', 'Photos', 'Testimonials', 'Testimonials updated', 'Synced at'];
+var EVENT_MEDIA_HEADERS = ['Event', 'Folder ID', 'Cover', 'Cover folder ID', 'Photos', 'Testimonials', 'Testimonials updated', 'Synced at'];
 
 var PLAN_MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 
@@ -2355,7 +2355,7 @@ function readEventPlan_() {
 }
 
 /**
- * Folder ID → { cover, photos[], testimonials } from the last sync. Columns
+ * Folder ID → { cover, coverFolder, photos[], testimonials } from the last sync. Columns
  * are found by header, so the tab written before the "Event" column existed
  * still reads.
  */
@@ -2368,6 +2368,7 @@ function readEventMedia_() {
   var col = {
     id: columnIndex_(h, ['Folder ID']),
     cover: columnIndex_(h, ['Cover']),
+    coverFolder: columnIndex_(h, ['Cover folder ID']),
     photos: columnIndex_(h, ['Photos']),
     text: columnIndex_(h, ['Testimonials']),
     updated: columnIndex_(h, ['Testimonials updated'])
@@ -2381,6 +2382,7 @@ function readEventMedia_() {
     if (!id) continue;
     media[id] = {
       cover: cell(rows[i], col.cover).trim(),
+      coverFolder: cell(rows[i], col.coverFolder).trim(),
       photos: splitList_(cell(rows[i], col.photos)),
       testimonials: cell(rows[i], col.text),
       testimonialsUpdated: cell(rows[i], col.updated)
@@ -2391,7 +2393,7 @@ function readEventMedia_() {
 
 /**
  * POST { action: 'getEventPlan', secret: '...' }
- * → { plan: [...], media: { <folder id>: { cover, photos, testimonials } } }
+ * → { plan: [...], media: { <folder id>: { cover, coverFolder, photos, testimonials } } }
  */
 function handleGetEventPlan(data) {
   if (!contentSecretOk_(data)) {
@@ -2564,7 +2566,8 @@ function driveImageUrl_(file) {
  * since the last sync — opening a Doc is the slowest step here.
  */
 function collectEventMedia_(folder, previous) {
-  var covers = publicImages_(childFolder_(folder, 'Cover'));
+  var coverFolder = childFolder_(folder, 'Cover');
+  var covers = publicImages_(coverFolder);
   covers.sort(function (a, b) { return b.getLastUpdated() - a.getLastUpdated(); });
 
   var photos = publicImages_(childFolder_(folder, 'Photos'));
@@ -2578,6 +2581,7 @@ function collectEventMedia_(folder, previous) {
 
   return {
     cover: covers.length ? driveImageUrl_(covers[0]) : '',
+    coverFolder: coverFolder.getId(),   // the admin desk's "Cover" button opens it
     photos: photos.map(driveImageUrl_),
     testimonials: text,
     testimonialsUpdated: updated
@@ -2614,7 +2618,7 @@ function syncEventFolders() {
     var now = new Date().toISOString();
     for (var id in folders) {
       var m = collectEventMedia_(folders[id], previous[id]);
-      out.push([folders[id].getName(), id, m.cover, m.photos.join(', '), m.testimonials, m.testimonialsUpdated, now]);
+      out.push([folders[id].getName(), id, m.cover, m.coverFolder, m.photos.join(', '), m.testimonials, m.testimonialsUpdated, now]);
     }
     // In date order: every folder name starts with its date.
     out.sort(function (a, b) { return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0; });

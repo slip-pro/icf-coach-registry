@@ -1,4 +1,5 @@
 // saveEventCover: a picture into an event folder's Cover, never twice, never outside the events root.
+// The folder sync records the Cover folder's ID, for the admin desk's "Cover" button.
 // Run: node tests/apps-script-covers.test.mjs
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
@@ -21,6 +22,7 @@ function folder(id, parent) {
     getFoldersByName: (n) => iter(f.kids.filter((k) => k.name === n)),
     createFolder: (n) => { const k = folder(id + "/" + n, f); k.name = n; f.kids.push(k); return k; },
     getFilesByName: (n) => iter(f.files.filter((x) => x.name === n)),
+    getFiles: () => iter(f.files),
     createFile: (blob) => { f.files.push({ name: blob.name, type: blob.type, bytes: blob.bytes, isTrashed: () => false }); },
   };
   folders[id] = f; return f;
@@ -57,6 +59,23 @@ throws("no bytes", () => sb.saveEventCover_({ folderId: event.id, filename: "x.j
 eq("handler needs the secret", sb.handleSaveEventCover({ secret: "no", folderId: event.id, filename: "z.jpg", base64: pic }).error, "Forbidden");
 eq("handler with the secret", sb.handleSaveEventCover({ secret: "s", folderId: event.id, filename: "z.jpg", base64: pic }).saved, true);
 eq("handler reports errors", sb.handleSaveEventCover({ secret: "s", folderId: "OTHER", filename: "z.jpg", base64: pic }).error, "Not an event folder");
+
+// The sync records the Cover folder, and the desk reads it back.
+sb.MimeType = { GOOGLE_DOCS: "doc" };
+const when = new Date("2026-10-01T00:00:00Z");
+const show = root.createFolder("2026-11-08 Breakfast");
+show.files.push({ name: "Testimonials", getMimeType: () => "doc", isTrashed: () => false, getLastUpdated: () => when });
+const m = sb.collectEventMedia_(show, { testimonialsUpdated: when.toISOString(), testimonials: "" });
+const coverKid = show.kids.find((k) => k.name === "Cover");
+eq("cover folder recorded", m.coverFolder, coverKid.id);
+eq("no picture yet", m.cover, "");
+
+const tab = [sb.EVENT_MEDIA_HEADERS, ["2026-11-08 Breakfast", show.id, "", coverKid.id, "", "", "", ""]];
+sb.ensureSheet_ = () => ({ getDataRange: () => ({ getValues: () => tab }) });
+eq("read back", sb.readEventMedia_()[show.id].coverFolder, coverKid.id);
+const older = [["Event", "Folder ID", "Cover", "Photos"], ["x", "F1", "c", ""]];
+sb.ensureSheet_ = () => ({ getDataRange: () => ({ getValues: () => older }) });
+eq("tab from before the column: empty", sb.readEventMedia_().F1.coverFolder, "");
 
 console.log(`${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
