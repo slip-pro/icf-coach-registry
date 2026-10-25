@@ -359,7 +359,7 @@ What it takes:
 
 ---
 
-## G-034: No legal address in the footer
+## G-034: No legal address in the footer — Done 25 Oct 2026
 
 ### F-032: Remove the chapter's legal address from the footer
 **Priority**: Low — minutes
@@ -369,3 +369,7 @@ What it takes:
 ("Demetras 9, Strovolos, 2058 Nicosia, Cyprus") above the email — `src/js/site-chrome.js`, the
 `footer` markup. Remove the address line; the email and the copyright stay. The footer copies the
 main site's, so the website repo's footer wants the same change, or the two drift apart.
+
+**Done 25 Oct 2026**: the address line is gone from `site-chrome.js`. The website's footer never had
+an address, so nothing to change there. (The removed address was the old one; the chapter's is now
+Filotimou 6.)
