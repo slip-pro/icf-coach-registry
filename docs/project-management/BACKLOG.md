@@ -370,6 +370,7 @@ What it takes:
 `footer` markup. Remove the address line; the email and the copyright stay. The footer copies the
 main site's, so the website repo's footer wants the same change, or the two drift apart.
 
-**Done 25 Oct 2026**: the address line is gone from `site-chrome.js`. The website's footer never had
-an address, so nothing to change there. (The removed address was the old one; the chapter's is now
-Filotimou 6.)
+**Done 25 Oct 2026**: the address line is gone from `site-chrome.js` (it still had the old address,
+Demetras 9). The website's footer (`components/Footer.tsx` in the website repo) showed the current
+one, Filotimou 6; removed there the same day. The privacy page keeps the address: the data
+controller has to be named there.
