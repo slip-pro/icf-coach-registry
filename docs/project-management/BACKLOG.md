@@ -331,3 +331,28 @@ so they stay visible without any change.
 
 **Decided 22 Oct 2026**: the check stays one-off; the owner repeats it by hand when needed. No
 regular letter.
+
+---
+
+## G-033: The Fienta link is set from the events admin desk
+
+### F-031: A "Tickets / link" field for each event in the admin desk
+**Priority**: Medium
+**Requested**: Owner, 25 Oct 2026
+
+**Description**: An event's ticket link (Fienta, or a partner's event page) lives in the
+`Tickets / link` column of the `Event plan` tab, and the site already shows it on the event page.
+Today it can only be put there by opening the sheet. Wanted: the events admin desk lets the person
+running an event paste the link right next to the event, the way the Cover button already works.
+
+What it takes:
+- **Apps Script**: a write action next to `saveEventCover` (e.g. `saveEventLink` — `secret`, the
+  event's row or folder ID, the URL) that writes the `Tickets / link` cell. The column and its
+  aliases are already in `EVENT_PLAN_COLUMNS.link`; nothing new in the sheet. Bump `SCRIPT_VERSION`,
+  redeploy, check the live script before pushing the desk.
+- **Admin desk** (the website repo): a field per event with Save, showing the current link; an empty
+  value clears it.
+- Check the value is an `https://` address; a Fienta link is the usual case but a partner's page is
+  allowed too, so no Fienta-only check.
+
+**Open**: whether the desk should also offer "open in Fienta" or just the plain field.
