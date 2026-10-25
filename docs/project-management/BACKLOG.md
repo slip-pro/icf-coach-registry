@@ -356,3 +356,16 @@ What it takes:
   allowed too, so no Fienta-only check.
 
 **Open**: whether the desk should also offer "open in Fienta" or just the plain field.
+
+---
+
+## G-034: No legal address in the footer
+
+### F-032: Remove the chapter's legal address from the footer
+**Priority**: Low — minutes
+**Requested**: Owner, 25 Oct 2026
+
+**Description**: The footer on the registry's standalone pages shows the chapter's legal address
+("Demetras 9, Strovolos, 2058 Nicosia, Cyprus") above the email — `src/js/site-chrome.js`, the
+`footer` markup. Remove the address line; the email and the copyright stay. The footer copies the
+main site's, so the website repo's footer wants the same change, or the two drift apart.
