@@ -372,5 +372,9 @@ main site's, so the website repo's footer wants the same change, or the two drif
 
 **Done 25 Oct 2026**: the address line is gone from `site-chrome.js` (it still had the old address,
 Demetras 9). The website's footer (`components/Footer.tsx` in the website repo) showed the current
-one, Filotimou 6; removed there the same day. The privacy page keeps the address: the data
-controller has to be named there.
+one, Filotimou 6; removed there the same day.
+
+**28 Oct 2026**: the owner asked for the address gone everywhere on the website. Removed from the
+privacy page (the chapter is still named as data controller, with the email), from the
+Organization JSON-LD (town and country stay) and from the sample meetup in `content/events.json`.
+The newsletter footer in Brevo still carries it — that is a letter, not the site.
