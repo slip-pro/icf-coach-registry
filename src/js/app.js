@@ -40,6 +40,10 @@ import { fetchConfig, applyConfig } from './config.js';
 import {
   projectSlug, fetchProject, projectCoaches, renderProjectIntro, openChooseForm,
 } from './project.js';
+import { visitorSeed, shuffled } from './shuffle.js';
+
+/** sessionStorage key of the catalogue's order (F-033); the project page has its own. */
+const CATALOGUE_ORDER_KEY = 'icf-catalogue-order';
 
 /**
  * @typedef {Object} RegistryConfig
@@ -519,6 +523,9 @@ async function init(config = {}) {
     project = projectData;
     allCoaches = coaches;
     coaches = project ? projectCoaches(allCoaches, project) : [];
+  } else if (inCatalog) {
+    // In registration order the same coaches would always lead (F-033).
+    coaches = shuffled(coaches, visitorSeed(CATALOGUE_ORDER_KEY));
   }
 
   // Apply remote config after hero is already visible

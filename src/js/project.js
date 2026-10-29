@@ -12,6 +12,7 @@
 
 import { t } from './i18n.js';
 import { esc } from './utils.js';
+import { visitorSeed, shuffled } from './shuffle.js';
 
 const ORDER_KEY = 'icf-project-order';
 
@@ -34,44 +35,16 @@ export async function fetchProject(apiBase, slug) {
   }
 }
 
-/** A small seeded generator, so one visitor keeps one order across re-renders. */
-function seededRandom(seed) {
-  let s = seed >>> 0;
-  return () => {
-    s = (s + 0x6d2b79f5) >>> 0;
-    let x = Math.imul(s ^ (s >>> 15), 1 | s);
-    x ^= x + Math.imul(x ^ (x >>> 7), 61 | x);
-    return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function visitorSeed() {
-  try {
-    const kept = Number(sessionStorage.getItem(ORDER_KEY));
-    if (kept) return kept;
-    const fresh = Math.floor(Math.random() * 2 ** 31) + 1;
-    sessionStorage.setItem(ORDER_KEY, String(fresh));
-    return fresh;
-  } catch (_err) {
-    return Math.floor(Math.random() * 2 ** 31) + 1;
-  }
-}
-
 /**
  * The project's coaches out of the catalogue, with `placesLeft`, shuffled
  * for this visitor. Nobody is first for everybody, so nobody is swamped.
  */
-export function projectCoaches(coaches, project, seed = visitorSeed()) {
+export function projectCoaches(coaches, project, seed = visitorSeed(ORDER_KEY)) {
   const places = new Map(project.coaches.map((c) => [(c.email || '').toLowerCase(), c.placesLeft]));
   const mine = coaches
     .filter((c) => places.has((c.email || '').toLowerCase()))
     .map((c) => ({ ...c, placesLeft: places.get(c.email.toLowerCase()) }));
-  const random = seededRandom(seed);
-  for (let i = mine.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1));
-    [mine[i], mine[j]] = [mine[j], mine[i]];
-  }
-  return mine;
+  return shuffled(mine, seed);
 }
 
 /** The card's bottom: places left and the button, in place of the contacts. */
