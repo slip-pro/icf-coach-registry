@@ -104,9 +104,16 @@ If a coach leaves ICF Cyprus or asks to be removed:
 
 ## When a coach's ICF membership ends
 
-You don't need to do anything. When the website's membership desk marks someone `left` in the
-**Members** tab, their card disappears from the catalogue (within about 5 minutes). The row in
-Submissions is untouched. When the desk marks them a member again, the card comes back by itself.
+You don't need to do anything. A coach's card disappears from the catalogue (within about
+10 minutes) in two cases:
+
+- the website's membership desk marks them `left` in the **Members** tab;
+- their **Member until** date in **Members** is more than 30 days in the past. The 30 days are for
+  late renewals. The date is only as fresh as the last ICF export uploaded to Members, so upload a
+  new export after the renewal season.
+
+The row in Submissions is untouched. When the roster shows them a member again (a new export with a
+later **Member until**, or the desk marks them a member), the card comes back by itself.
 
 A coach who opens their edit link while hidden sees a short note that the profile is paused until
 they renew; they can still edit it.

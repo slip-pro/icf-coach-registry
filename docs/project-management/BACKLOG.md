@@ -415,7 +415,7 @@ before bio matches. Test: `tests/catalogue-order.test.mjs`.
 
 ---
 
-## G-036: Only current ICF members in the catalogue
+## G-036: Only current ICF members in the catalogue — Done 29 Oct 2026
 
 ### F-034: Hide coaches whose ICF membership has ended
 **Priority**: Medium
@@ -442,6 +442,11 @@ What it takes:
 
 **Decided 29 Oct 2026** (owner): 30 days of grace. A coach is hidden once `Member until` is more
 than 30 days in the past.
+
+**Built 29 Oct 2026**: `membershipIndex_` counts a roster row as ended when `Status = left` or
+`Member until` is more than `MEMBERSHIP_GRACE_DAYS` (30) before today in the sheet's time zone; a
+coach is paused only when every matching row has ended. No letter to the coach for now. Test:
+`tests/apps-script-membership.test.mjs`. `SCRIPT_VERSION` 2026-10-29 lapsed members.
 
 ---
 

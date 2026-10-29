@@ -337,7 +337,7 @@ function getSettings() {
    so "is the new code live?" is a request, not a guess — pasting the code
    without deploying a New version leaves the old one answering.
 */
-var SCRIPT_VERSION = '2026-10-22 cover folder';
+var SCRIPT_VERSION = '2026-10-29 lapsed members';
 
 // ==================== MAIL ====================
 
@@ -716,32 +716,47 @@ function catalogueChanged_(current, table) {
    desk marks them a member again. Deleting on a roster glitch and asking a
    coach to register again is the failure this avoids.
 
-   Paused means the Members sheet has the coach with Status = left and no
-   current row for them. A coach the roster does not know at all stays
-   visible — a missing match is not evidence that somebody left.
+   Paused means the Members sheet has the coach only in rows that ended:
+   Status = left, or a "Member until" more than MEMBERSHIP_GRACE_DAYS in the
+   past (F-034 — ICF renewals often arrive weeks late, and the roster is only
+   as fresh as the last export). A coach the roster does not know at all
+   stays visible — a missing match is not evidence that somebody left, and
+   coaches from other ICF chapters are not in our roster.
 
    Matching is by email. When a coach registered with a different address
    than ICF has, type their Member ID (from the Members sheet) into an
    optional "Member ID" column in Submissions; that wins over the email.
 */
+var MEMBERSHIP_GRACE_DAYS = 30;
+
 function membershipIndex_() {
-  var index = { leftIds: {}, leftEmails: {}, currentIds: {}, currentEmails: {} };
-  readRoster_().forEach(function (row) {
-    var left = row.status.toLowerCase() === 'left';
-    if (row.memberId) index[left ? 'leftIds' : 'currentIds'][row.memberId] = true;
-    index[left ? 'leftEmails' : 'currentEmails'][row.email] = true;
+  var index = { endedIds: {}, endedEmails: {}, currentIds: {}, currentEmails: {} };
+  var roster = readRoster_();
+  var cutoff = roster.length ? isoDaysBefore_(todayInSheetZone_(), MEMBERSHIP_GRACE_DAYS) : '';
+  roster.forEach(function (row) {
+    // Dates are yyyy-MM-dd (readRoster_), so they compare as text.
+    var ended = row.status.toLowerCase() === 'left' || (!!row.memberUntil && row.memberUntil < cutoff);
+    if (row.memberId) index[ended ? 'endedIds' : 'currentIds'][row.memberId] = true;
+    index[ended ? 'endedEmails' : 'currentEmails'][row.email] = true;
   });
   return index;
 }
 
-/** True when this Submissions row belongs to a member who left. */
+/** The yyyy-MM-dd date `days` before `iso`. */
+function isoDaysBefore_(iso, days) {
+  var d = new Date(iso + 'T12:00:00Z');
+  d.setUTCDate(d.getUTCDate() - days);
+  return d.toISOString().slice(0, 10);
+}
+
+/** True when this Submissions row belongs to a member who left or lapsed. */
 function membershipPaused_(index, headers, row) {
   var idAt = columnIndex_(headers, ['Member ID']);
   var id = idAt === -1 ? '' : (row[idAt] || '').toString().trim().replace(/\.0+$/, '');
-  if (id) return !!index.leftIds[id] && !index.currentIds[id];
+  if (id) return !!index.endedIds[id] && !index.currentIds[id];
   var emailAt = columnIndex_(headers, ['Email', 'E-mail']);
   var email = emailAt === -1 ? '' : (row[emailAt] || '').toString().trim().toLowerCase();
-  return !!email && !!index.leftEmails[email] && !index.currentEmails[email];
+  return !!email && !!index.endedEmails[email] && !index.currentEmails[email];
 }
 
 // ==================== CONSENTS (G-028) ====================

@@ -112,6 +112,7 @@ python3 server.py
 node tests/name-search.test.mjs
 node tests/text-search.test.mjs
 node tests/apps-script-consent.test.mjs   # Apps Script: consent columns
+node tests/apps-script-membership.test.mjs # Apps Script: who is hidden — left, or Member until +30 days
 node tests/apps-script-board.test.mjs     # Apps Script: Board "Since" year
 node tests/apps-script-pending.test.mjs   # Apps Script: pending applications count
 node tests/apps-script-plan.test.mjs      # Apps Script: event plan
