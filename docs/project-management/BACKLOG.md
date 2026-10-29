@@ -378,3 +378,31 @@ one, Filotimou 6; removed there the same day.
 privacy page (the chapter is still named as data controller, with the email), from the
 Organization JSON-LD (town and country stay) and from the sample meetup in `content/events.json`.
 The newsletter footer in Brevo still carries it — that is a letter, not the site.
+
+---
+
+## G-035: Nobody is always first in the catalogue
+
+### F-033: Random order of coaches in the catalogue
+**Priority**: Medium
+**Requested**: Owner, 29 Oct 2026
+
+**Description**: The catalogue lists coaches in the order of the rows in the open catalogue file —
+the order they registered in. The same coaches are always at the top and get seen first; the ones
+who joined last sit at the bottom. Wanted: each visitor sees the coaches in a random order, so
+nobody is first for everybody.
+
+What it takes:
+- The project page (`?project=`, `src/js/project.js`) already does this: `seededRandom` +
+  `visitorSeed`, one seed per visitor kept in `sessionStorage`. Reuse the same pair for the main
+  catalogue (move them to `utils.js` or export them), with its own storage key, so the order does
+  not jump while the visitor filters, switches language or comes back from a profile.
+- Shuffle once, after the coaches are loaded in `app.js`; filters only hide cards and keep that
+  order.
+- Search by name or topic keeps its own ranking when it has one (best match first); the random
+  order applies when nothing is typed in the search box.
+- Test next to `tests/project-mode.test.mjs`: the same seed gives the same order, another seed a
+  different one, no coach lost or doubled.
+
+**Open**: a new order on every visit (same within one browser tab, as in the project page) or a new
+order on every page reload. The plan above is the first.
