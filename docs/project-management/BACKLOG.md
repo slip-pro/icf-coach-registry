@@ -404,5 +404,6 @@ What it takes:
 - Test next to `tests/project-mode.test.mjs`: the same seed gives the same order, another seed a
   different one, no coach lost or doubled.
 
-**Open**: a new order on every visit (same within one browser tab, as in the project page) or a new
-order on every page reload. The plan above is the first.
+**Decided 29 Oct 2026** (owner): a new order on every visit, the same within one browser tab — as
+in the project page. A reload in the same tab keeps the order; a new tab or a later visit gets a
+new one.
