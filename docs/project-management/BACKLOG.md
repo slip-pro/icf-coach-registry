@@ -437,10 +437,11 @@ What it takes:
 - Update `docs/ADMIN_GUIDE.md`, "When a coach's ICF membership ends".
 
 **Open**:
-- A grace period after `Member until` (ICF renewals often come a few weeks late): none, 30 days,
-  or until the next roster upload?
 - Whether the coach gets a letter when their profile is hidden ("renew to be listed again").
 - `Member until` is only as current as the last ICF export uploaded to `Members`.
+
+**Decided 29 Oct 2026** (owner): 30 days of grace. A coach is hidden once `Member until` is more
+than 30 days in the past.
 
 ---
 
