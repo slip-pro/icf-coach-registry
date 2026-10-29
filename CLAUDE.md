@@ -42,6 +42,7 @@ Configurable for any coaching organization — no code changes needed.
 │   │   ├── name-search.js             # Script-independent name matching
 │   │   ├── text-search.js             # Search box: words in bios + specialization labels
 │   │   ├── project.js                 # ?project=: a coaching project's choice page (#57)
+│   │   ├── shuffle.js                 # Random order per visitor (catalogue + project page)
 │   │   ├── registration.js            # Registration form
 │   │   ├── edit.js                    # Edit profile (magic link)
 │   │   ├── submit.js                  # Form submission
@@ -122,4 +123,5 @@ node tests/apps-script-covers.test.mjs    # Apps Script: saveEventCover into an 
 node tests/api-coaches.test.mjs           # /api/coaches: open catalogue file, second try, last good copy
 node tests/api-project.test.mjs           # /api/project: places from the open file, choosing a coach
 node tests/project-mode.test.mjs          # ?project=: the project's coaches, random order per visitor
+node tests/catalogue-order.test.mjs       # the catalogue's random order per visitor (F-033)
 ```

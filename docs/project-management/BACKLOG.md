@@ -381,7 +381,7 @@ The newsletter footer in Brevo still carries it — that is a letter, not the si
 
 ---
 
-## G-035: Nobody is always first in the catalogue
+## G-035: Nobody is always first in the catalogue — Done 29 Oct 2026
 
 ### F-033: Random order of coaches in the catalogue
 **Priority**: Medium
@@ -407,3 +407,65 @@ What it takes:
 **Decided 29 Oct 2026** (owner): a new order on every visit, the same within one browser tab — as
 in the project page. A reload in the same tab keeps the order; a new tab or a later visit gets a
 new one.
+
+**Done 29 Oct 2026**: `src/js/shuffle.js` holds the seeded shuffle and the per-tab seed, shared by
+the catalogue (`icf-catalogue-order`) and the project page (`icf-project-order`). `app.js` shuffles
+the catalogue once after loading; filters keep that order, and a search still puts name matches
+before bio matches. Test: `tests/catalogue-order.test.mjs`.
+
+---
+
+## G-036: Only current ICF members in the catalogue
+
+### F-034: Hide coaches whose ICF membership has ended
+**Priority**: Medium
+**Requested**: Owner, 29 Oct 2026
+
+**Description**: The catalogue should show only coaches who are ICF members now. Today (G-029) a
+coach is hidden only when the `Members` tab marks them `left`, and only the membership desk sets
+`left`, by hand. A coach whose membership simply ran out stays visible: the F-030 check on 22 Oct
+found two listed coaches with `Member until` 30 Sep 2026 passed, auto-renewal off, status still
+`active`.
+
+What it takes:
+- `getCoaches` also hides a coach whose roster row has a `Member until` date in the past, not only
+  `Status = left`. Same mechanism as G-029: the row stays, nothing is deleted, the coach reappears
+  when the roster shows a renewal; the edit page already shows the "paused" notice.
+- A coach the roster does not know stays visible: the owner decided on 22 Oct that coaches from
+  other ICF chapters stay in the registry.
+- Apps Script change: bump `SCRIPT_VERSION`, redeploy, check the live script before pushing.
+- Update `docs/ADMIN_GUIDE.md`, "When a coach's ICF membership ends".
+
+**Open**:
+- A grace period after `Member until` (ICF renewals often come a few weeks late): none, 30 days,
+  or until the next roster upload?
+- Whether the coach gets a letter when their profile is hidden ("renew to be listed again").
+- `Member until` is only as current as the last ICF export uploaded to `Members`.
+
+---
+
+## G-037: People find the registry
+
+### F-035: Plan how to promote the coach registry
+**Priority**: Medium
+**Requested**: Owner, 29 Oct 2026
+
+**Description**: The registry is live, but there is no plan for how clients and companies get to
+it. Wanted: a short promotion plan the board agrees on before any work starts. Two audiences:
+people and companies looking for a coach (the main one), and chapter members who are not listed
+yet (22–23 credentialed members per F-030, the invitation list).
+
+Directions to think through:
+- **Search**: page titles and descriptions per language, a schema.org listing, a sitemap, the
+  registry linked from icf-cyprus.com and from the ICF Global chapter page.
+- **The chapter's own channels**: a regular newsletter block (a coach of the month, new coaches),
+  social posts, a link in every chapter letter and event page.
+- **Partners**: WIT Cyprus and other partner organisations, HR communities, business associations;
+  coaching projects (`?project=`) as a showcase.
+- **The coaches themselves**: a "Listed in the ICF Cyprus Coach Registry" badge and a link to their
+  own profile for their site and LinkedIn.
+- **Measuring**: whether to count visits and contact clicks at all, given the privacy page promises
+  no analytics.
+
+**Open**: who on the board owns promotion; what counts as success (visits, contact clicks,
+registrations).
