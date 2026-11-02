@@ -475,3 +475,38 @@ Directions to think through:
 
 **Open**: who on the board owns promotion; what counts as success (visits, contact clicks,
 registrations).
+
+---
+
+## G-038: A Beget outage does not take the sites down
+
+### F-036: Move icf-cyprus.com off Beget
+**Priority**: High
+**Requested**: Owner, 2 Nov 2026
+
+**Description**: On 2 Nov 2026 Beget, the registrar and DNS host of `icf-cyprus.com`, had a
+platform-wide outage from about 02:00 Moscow time: its name servers answered SERVFAIL, so both
+`icf-cyprus.com` and `coaches.icf-cyprus.com` stopped resolving, while both Vercel projects kept
+running. Beget's control panel was down too, so nothing could be changed during the outage. The
+workaround was to turn off the redirect from the `.vercel.app` addresses to the custom domains
+(`icf-cyprus-website.vercel.app`, `icf-cyprus-coaches.vercel.app`) and hand those links out.
+
+Today everything sits at Beget: the registration (expires 23 Dec 2027), the name servers
+(`ns1/ns2.beget.com`, `ns1/ns2.beget.pro`) and the mail (`MX` → `mx1/mx2.beget.com`).
+
+What it takes:
+- **DNS first**: move the zone to a separate DNS host (Cloudflare free plan or Vercel DNS), copy
+  every record from Beget (A/CNAME for both sites, MX, SPF/DKIM/DMARC TXT for Beget mail and
+  Brevo, any verification records), then change the name servers at Beget. This alone keeps the
+  sites up in the next Beget outage.
+- **Mail**: decide whether mailboxes on `@icf-cyprus.com` stay at Beget or move (Google Workspace,
+  Zoho, etc.). If they stay, a Beget outage still stops mail, but not the sites.
+- **Registration**: optionally transfer the domain to another registrar (Cloudflare, Namecheap,
+  Porkbun); unlock it and get the transfer code from Beget.
+- Check after the move: both sites, `/api/*`, letters from Brevo (SPF/DKIM pass), magic links.
+
+**Open**: who has the Beget login; which mailboxes exist on the domain; whether to transfer the
+registration or only the DNS.
+
+**After any outage**: put the `.vercel.app` redirects back (Vercel → Domains → Edit → Redirect to
+Another Domain → 308) once the custom domains resolve again.
