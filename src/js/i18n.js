@@ -223,9 +223,9 @@ const dictionary = {
     el: 'Βρίσκεται στο εισιτήριο Fienta, π.χ. CA4HRIOPQ0.',
   },
   projectConsent: {
-    en: 'I agree that ICF Cyprus and my coach keep my name and email for this project. The partner receives totals only, never personal data.',
-    ru: 'Даю согласие, чтобы ICF Cyprus и мой коуч хранили моё имя и email для этого проекта. Партнёр получает только итоговые цифры, без личных данных.',
-    el: 'Συμφωνώ το ICF Cyprus και ο coach μου να διατηρούν το όνομα και το email μου για αυτό το έργο. Ο συνεργάτης λαμβάνει μόνο συνολικά στοιχεία, ποτέ προσωπικά δεδομένα.',
+    en: 'I agree that ICF Cyprus and my coach keep my name and email for this project. The partner sees my ticket purchase, but about the programme itself it receives totals only.',
+    ru: 'Даю согласие, чтобы ICF Cyprus и мой коуч хранили моё имя и email для этого проекта. Партнёр видит мою покупку билета, а о самой программе получает только итоговые цифры.',
+    el: 'Συμφωνώ το ICF Cyprus και ο coach μου να διατηρούν το όνομα και το email μου για αυτό το έργο. Ο συνεργάτης βλέπει την αγορά του εισιτηρίου μου, ενώ για το ίδιο το πρόγραμμα λαμβάνει μόνο συνολικά στοιχεία.',
   },
   projectSubmit: {
     en: 'Confirm my choice',
