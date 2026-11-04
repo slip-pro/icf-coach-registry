@@ -334,10 +334,11 @@ function renderCard(coach, index, excerpt) {
   const divider = contact ? '<hr class="icf-divider">' : '';
   const bio = getBioForLanguage(coach, getCurrentLanguage());
 
+  const project = onChoose ? ' icf-card--project' : '';
   const full = onChoose && coach.placesLeft < 1 ? ' icf-card--full' : '';
 
   return `
-    <article class="icf-card${full}" aria-label="${esc(coach.name)}"
+    <article class="icf-card${project}${full}" aria-label="${esc(coach.name)}"
       data-coach-index="${index}">
       ${renderCardTop(coach)}
       ${renderBio(bio)}

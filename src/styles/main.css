@@ -2012,6 +2012,11 @@
   color: var(--icf-text-muted);
 }
 
+/* The Choose buttons line up across a row, whatever the length of the card above them. */
+.icf-card--project .icf-divider {
+  margin-top: auto;
+}
+
 .icf-card--full {
   opacity: 0.65;
 }
