@@ -141,5 +141,19 @@ const choose = (w, extra = {}) => w.sb.handleChooseCoach({
   eq("not an approved registry coach", w.sb.handleJoinProject({ project: "wit", email: "eva@x.com" }).error, "not_in_registry");
 }
 
+// ---- a coach says how many participants they can take
+{
+  const w = world();
+  w.sb.handleJoinProject({ project: "wit", email: "dora@x.com", places: "4" });
+  eq("places go into the row", w.coaches.rows[4][4], 4);
+  eq("the lead's letter names the number", JSON.stringify(w.mails[0]).includes("can take 4 participants"), true);
+  eq("the coach's letter too", JSON.stringify(w.mails[1]).includes("up to 4 participants"), true);
+  for (const bad of [0, 6, 2.5, "many", undefined]) {
+    const b = world();
+    b.sb.handleJoinProject({ project: "wit", email: "dora@x.com", places: bad });
+    eq(`places ${bad}: left to the lead`, b.coaches.rows[4][4], "");
+  }
+}
+
 console.log(`${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

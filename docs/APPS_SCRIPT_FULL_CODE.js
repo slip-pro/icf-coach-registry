@@ -337,7 +337,7 @@ function getSettings() {
    so "is the new code live?" is a request, not a guess — pasting the code
    without deploying a New version leaves the old one answering.
 */
-var SCRIPT_VERSION = '2026-10-29 lapsed members';
+var SCRIPT_VERSION = '2026-11-04 coach sets places';
 
 // ==================== MAIL ====================
 
@@ -2967,7 +2967,8 @@ function leadEmail_(project) {
 }
 
 /**
- * POST { action: 'joinProject', project, email } — a coach asks to take part.
+ * POST { action: 'joinProject', project, email, places } — a coach asks to take part
+ * and says how many participants they can take (1 to 5; anything else leaves it to the lead).
  * Only approved registry coaches; the lead accepts in the Project coaches tab.
  */
 function handleJoinProject(data) {
@@ -2977,6 +2978,8 @@ function handleJoinProject(data) {
   if (!email) return jsonResponse({ success: false, error: 'email_required' });
   var coach = registryCoach_(email);
   if (!coach) return jsonResponse({ success: false, error: 'not_in_registry' });
+  var places = Number(data.places);
+  if (!(places >= 1 && places <= 5 && Math.floor(places) === places)) places = '';
 
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(20000)) return jsonResponse({ success: false, error: 'busy' });
@@ -2988,7 +2991,7 @@ function handleJoinProject(data) {
     if (already) return jsonResponse({ success: true, status: lower_(already.Status) || 'pending' });
     appendObject_(table, {
       'Project': lower_(project.Slug), 'Coach email': email, 'Coach name': coach.name,
-      'Status': 'pending', 'Places': '', 'Joined at': new Date(),
+      'Status': 'pending', 'Places': places, 'Joined at': new Date(),
     });
   } finally {
     lock.releaseLock();
@@ -2998,9 +3001,11 @@ function handleJoinProject(data) {
   sendMail_({
     to: leadEmail_(project),
     subject: coach.name + ' wants to join ' + project.Name,
-    body: coach.name + ' (' + email + ') asked to take part in ' + project.Name + '.\n\n'
+    body: coach.name + ' (' + email + ') asked to take part in ' + project.Name
+      + (places ? ' and can take ' + places + (places === 1 ? ' participant' : ' participants') : '') + '.\n\n'
       + 'To accept, open the Projects file, tab "Project coaches", and set Status to "accepted"'
-      + ' (Places: leave empty for ' + (project['Places per coach'] || 'the default') + ', or type a number).\n',
+      + (places ? ' (change Places if you want a different number).\n'
+        : ' (Places: leave empty for ' + (project['Places per coach'] || 'the default') + ', or type a number).\n'),
   });
   sendMail_({
     to: email,
@@ -3008,7 +3013,8 @@ function handleJoinProject(data) {
     subject: 'You asked to join ' + project.Name + ' — ' + settings.SENDER_NAME,
     body: 'Hello ' + coach.name + ',\n\n'
       + 'Thank you for joining ' + project.Name + '. ' + (project['Lead name'] || 'The project lead')
-      + ' will confirm your place and let you know how many participants you can take.\n\n'
+      + ' will confirm your place'
+      + (places ? ' for up to ' + places + (places === 1 ? ' participant' : ' participants') : ' and let you know how many participants you can take') + '.\n\n'
       + 'If it was not you, just ignore this letter.\n\n' + settings.SENDER_NAME + '\n',
   });
   return jsonResponse({ success: true, status: 'pending' });
