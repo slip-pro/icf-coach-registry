@@ -97,6 +97,7 @@ const choose = (w, extra = {}) => w.sb.handleChooseCoach({
     [["https://fienta.com/api/v1/tickets/ABC123", "USED"]]);
   eq("letters to both, replies to the lead", w.mails.map((m) => [m.to, m.replyTo]), [["mia@x.com", "lead@icf.test"], ["anna@x.com", "lead@icf.test"]]);
   eq("places tab: Anna has one left", w.places.rows.filter((r) => r[3] === "anna@x.com").map((r) => r[4]), ["1"]);
+  eq("places tab: Anna has one client", w.places.rows.filter((r) => r[3] === "anna@x.com").map((r) => r[5]), ["1"]);
 
   const again = choose(w, { coachEmail: "bea@x.com" });
   eq("same ticket again: the first match, nothing new", [again.success, again.already, again.coachName, w.matches.rows.length], [true, true, "Anna", 2]);

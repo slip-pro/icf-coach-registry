@@ -170,7 +170,7 @@ falls back to the last good copy in Vercel Blob. `getCoaches` stays for an insta
   (`PUT /tickets/{code}`), refreshes `Project places` and sends the introduction letter to the
   participant and the coach. A ticket already in `Matches` is answered at once with that coach,
   before the lock, so repeating a request never makes a second match.
-- `Project places` (in the open file): slug, name, status, accepted coach emails, places left —
+- `Project places` (in the open file): slug, name, status, accepted coach emails, places left, clients taken —
   nothing about participants. Refreshed on every edit of the Projects file, after each choice and
   with `publishCatalogue`. The registry's `/api/project` reads it, so the choice page does not
   wait on the script.

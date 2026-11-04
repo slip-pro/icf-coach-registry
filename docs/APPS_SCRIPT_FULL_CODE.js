@@ -337,7 +337,7 @@ function getSettings() {
    so "is the new code live?" is a request, not a guess — pasting the code
    without deploying a New version leaves the old one answering.
 */
-var SCRIPT_VERSION = '2026-11-04 coach sets places';
+var SCRIPT_VERSION = '2026-11-04 coaches order by clients';
 
 // ==================== MAIL ====================
 
@@ -2909,12 +2909,13 @@ function projectPlaces_(project, coaches, matches) {
         return lower_(m.Project) === lower_(project.Slug) && lower_(m['Coach email']) === lower_(c['Coach email'])
           && matchCounts_(m);
       }).length;
-      return { email: lower_(c['Coach email']), name: c['Coach name'], placesLeft: Math.max(0, places - taken) };
+      return { email: lower_(c['Coach email']), name: c['Coach name'], placesLeft: Math.max(0, places - taken), taken: taken };
     });
 }
 
 /**
- * Writes every project's coaches and places left into the open catalogue
+ * Writes every project's coaches, places left and clients taken (the page orders
+ * coaches by it and does not show it) into the open catalogue
  * file's second tab, so the registry's project mode reads them as fast as
  * the catalogue itself. Only slugs, coach emails (already on the cards) and
  * numbers — nothing about participants.
@@ -2925,14 +2926,14 @@ function publishProjectPlaces_() {
   var projects = readTable_('Projects').rows;
   var coaches = readTable_('Project coaches').rows;
   var matches = readTable_('Matches').rows;
-  var table = [['Project', 'Project name', 'Project status', 'Coach email', 'Places left']];
+  var table = [['Project', 'Project name', 'Project status', 'Coach email', 'Places left', 'Taken']];
   projects.forEach(function (p) {
     if (!p.Slug) return;
     var accepted = projectPlaces_(p, coaches, matches);
     // No coaches accepted yet: one row, so the page still knows the project.
-    if (!accepted.length) table.push([lower_(p.Slug), p.Name, lower_(p.Status), '', '0']);
+    if (!accepted.length) table.push([lower_(p.Slug), p.Name, lower_(p.Status), '', '0', '0']);
     accepted.forEach(function (c) {
-      table.push([lower_(p.Slug), p.Name, lower_(p.Status), c.email, String(c.placesLeft)]);
+      table.push([lower_(p.Slug), p.Name, lower_(p.Status), c.email, String(c.placesLeft), String(c.taken)]);
     });
   });
   var book = SpreadsheetApp.openById(id);

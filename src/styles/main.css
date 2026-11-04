@@ -2012,6 +2012,10 @@
   color: var(--icf-text-muted);
 }
 
+.icf-card--full {
+  opacity: 0.65;
+}
+
 .icf-project-choose {
   width: 100%;
   background: var(--icf-cta);

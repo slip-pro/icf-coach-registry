@@ -319,7 +319,8 @@ function renderCatalog(state, errorMessage) {
     );
 
     if (filtersContainer) {
-      renderFilters(coaches, filtersContainer, handleFilterChange);
+      // In a project the sessions are in the ticket, so there is no price to filter by.
+      renderFilters(coaches, filtersContainer, handleFilterChange, { showPrice: !project });
     }
     if (gridContainer) {
       renderCards(coaches, gridContainer, cardOptions());

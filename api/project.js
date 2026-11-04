@@ -38,6 +38,7 @@ export function projectFromRows(rows, slug) {
     coaches: mine.filter((r) => r[at('Coach email')]).map((r) => ({
       email: (r[at('Coach email')] || '').toLowerCase(),
       placesLeft: Number(r[at('Places left')]) || 0,
+      taken: Number(r[at('Taken')]) || 0,
     })),
   };
 }

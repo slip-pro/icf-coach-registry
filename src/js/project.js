@@ -2,9 +2,11 @@
  * ICF Registry — project mode (site BACKLOG #57).
  *
  * `?project=wit` turns the catalogue into a coaching project's choice page:
- * only the coaches the lead accepted, in an order of this visitor's own, each
- * with the places left and a "Choose this coach" button instead of contacts.
- * A direct message would bypass the count, so the contacts stay hidden.
+ * only the coaches the lead accepted, those with the fewest clients first, in an
+ * order of this visitor's own within that, each with a "Choose this coach" button
+ * instead of contacts. A direct message would bypass the count, so the contacts
+ * stay hidden. No places left and no prices on the cards: a small number reads as
+ * "in demand" and pulls choices the wrong way, and the sessions are in the ticket.
  *
  * Choosing asks for the participant's name, email, Fienta ticket number and
  * consent; the Apps Script checks the ticket and sends both an introduction.
@@ -36,24 +38,29 @@ export async function fetchProject(apiBase, slug) {
 }
 
 /**
- * The project's coaches out of the catalogue, with `placesLeft`, shuffled
- * for this visitor. Nobody is first for everybody, so nobody is swamped.
+ * The project's coaches out of the catalogue, with `placesLeft` and `taken`, in
+ * waves so clients spread evenly: no clients yet, then one, then two; the fully
+ * booked at the end. Shuffled for this visitor within a wave, so nobody is first
+ * for everybody, and everybody stays on the page to be chosen.
  */
 export function projectCoaches(coaches, project, seed = visitorSeed(ORDER_KEY)) {
-  const places = new Map(project.coaches.map((c) => [(c.email || '').toLowerCase(), c.placesLeft]));
+  const places = new Map(project.coaches.map((c) => [(c.email || '').toLowerCase(), c]));
   const mine = coaches
     .filter((c) => places.has((c.email || '').toLowerCase()))
-    .map((c) => ({ ...c, placesLeft: places.get(c.email.toLowerCase()) }));
-  return shuffled(mine, seed);
+    .map((c) => {
+      const { placesLeft, taken = 0 } = places.get(c.email.toLowerCase());
+      return { ...c, placesLeft, taken };
+    });
+  const wave = (c) => (c.placesLeft < 1 ? Infinity : c.taken);
+  return shuffled(mine, seed).sort((a, b) => (wave(a) === wave(b) ? 0 : wave(a) - wave(b)));
 }
 
-/** The card's bottom: places left and the button, in place of the contacts. */
+/** The card's bottom: the button, in place of the contacts. */
 export function renderProjectAction(coach, index) {
   if (coach.placesLeft < 1) {
     return `<p class="icf-project-places icf-project-places--full">${esc(t('projectFull'))}</p>`;
   }
   return `
-    <p class="icf-project-places">${esc(t('projectPlacesLeft').replace('{n}', coach.placesLeft))}</p>
     <button type="button" class="icf-project-choose" data-choose-index="${index}">
       ${esc(t('projectChoose'))}
     </button>`;

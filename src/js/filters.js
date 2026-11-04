@@ -309,7 +309,7 @@ function checkIcon() {
  *   per coach found through a bio, the excerpt that matched
  * @returns {void}
  */
-export function renderFilters(coaches, container, onFilterChange) {
+export function renderFilters(coaches, container, onFilterChange, { showPrice = true } = {}) {
   container.innerHTML = '';
 
   const allSpecializations = extractSpecializations(coaches);
@@ -450,11 +450,13 @@ export function renderFilters(coaches, container, onFilterChange) {
   }
 
   // 5. Price range chips (on new line)
-  const priceBreak = document.createElement('div');
-  priceBreak.className = 'icf-filters__break';
-  wrapper.appendChild(priceBreak);
+  if (showPrice) {
+    const priceBreak = document.createElement('div');
+    priceBreak.className = 'icf-filters__break';
+    wrapper.appendChild(priceBreak);
+  }
 
-  for (const range of PRICE_RANGES) {
+  for (const range of showPrice ? PRICE_RANGES : []) {
     const chip = buildToggleChip(
       t(range.labelKey),
       range.key,

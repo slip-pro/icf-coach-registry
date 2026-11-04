@@ -173,9 +173,9 @@ const dictionary = {
 
   // Project mode (?project=…): a coaching project's choice page
   projectIntro: {
-    en: 'Choose your coach. The order is different for every visitor; each coach takes a limited number of participants.',
-    ru: 'Выберите своего коуча. Порядок карточек у каждого свой; у каждого коуча ограниченное число мест.',
-    el: 'Επιλέξτε τον coach σας. Η σειρά είναι διαφορετική για κάθε επισκέπτη· κάθε coach δέχεται περιορισμένο αριθμό συμμετεχόντων.',
+    en: 'Choose your coach: read the profiles and pick the one who feels right for you.',
+    ru: 'Выберите своего коуча: прочитайте профили и остановитесь на том, кто вам подходит.',
+    el: 'Επιλέξτε τον coach σας: διαβάστε τα προφίλ και διαλέξτε αυτόν που σας ταιριάζει.',
   },
   projectClosedNote: {
     en: 'Sign-up for this project is closed.',
@@ -186,11 +186,6 @@ const dictionary = {
     en: 'This project was not found. Check the link in your ticket.',
     ru: 'Проект не найден. Проверьте ссылку в билете.',
     el: 'Το έργο δεν βρέθηκε. Ελέγξτε τον σύνδεσμο στο εισιτήριό σας.',
-  },
-  projectPlacesLeft: {
-    en: 'Places left: {n}',
-    ru: 'Осталось мест: {n}',
-    el: 'Διαθέσιμες θέσεις: {n}',
   },
   projectFull: {
     en: 'Fully booked',

@@ -18,14 +18,14 @@ function fakeRes() {
 }
 
 const rows = [
-  ["Project", "Project name", "Project status", "Coach email", "Places left"],
-  ["wit", "Coaching with WIT Cyprus", "open", "Anna@x.com", "2"],
-  ["wit", "Coaching with WIT Cyprus", "open", "bea@x.com", "0"],
+  ["Project", "Project name", "Project status", "Coach email", "Places left", "Taken"],
+  ["wit", "Coaching with WIT Cyprus", "open", "Anna@x.com", "2", "1"],
+  ["wit", "Coaching with WIT Cyprus", "open", "bea@x.com", "0", "3"],
   ["cim", "CIM", "closed", "anna@x.com", "1"],
 ];
 eq("the project's coaches and places", projectFromRows(rows, "wit"), {
   slug: "wit", name: "Coaching with WIT Cyprus", status: "open",
-  coaches: [{ email: "anna@x.com", placesLeft: 2 }, { email: "bea@x.com", placesLeft: 0 }],
+  coaches: [{ email: "anna@x.com", placesLeft: 2, taken: 1 }, { email: "bea@x.com", placesLeft: 0, taken: 3 }],
 });
 eq("unknown project", projectFromRows(rows, "nope"), null);
 eq("empty file", projectFromRows([], "wit"), null);

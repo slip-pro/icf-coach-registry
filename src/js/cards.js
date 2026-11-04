@@ -285,7 +285,12 @@ function getFormatMeta(format) {
 function renderMeta(coach) {
   const langText = coach.languages.join(', ');
   const formatMeta = getFormatMeta(coach.format);
-  const priceText = formatPrice(coach.priceMin, coach.priceMax);
+  // In project mode the sessions are in the ticket: a price per session only confuses.
+  const price = onChoose ? '' : `
+      <span class="icf-meta__item">
+        ${ICONS.price}
+        ${esc(formatPrice(coach.priceMin, coach.priceMax))}
+      </span>`;
 
   return `
     <div class="icf-meta">
@@ -296,11 +301,7 @@ function renderMeta(coach) {
       <span class="icf-meta__item">
         ${formatMeta.icon}
         ${esc(formatMeta.label)}
-      </span>
-      <span class="icf-meta__item">
-        ${ICONS.price}
-        ${esc(priceText)}
-      </span>
+      </span>${price}
     </div>`;
 }
 
@@ -333,8 +334,10 @@ function renderCard(coach, index, excerpt) {
   const divider = contact ? '<hr class="icf-divider">' : '';
   const bio = getBioForLanguage(coach, getCurrentLanguage());
 
+  const full = onChoose && coach.placesLeft < 1 ? ' icf-card--full' : '';
+
   return `
-    <article class="icf-card" aria-label="${esc(coach.name)}"
+    <article class="icf-card${full}" aria-label="${esc(coach.name)}"
       data-coach-index="${index}">
       ${renderCardTop(coach)}
       ${renderBio(bio)}
@@ -361,7 +364,7 @@ let currentCoaches = null;
 /** In project mode: called with the coach whose "Choose" button was pressed. */
 let onChoose = null;
 
-/** Contacts on the plain catalogue; places and a Choose button in project mode. */
+/** Contacts on the plain catalogue; a Choose button in project mode. */
 function bottomOfCard(coach, index) {
   return onChoose ? renderProjectAction(coach, index) : renderContactBlock(coach);
 }
