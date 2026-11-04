@@ -44,5 +44,14 @@ const { renderProjectAction } = await import("../src/js/project.js");
 globalThis.document = { createElement: () => ({ set textContent(v) { this.innerHTML = v; } }) };
 eq("no places count on the card", renderProjectAction({ placesLeft: 3 }, 0).includes("icf-project-places"), false);
 
+// ---- a language set with no text under it must not blank the card
+const { getBioForLanguage } = await import("../src/js/cards.js");
+const emptyRu = { bio1: "Hello", bio1Lang: "en", bio2: "", bio2Lang: "ru" };
+eq("empty Russian bio: the English one", getBioForLanguage(emptyRu, "ru"), "Hello");
+eq("English asked: English", getBioForLanguage(emptyRu, "en"), "Hello");
+eq("the language's own bio first", getBioForLanguage({ bio1: "Hello", bio1Lang: "en", bio2: "Привет", bio2Lang: "ru" }, "ru"), "Привет");
+eq("no languages set: the first bio", getBioForLanguage({ bio1: "Hello", bio1Lang: "", bio2: "Привет", bio2Lang: "" }, "ru"), "Hello");
+eq("only the second bio: that one", getBioForLanguage({ bio1: "", bio1Lang: "", bio2: "Привет", bio2Lang: "" }, "en"), "Привет");
+
 console.log(`${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
