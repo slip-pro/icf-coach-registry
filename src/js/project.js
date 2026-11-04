@@ -112,7 +112,8 @@ export function openChooseForm(coach, { apiBase, slug, paid = true, onDone, onCl
           <input name="ticket" type="text" autocomplete="off" required>
           <small>${esc(t('projectTicketHint'))}</small></label>` : ''}
         <label class="icf-choose-form__consent"><input name="consent" type="checkbox" required>
-          <span>${esc(t('projectConsent'))}</span></label>
+          <span>${esc(t('projectConsent'))}
+            <a href="https://icf-cyprus.com/privacy" target="_blank" rel="noopener noreferrer">${esc(t('projectPrivacy'))}</a></span></label>
         <p class="icf-choose-form__message" role="status" aria-live="polite"></p>
         <button type="submit" class="icf-project-choose">${esc(t('projectSubmit'))}</button>
       </form>

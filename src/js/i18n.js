@@ -222,6 +222,11 @@ const dictionary = {
     ru: 'Он есть в билете Fienta, например CA4HRIOPQ0.',
     el: 'Βρίσκεται στο εισιτήριο Fienta, π.χ. CA4HRIOPQ0.',
   },
+  projectPrivacy: {
+    en: 'Privacy policy',
+    ru: 'Политика конфиденциальности',
+    el: 'Πολιτική απορρήτου',
+  },
   projectConsent: {
     en: 'I agree that ICF Cyprus and my coach keep my name and email for this project. The partner sees my ticket purchase, but about the programme itself it receives totals only.',
     ru: 'Даю согласие, чтобы ICF Cyprus и мой коуч хранили моё имя и email для этого проекта. Партнёр видит мою покупку билета, а о самой программе получает только итоговые цифры.',

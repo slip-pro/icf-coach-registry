@@ -2093,6 +2093,11 @@
   color: var(--icf-text-tertiary);
 }
 
+.icf-choose-form__consent a {
+  color: inherit;
+  text-decoration: underline;
+}
+
 .icf-choose-form__consent input {
   margin-top: 3px;
   flex-shrink: 0;
