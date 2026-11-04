@@ -156,5 +156,24 @@ const choose = (w, extra = {}) => w.sb.handleChooseCoach({
   }
 }
 
+// ---- tickets sold in a partner's Fienta: no call to Fienta, the lead checks by hand
+{
+  const w = world({ project: { event: "manual" } });
+  const r = choose(w, { ticket: " ca4hriopq0 " });
+  eq("manual: accepted without Fienta", [r.success, w.fetches.length], [true, 0]);
+  eq("manual: the number is kept", w.matches.rows[1][1], "CA4HRIOPQ0");
+  eq("manual: letters to both, then to the lead", w.mails.map((m) => m.to), ["mia@x.com", "anna@x.com", "lead@icf.test"]);
+  eq("manual: the lead's letter names the ticket", w.mails[2].subject.includes("CA4HRIOPQ0"), true);
+  const again = choose(w, { ticket: "CA4HRIOPQ0", coachEmail: "bea@x.com" });
+  eq("manual: one number, one choice", [again.already, again.coachName, w.matches.rows.length, w.mails.length], [true, "Anna", 2, 3]);
+  eq("manual: no number", choose(w, { ticket: "" }).error, "ticket_required");
+  eq("manual: not like a ticket number", choose(w, { ticket: "my ticket" }).error, "ticket_not_found");
+  eq("manual: too short", choose(w, { ticket: "123" }).error, "ticket_not_found");
+}
+{
+  const w = world({ project: { event: "MANUAL" } });
+  eq("manual in capitals too", [choose(w, { ticket: "ABC123" }).success, w.fetches.length], [true, 0]);
+}
+
 console.log(`${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

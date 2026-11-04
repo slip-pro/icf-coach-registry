@@ -337,7 +337,7 @@ function getSettings() {
    so "is the new code live?" is a request, not a guess — pasting the code
    without deploying a New version leaves the old one answering.
 */
-var SCRIPT_VERSION = '2026-11-04 coaches order by clients';
+var SCRIPT_VERSION = '2026-11-04 manual ticket check';
 
 // ==================== MAIL ====================
 
@@ -3077,11 +3077,16 @@ function handleChooseCoach(data) {
   var name = (data.name || '').toString().trim();
   var email = lower_(data.email);
   var coachEmail = lower_(data.coachEmail);
-  var paid = !!(project['Fienta event ID'] || '').toString().trim();
+  var eventId = (project['Fienta event ID'] || '').toString().trim();
+  var paid = !!eventId;
+  // Tickets sold in a partner's Fienta, out of reach of our key: `manual` in the
+  // event ID takes the number as given, and the lead checks it against the order letters.
+  var manual = lower_(eventId) === 'manual';
   var ticket = (data.ticket || '').toString().trim().toUpperCase();
   if (!name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return jsonResponse({ success: false, error: 'name_email_required' });
   if (data.consent !== true) return jsonResponse({ success: false, error: 'consent_required' });
   if (paid && !ticket) return jsonResponse({ success: false, error: 'ticket_required' });
+  if (manual && !/^[A-Z0-9]{6,20}$/.test(ticket)) return jsonResponse({ success: false, error: 'ticket_not_found' });
   // A free project has no ticket: one choice per email.
   var key = paid ? ticket : 'email:' + email;
 
@@ -3107,8 +3112,8 @@ function handleChooseCoach(data) {
     if (!coach) return jsonResponse({ success: false, error: 'coach_not_in_project' });
     if (coach.placesLeft < 1) return jsonResponse({ success: false, error: 'coach_full' });
 
-    if (paid) {
-      var check = checkFientaTicket_(ticket, project['Fienta event ID']);
+    if (paid && !manual) {
+      var check = checkFientaTicket_(ticket, eventId);
       if (!check.ok) return jsonResponse({ success: false, error: check.error });
     }
     appendObject_(matches, {
@@ -3116,13 +3121,22 @@ function handleChooseCoach(data) {
       'Coach email': coach.email, 'Coach name': coach.name, 'Chosen at': new Date(),
       'Consent': formatDate_(new Date()), 'Status': 'active',
     });
-    if (paid) markFientaTicketUsed_(ticket);
+    if (paid && !manual) markFientaTicketUsed_(ticket);
   } finally {
     lock.releaseLock();
   }
 
   try { publishProjectPlaces_(); } catch (err) { Logger.log('places: ' + err.message); }
   sendIntroduction_(project, coach, name, email);
+  if (manual) {
+    sendMail_({
+      to: leadEmail_(project),
+      subject: 'Check ticket ' + ticket + ' — ' + project.Name,
+      body: name + ' (' + email + ') chose ' + coach.name + ' in ' + project.Name + ' with ticket ' + ticket + '.\n\n'
+        + 'Please check this number against the order letters from Fienta. If there is no such order, set Status to'
+        + ' "cancelled" in the Matches tab, which frees the place, and let the coach know.\n',
+    });
+  }
   return jsonResponse({ success: true, coachName: coach.name });
 }
 

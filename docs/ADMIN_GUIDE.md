@@ -210,7 +210,9 @@ the file itself; a project page in /admin comes later.
 2. `Name`, `Partner`, `Lead name`, **`Lead email`** — participants' and coaches' replies go there.
 3. Paid project: create the event in Fienta; put the choice page link into the ticket text; copy
    the number from the event's edit page address (`fienta.com/my/events/<number>/…`) into
-   **`Fienta event ID`** — digits only. Free project: leave it empty, no ticket is asked.
+   **`Fienta event ID`** — digits only. Free project: leave it empty, no ticket is asked. Tickets sold
+   in a partner's Fienta, which our key cannot see: type `manual`. The number is then not checked in
+   Fienta, each number works once, and the lead gets a letter to check it against the order letters.
 4. `Places per coach` — how many participants a coach takes by default.
 5. `Status`: `draft` while preparing, **`open`** to take coaches and participants, `closed` after.
 
