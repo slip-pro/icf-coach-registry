@@ -41,7 +41,7 @@ eq("within a wave the order varies", waveOrders.size, 4);
 eq("a project file without the Taken column: plain shuffle, full last",
   [...new Set(Array.from({ length: 100 }, (_, s) => projectCoaches(catalogue, { coaches: waves.coaches.map(({ taken, ...c }) => c) }, s + 1).map((c) => c.name).join("").at(-1)))], ["c"]);
 const { renderProjectAction } = await import("../src/js/project.js");
-globalThis.document = { createElement: () => ({ set textContent(v) { this.innerHTML = v; } }) };
+globalThis.document = { createElement: () => ({ set textContent(v) { this.innerHTML = v; } }), addEventListener() {} };
 eq("no places count on the card", renderProjectAction({ placesLeft: 3 }, 0).includes("icf-project-places"), false);
 
 // ---- a language set with no text under it must not blank the card
