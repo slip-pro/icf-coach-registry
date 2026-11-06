@@ -85,5 +85,41 @@ sandbox.publishCatalogueOnEdit(edit("EditTokens"));
 eq("Submissions and Members edits publish, others not", runs, 2);
 sandbox.publishCatalogue = real;
 
+// ---- a coach saving their profile refreshes the catalogue
+const profileWrites = [];
+const coachRows = [
+  ["Status", "Name", "Email"],
+  ["approved", "Anna", "anna@x.com"],
+];
+const tokenCell = { value: false };
+const tokensTab = {
+  getDataRange: () => ({ getValues: () => [["Email", "Token", "Expires", "Used"], ["anna@x.com", "t1", "2099-01-01", tokenCell.value]] }),
+  getRange: () => ({ setValue(v) { tokenCell.value = v; } }),
+};
+const coachTab = {
+  getDataRange: () => ({ getValues: () => coachRows }),
+  getRange: () => ({ setValues(v) { profileWrites.push(v); } }),
+};
+sandbox.sheetFor_ = (tab) => (tab === "EditTokens" ? tokensTab : coachTab);
+sandbox.writeConsents_ = () => {};
+sandbox.jsonResponse = (o) => o;
+const saveOutcome = (publish) => {
+  tokenCell.value = false;
+  sandbox.publishCatalogue = publish;
+  return sandbox.handleSaveProfile({ token: "t1", name: "Anna", bio1: "new text" });
+};
+
+let published = 0;
+eq("saved", saveOutcome(() => { published++; return "written 1"; }).success, true);
+eq("the catalogue is published on save", published, 1);
+eq("the token is used up", tokenCell.value, true);
+
+sandbox.Logger = { log() {} };
+const before = profileWrites.length;
+eq("a failed publish does not fail the save", saveOutcome(() => { throw new Error("quota"); }).success, true);
+eq("and the profile was still written", profileWrites.length, before + 1);
+eq("and the token used up", tokenCell.value, true);
+sandbox.publishCatalogue = real;
+
 console.log(`${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

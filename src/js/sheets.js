@@ -10,6 +10,8 @@
  *   // or for dev: const coaches = await fetchCoaches({ mock: true });
  */
 
+import { detectBioLanguage } from './bio-language.js';
+
 /**
  * @typedef {Object} Coach
  * @property {string} id
@@ -175,9 +177,9 @@ function csvToCoaches(rows) {
       priceMin: parseInt(raw.priceMin, 10) || 0,
       priceMax: parseInt(raw.priceMax, 10) || 0,
       bio1: raw.bio1 || '',
-      bio1Lang: normalizeLangCode(raw.bio1Lang),
+      bio1Lang: normalizeLangCode(raw.bio1Lang) || detectBioLanguage(raw.bio1),
       bio2: raw.bio2 || '',
-      bio2Lang: normalizeLangCode(raw.bio2Lang),
+      bio2Lang: normalizeLangCode(raw.bio2Lang) || detectBioLanguage(raw.bio2),
       get bio() { return this.bio1; },
       email: raw.email || '',
       whatsapp: raw.whatsapp || '',

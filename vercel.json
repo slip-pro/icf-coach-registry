@@ -5,6 +5,9 @@
     },
     "api/project.js": {
       "maxDuration": 60
+    },
+    "api/save-profile.js": {
+      "maxDuration": 60
     }
   },
   "rewrites": [

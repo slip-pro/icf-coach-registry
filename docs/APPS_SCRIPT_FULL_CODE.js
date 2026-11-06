@@ -337,7 +337,7 @@ function getSettings() {
    so "is the new code live?" is a request, not a guess — pasting the code
    without deploying a New version leaves the old one answering.
 */
-var SCRIPT_VERSION = '2026-11-04 manual ticket check';
+var SCRIPT_VERSION = '2026-11-06 catalogue refreshes when a coach saves';
 
 // ==================== MAIL ====================
 
@@ -1225,6 +1225,15 @@ function handleSaveProfile(data) {
 
   // Mark token as used
   tokensSheet.getRange(tokenRow + 1, 4).setValue(true);
+
+  // A script's own writes do not fire the on-edit trigger, so without this the
+  // card waited for the 10-minute timer. The profile is saved by now: a failure
+  // here must not tell the coach it was not, and the timer will catch up.
+  try {
+    publishCatalogue();
+  } catch (publishErr) {
+    Logger.log('publish after save: ' + publishErr.message);
+  }
 
   return jsonResponse({ success: true });
 }

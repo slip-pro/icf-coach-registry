@@ -41,6 +41,7 @@ Configurable for any coaching organization — no code changes needed.
 │   │   ├── filters.js                 # Filter panel + search box (name or topic)
 │   │   ├── name-search.js             # Script-independent name matching
 │   │   ├── text-search.js             # Search box: words in bios + specialization labels
+│   │   ├── bio-language.js            # A text with no language set: detected from its letters
 │   │   ├── project.js                 # ?project=: a coaching project's choice page (#57)
 │   │   ├── shuffle.js                 # Random order per visitor (catalogue + project page)
 │   │   ├── registration.js            # Registration form
@@ -125,4 +126,5 @@ node tests/api-coaches.test.mjs           # /api/coaches: open catalogue file, s
 node tests/api-project.test.mjs           # /api/project: places from the open file, choosing a coach
 node tests/project-mode.test.mjs          # ?project=: the project's coaches, random order per visitor
 node tests/catalogue-order.test.mjs       # the catalogue's random order per visitor (F-033)
+node tests/bio-language.test.mjs          # a text with no language: the letters say which it is
 ```

@@ -19,6 +19,7 @@
 import { t } from './i18n.js';
 import { renderConsentSection, readConsents, checkConsents } from './consent.js';
 import { esc, compressImageToBase64 } from './utils.js';
+import { detectBioLanguage } from './bio-language.js';
 
 /* ---------------------------------------------------------------
    Constants
@@ -624,7 +625,7 @@ function buildEditFormHTML(profile, paused) {
           data-i18n="regSectionAbout">${esc(t('regSectionAbout'))}</h3>
         ${renderBioLangSelect(
           uid('bio1-lang'), 'regLabelBio1Lang',
-          BIO_LANG_OPTIONS, true, profile.bio1Language
+          BIO_LANG_OPTIONS, true, profile.bio1Language || detectBioLanguage(profile.bio1)
         )}
         ${renderBioTextarea({
           id: uid('bio1'),
@@ -635,7 +636,7 @@ function buildEditFormHTML(profile, paused) {
         })}
         ${renderBioLangSelect(
           uid('bio2-lang'), 'regLabelBio2Lang',
-          BIO_LANG_OPTIONS, false, profile.bio2Language
+          BIO_LANG_OPTIONS, false, profile.bio2Language || detectBioLanguage(profile.bio2)
         )}
         ${renderBioTextarea({
           id: uid('bio2'),

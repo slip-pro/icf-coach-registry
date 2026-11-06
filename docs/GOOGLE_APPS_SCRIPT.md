@@ -206,7 +206,7 @@ Triggers (all reset by `installTriggers` or by re-running a setup): `colorByStat
 | `addStatusDropdown` | Add dropdown to Status cells | Manual (once) |
 | `createSettingsSheet` | Create Settings sheet with defaults | Manual (once) |
 | `setupCatalogue` | Make, share and fill the open catalogue file; set its triggers | Manual (once) |
-| `publishCatalogue` | Copy the catalogue (and project places) into the open file | 10-min timer, registry edits |
+| `publishCatalogue` | Copy the catalogue (and project places) into the open file | 10-min timer, registry edits, a coach saving their profile |
 | `setupProjects` | Make the Projects file with its tabs and a draft WIT row | Manual (once) |
 | `handleJoinProject` | A registry coach asks to take part in a project | `action: 'joinProject'` |
 | `handleChooseCoach` | A participant chooses her coach (Fienta ticket check) | `action: 'chooseCoach'` |
