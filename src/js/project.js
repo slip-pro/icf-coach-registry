@@ -136,6 +136,7 @@ export function openChooseForm(coach, { apiBase, slug, paid = true, onDone, onCl
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const fields = Object.fromEntries(new FormData(form));
+    if (paid && !String(fields.ticket || '').trim()) { message.textContent = t('projectErrTicketRequired'); return; }
     if (!fields.consent) { message.textContent = t('projectErrConsent'); return; }
     submit.disabled = true;
     message.textContent = t('projectSending');

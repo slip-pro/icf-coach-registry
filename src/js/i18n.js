@@ -213,9 +213,9 @@ const dictionary = {
     el: 'Το email σας',
   },
   projectTicket: {
-    en: 'Ticket number',
-    ru: 'Номер билета',
-    el: 'Αριθμός εισιτηρίου',
+    en: 'Fienta ticket number',
+    ru: 'Номер билета на Fienta',
+    el: 'Αριθμός εισιτηρίου Fienta',
   },
   projectTicketHint: {
     en: 'It is on your Fienta ticket, e.g. CA4HRIOPQ0.',
