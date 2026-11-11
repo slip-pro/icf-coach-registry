@@ -104,16 +104,16 @@ export function openChooseForm(coach, { apiBase, slug, paid = true, onDone, onCl
         <button type="button" class="icf-modal__close" aria-label="${esc(t('closeModal'))}">&times;</button>
         <h2 class="icf-choose-form__title">${esc(t('projectChooseTitle'))}</h2>
         <p class="icf-choose-form__coach">${esc(coach.name)}</p>
-        <label class="icf-choose-form__field">${esc(t('projectYourName'))}
+        <label class="icf-choose-form__field"><span>${esc(t('projectYourName'))} <span class="icf-req" aria-hidden="true">*</span></span>
           <input name="name" type="text" autocomplete="name" required></label>
-        <label class="icf-choose-form__field">${esc(t('projectYourEmail'))}
+        <label class="icf-choose-form__field"><span>${esc(t('projectYourEmail'))} <span class="icf-req" aria-hidden="true">*</span></span>
           <input name="email" type="email" autocomplete="email" required></label>
-        ${paid ? `<label class="icf-choose-form__field">${esc(t('projectTicket'))}
+        ${paid ? `<label class="icf-choose-form__field"><span>${esc(t('projectTicket'))} <span class="icf-req" aria-hidden="true">*</span></span>
           <input name="ticket" type="text" autocomplete="off" required>
           <small>${esc(t('projectTicketHint'))}</small></label>` : ''}
         <label class="icf-choose-form__consent"><input name="consent" type="checkbox" required>
           <span>${esc(t('projectConsent'))}
-            <a href="https://icf-cyprus.com/privacy" target="_blank" rel="noopener noreferrer">${esc(t('projectPrivacy'))}</a></span></label>
+            <a href="https://icf-cyprus.com/privacy" target="_blank" rel="noopener noreferrer">${esc(t('projectPrivacy'))}</a> <span class="icf-req" aria-hidden="true">*</span></span></label>
         <p class="icf-choose-form__message" role="status" aria-live="polite"></p>
         <button type="submit" class="icf-project-choose">${esc(t('projectSubmit'))}</button>
       </form>

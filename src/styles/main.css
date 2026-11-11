@@ -2079,6 +2079,11 @@
   border-radius: var(--icf-radius-input);
 }
 
+.icf-req {
+  color: var(--icf-error);
+  font-weight: 600;
+}
+
 .icf-choose-form__field small {
   font-weight: 400;
   color: var(--icf-text-tertiary);
