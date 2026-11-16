@@ -160,7 +160,9 @@ falls back to the last good copy in Vercel Blob. `getCoaches` stays for an insta
 - `Projects`: one row per project — `Slug`, `Name`, `Partner`, `Lead name`, `Lead email` (replies
   to every project letter go there), `Status` (`draft` / `open` / `closed`), `Fienta event ID`
   (the number from the event's edit page in Fienta; empty = a free project, no ticket asked;
-  `manual` = tickets in a partner's Fienta: not checked there, the lead gets a letter per choice),
+  `manual` = tickets in a partner's Fienta: not checked there, the lead gets a letter per choice;
+  `codes` = a gift project: the code on each guest's printed certificate, listed on the `Codes` tab
+  (`Project`, `Code`, `Notes`), each working once),
   `Sessions`, `Session minutes`, `Places per coach` (default), `Description`.
 - `Project coaches`: `joinProject` adds an approved registry coach as `pending` and writes to the
   lead and the coach; the lead sets `accepted` / `declined`, and `Places` (empty = the default).

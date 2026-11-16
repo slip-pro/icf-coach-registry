@@ -2812,6 +2812,11 @@ function moveDriveImages_(urls, folder) {
    registry's project mode. Her ticket is checked in Fienta here, so the
    check cannot be skipped by calling this script directly, and the ticket is
    marked used. A project without a Fienta event is free: no ticket asked.
+
+   "Fienta event ID" also takes two words in place of a number:
+     manual   tickets sold in a partner's Fienta — the lead checks each number by hand
+     codes    a gift project: every guest holds a printed certificate with a code of
+              its own; the codes are listed in the Codes tab, and each works once
 */
 var PROJECT_TABS = {
   'Projects': ['Slug', 'Name', 'Partner', 'Lead name', 'Lead email', 'Status', 'Fienta event ID',
@@ -2819,6 +2824,7 @@ var PROJECT_TABS = {
   'Project coaches': ['Project', 'Coach email', 'Coach name', 'Status', 'Places', 'Joined at'],
   'Matches': ['Project', 'Ticket', 'Participant name', 'Participant email', 'Coach email',
     'Coach name', 'Chosen at', 'Consent', 'Status', 'Notes'],
+  'Codes': ['Project', 'Code', 'Notes'],
 };
 var PROJECT_PLACES_TAB = 'Project places';
 
@@ -2901,6 +2907,19 @@ function findProject_(slug) {
   return readTable_('Projects').rows.filter(function (p) { return lower_(p.Slug) === lower_(slug); })[0] || null;
 }
 
+/** What the choice page asks a participant for: 'fienta' (a ticket number), 'code' (a certificate code) or 'none'. */
+function ticketKind_(project) {
+  var eventId = lower_(project['Fienta event ID']);
+  return !eventId ? 'none' : eventId === 'codes' ? 'code' : 'fienta';
+}
+
+/** Whether this code is on the project's list in the Codes tab. */
+function codeIssued_(project, code) {
+  return readTable_('Codes').rows.some(function (c) {
+    return lower_(c.Project) === lower_(project.Slug) && lower_(c.Code) === lower_(code);
+  });
+}
+
 /** A match that holds a place: anything but cancelled or replaced. */
 function matchCounts_(row) {
   var s = lower_(row.Status);
@@ -2935,14 +2954,15 @@ function publishProjectPlaces_() {
   var projects = readTable_('Projects').rows;
   var coaches = readTable_('Project coaches').rows;
   var matches = readTable_('Matches').rows;
-  var table = [['Project', 'Project name', 'Project status', 'Coach email', 'Places left', 'Taken']];
+  var table = [['Project', 'Project name', 'Project status', 'Coach email', 'Places left', 'Taken', 'Ticket kind']];
   projects.forEach(function (p) {
     if (!p.Slug) return;
     var accepted = projectPlaces_(p, coaches, matches);
     // No coaches accepted yet: one row, so the page still knows the project.
-    if (!accepted.length) table.push([lower_(p.Slug), p.Name, lower_(p.Status), '', '0', '0']);
+    var kind = ticketKind_(p);
+    if (!accepted.length) table.push([lower_(p.Slug), p.Name, lower_(p.Status), '', '0', '0', kind]);
     accepted.forEach(function (c) {
-      table.push([lower_(p.Slug), p.Name, lower_(p.Status), c.email, String(c.placesLeft), String(c.taken)]);
+      table.push([lower_(p.Slug), p.Name, lower_(p.Status), c.email, String(c.placesLeft), String(c.taken), kind]);
     });
   });
   var book = SpreadsheetApp.openById(id);
@@ -3091,11 +3111,14 @@ function handleChooseCoach(data) {
   // Tickets sold in a partner's Fienta, out of reach of our key: `manual` in the
   // event ID takes the number as given, and the lead checks it against the order letters.
   var manual = lower_(eventId) === 'manual';
+  // A gift project: the code printed on the guest's certificate, from the Codes tab.
+  var codes = ticketKind_(project) === 'code';
   var ticket = (data.ticket || '').toString().trim().toUpperCase();
   if (!name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return jsonResponse({ success: false, error: 'name_email_required' });
   if (data.consent !== true) return jsonResponse({ success: false, error: 'consent_required' });
   if (paid && !ticket) return jsonResponse({ success: false, error: 'ticket_required' });
   if (manual && !/^[A-Z0-9]{6,20}$/.test(ticket)) return jsonResponse({ success: false, error: 'ticket_not_found' });
+  if (codes && !codeIssued_(project, ticket)) return jsonResponse({ success: false, error: 'ticket_not_found' });
   // A free project has no ticket: one choice per email.
   var key = paid ? ticket : 'email:' + email;
 
@@ -3121,7 +3144,7 @@ function handleChooseCoach(data) {
     if (!coach) return jsonResponse({ success: false, error: 'coach_not_in_project' });
     if (coach.placesLeft < 1) return jsonResponse({ success: false, error: 'coach_full' });
 
-    if (paid && !manual) {
+    if (paid && !manual && !codes) {
       var check = checkFientaTicket_(ticket, eventId);
       if (!check.ok) return jsonResponse({ success: false, error: check.error });
     }
@@ -3130,7 +3153,7 @@ function handleChooseCoach(data) {
       'Coach email': coach.email, 'Coach name': coach.name, 'Chosen at': new Date(),
       'Consent': formatDate_(new Date()), 'Status': 'active',
     });
-    if (paid && !manual) markFientaTicketUsed_(ticket);
+    if (paid && !manual && !codes) markFientaTicketUsed_(ticket);
   } finally {
     lock.releaseLock();
   }
@@ -3152,7 +3175,8 @@ function handleChooseCoach(data) {
 /** The introduction letter, to the participant and to the coach; replies go to the lead. */
 function sendIntroduction_(project, coach, name, email) {
   var settings = getSettings();
-  var sessions = project.Sessions ? project.Sessions + ' sessions' : 'your sessions';
+  var sessions = Number(project.Sessions) === 1 ? 'your session'
+    : project.Sessions ? project.Sessions + ' sessions' : 'your sessions';
   var lead = (project['Lead name'] || 'the project lead') + ' (' + leadEmail_(project) + ')';
   sendMail_({
     to: email,
@@ -3172,7 +3196,7 @@ function sendIntroduction_(project, coach, name, email) {
     subject: 'New participant in ' + project.Name + ': ' + name,
     body: 'Hello ' + coach.name + ',\n\n'
       + name + ' (' + email + ') chose you as their coach in ' + project.Name + '. '
-      + (project['Fienta event ID'] ? 'The programme is already paid. ' : '')
+      + (ticketKind_(project) === 'fienta' ? 'The programme is already paid. ' : '')
       + 'Please write to them to arrange ' + sessions + '.\n\n'
       + 'Questions: ' + lead + ' — reply to this letter.\n\n'
       + settings.SENDER_NAME + '\n',

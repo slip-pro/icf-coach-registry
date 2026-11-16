@@ -30,13 +30,19 @@ function world({ fienta = {}, project = {} } = {}) {
   ]);
   const matches = fakeSheet([["Project", "Ticket", "Participant name", "Participant email", "Coach email", "Coach name", "Chosen at", "Consent", "Status", "Notes"]]);
   const places = fakeSheet([]);
+  const codes = fakeSheet([
+    ["Project", "Code", "Notes"],
+    ["wit", "LX-AAAAA", ""],
+    ["wit", "lx-bbbbb ", ""],
+    ["other", "LX-CCCCC", ""],
+  ]);
   const submissions = [
     ["Status", "Name", "Email"],
     ["approved", "Dora", "dora@x.com"],
     ["pending", "Eva", "eva@x.com"],
     ["approved", "Anna", "anna@x.com"],
   ];
-  const book = { getSheetByName: (n) => ({ Projects: projects, "Project coaches": coaches, Matches: matches })[n] || null };
+  const book = { getSheetByName: (n) => ({ Projects: projects, "Project coaches": coaches, Matches: matches, Codes: codes })[n] || null };
   const mails = [], fetches = [];
   const sb = {
     PropertiesService: { getScriptProperties: () => ({ getProperty: (k) => ({ PROJECTS_FILE: "proj", CATALOGUE_FILE: "cat", FIENTA_API_KEY: "key" })[k] ?? null }) },
@@ -173,6 +179,40 @@ const choose = (w, extra = {}) => w.sb.handleChooseCoach({
 {
   const w = world({ project: { event: "MANUAL" } });
   eq("manual in capitals too", [choose(w, { ticket: "ABC123" }).success, w.fetches.length], [true, 0]);
+}
+
+// ---- a gift project: each guest's printed certificate has a code of its own (Codes tab)
+{
+  const w = world({ project: { event: "codes" } });
+  eq("codes: not on the list", choose(w, { ticket: "LX-ZZZZZ" }).error, "ticket_not_found");
+  eq("codes: another project's code", choose(w, { ticket: "LX-CCCCC" }).error, "ticket_not_found");
+  eq("codes: no code", choose(w, { ticket: "" }).error, "ticket_required");
+  eq("codes: nothing written yet", w.matches.rows.length, 1);
+  const r = choose(w, { ticket: " lx-aaaaa " });
+  eq("codes: a listed code is accepted, no Fienta", [r.success, r.coachName, w.fetches.length], [true, "Anna", 0]);
+  eq("codes: the code is kept as the ticket", w.matches.rows[1][1], "LX-AAAAA");
+  eq("codes: letters to both only — nothing for the lead to check", w.mails.map((m) => m.to), ["mia@x.com", "anna@x.com"]);
+  eq("codes: the coach is not told it is paid", JSON.stringify(w.mails[1]).includes("already paid"), false);
+  w.projects.rows[1][7] = "1";
+  choose(w, { ticket: "LX-BBBBB", email: "zoe@x.com" });
+  eq("one session is not called '1 sessions'", [w.mails[2].body.includes("arrange your session."), w.mails[2].body.includes("1 sessions")], [true, false]);
+  w.matches.rows.pop(); w.mails.length = 2; w.projects.rows[1][7] = "3";
+  const again = choose(w, { ticket: "LX-AAAAA", coachEmail: "bea@x.com", email: "other@x.com" });
+  eq("codes: one code, one choice", [again.already, again.coachName, w.matches.rows.length], [true, "Anna", 2]);
+  eq("codes: a code typed loosely in the sheet still counts", choose(w, { ticket: "LX-BBBBB", coachEmail: "bea@x.com" }).success, true);
+}
+
+// ---- the page is told what to ask for
+{
+  const kind = (event) => {
+    const w = world({ project: { event } });
+    w.sb.publishProjectPlaces_();
+    return [w.places.rows[0][6], w.places.rows[1][6]];
+  };
+  eq("places tab: a Fienta event", kind("777"), ["Ticket kind", "fienta"]);
+  eq("places tab: a partner's Fienta", kind("manual"), ["Ticket kind", "fienta"]);
+  eq("places tab: certificate codes", kind("Codes"), ["Ticket kind", "code"]);
+  eq("places tab: a free project", kind(""), ["Ticket kind", "none"]);
 }
 
 console.log(`${passed} passed, ${failed} failed`);

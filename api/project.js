@@ -34,6 +34,9 @@ export function projectFromRows(rows, slug) {
     slug,
     name: mine[0][at('Project name')] || '',
     status: mine[0][at('Project status')] || '',
+    // What the choice form asks for: a Fienta ticket number, a certificate code, or
+    // nothing. A file from before this column: a Fienta ticket, as it always was.
+    ticket: ['fienta', 'code', 'none'].includes(mine[0][at('Ticket kind')]) ? mine[0][at('Ticket kind')] : 'fienta',
     // A project with no accepted coaches yet has one row with no email.
     coaches: mine.filter((r) => r[at('Coach email')]).map((r) => ({
       email: (r[at('Coach email')] || '').toLowerCase(),

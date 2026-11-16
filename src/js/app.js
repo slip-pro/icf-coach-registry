@@ -38,7 +38,7 @@ import { submitRegistration } from './submit.js';
 import { renderEditView } from './edit.js';
 import { fetchConfig, applyConfig } from './config.js';
 import {
-  projectSlug, fetchProject, projectCoaches, renderProjectIntro, openChooseForm,
+  projectSlug, fetchProject, projectCoaches, renderProjectIntro, openChooseForm, ticketFromAddress,
 } from './project.js';
 import { visitorSeed, shuffled } from './shuffle.js';
 
@@ -86,6 +86,8 @@ function chooseCoach(coach) {
   openChooseForm(coach, {
     apiBase: apiBase(),
     slug: projectSlugValue,
+    ticketKind: project.ticket,
+    ticket: ticketFromAddress(),
     // After a choice the places changed: re-read them, redraw once the form is closed.
     onDone: async () => {
       const fresh = await fetchProject(apiBase(), projectSlugValue);

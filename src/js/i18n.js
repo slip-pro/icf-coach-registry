@@ -222,6 +222,31 @@ const dictionary = {
     ru: 'Он есть в билете Fienta, например CA4HRIOPQ0.',
     el: 'Βρίσκεται στο εισιτήριο Fienta, π.χ. CA4HRIOPQ0.',
   },
+  projectCode: {
+    en: 'Code from your gift certificate',
+    ru: 'Код с подарочного сертификата',
+    el: 'Κωδικός από τη δωροεπιταγή σας',
+  },
+  projectCodeHint: {
+    en: 'It is printed on the front of your certificate, e.g. LX-4F7KQ.',
+    ru: 'Он напечатан на лицевой стороне сертификата, например LX-4F7KQ.',
+    el: 'Είναι τυπωμένος στην μπροστινή πλευρά της δωροεπιταγής, π.χ. LX-4F7KQ.',
+  },
+  projectConsentGift: {
+    en: 'I agree that ICF Cyprus and my coach keep my name and email for this project. The partner receives totals only.',
+    ru: 'Даю согласие, чтобы ICF Cyprus и мой коуч хранили моё имя и email для этого проекта. Партнёр получает только итоговые цифры.',
+    el: 'Συμφωνώ το ICF Cyprus και ο coach μου να διατηρούν το όνομα και το email μου για αυτό το έργο. Ο συνεργάτης λαμβάνει μόνο συνολικά στοιχεία.',
+  },
+  projectErrCodeNotFound: {
+    en: 'We could not find this code. Check it against the front of your certificate.',
+    ru: 'Код не найден. Сверьте его с лицевой стороной сертификата.',
+    el: 'Δεν βρέθηκε αυτός ο κωδικός. Ελέγξτε τον στην μπροστινή πλευρά της δωροεπιταγής.',
+  },
+  projectErrCodeRequired: {
+    en: 'Please enter the code from your certificate.',
+    ru: 'Введите код с сертификата.',
+    el: 'Συμπληρώστε τον κωδικό από τη δωροεπιταγή.',
+  },
   projectPrivacy: {
     en: 'Privacy policy',
     ru: 'Политика конфиденциальности',

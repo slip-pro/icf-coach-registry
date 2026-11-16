@@ -8,8 +8,10 @@
  * stay hidden. No places left and no prices on the cards: a small number reads as
  * "in demand" and pulls choices the wrong way, and the sessions are in the ticket.
  *
- * Choosing asks for the participant's name, email, Fienta ticket number and
- * consent; the Apps Script checks the ticket and sends both an introduction.
+ * Choosing asks for the participant's name, email and consent, and for what the
+ * project lets her in by (`project.ticket`): a Fienta ticket number, the code on a
+ * printed gift certificate, or nothing. The Apps Script checks it and sends both
+ * an introduction.
  */
 
 import { t } from './i18n.js';
@@ -22,6 +24,15 @@ const ORDER_KEY = 'icf-project-order';
 export function projectSlug(search = (typeof location !== 'undefined' ? location.search : '')) {
   const slug = new URLSearchParams(search).get('project') || '';
   return /^[a-z0-9-]{1,40}$/i.test(slug) ? slug.toLowerCase() : '';
+}
+
+/**
+ * A ticket number or certificate code carried in the page address (`&ticket=`), as
+ * the certificate's QR sends it; '' when there is none or it does not look like one.
+ */
+export function ticketFromAddress(search = (typeof location !== 'undefined' ? location.search : '')) {
+  const ticket = (new URLSearchParams(search).get('ticket') || '').trim().toUpperCase();
+  return /^[A-Z0-9-]{4,20}$/.test(ticket) ? ticket : '';
 }
 
 /** GET /api/project — null when the project is unknown or the call failed. */
@@ -90,12 +101,22 @@ const ERROR_KEYS = {
   name_email_required: 'projectErrNameEmail',
 };
 
+/** The same refusals, in the words of a gift certificate. */
+const CODE_ERROR_KEYS = {
+  ticket_not_found: 'projectErrCodeNotFound',
+  ticket_required: 'projectErrCodeRequired',
+};
+
 /**
- * Opens the choice form for a coach. `onDone` runs after a successful
- * choice, so the page can refresh the places.
+ * Opens the choice form for a coach. `ticketKind` is what the project asks for
+ * ('fienta', 'code' or 'none'); `ticket` fills the field in ahead. `onDone` runs
+ * after a successful choice, so the page can refresh the places.
  */
-export function openChooseForm(coach, { apiBase, slug, paid = true, onDone, onClose } = {}) {
+export function openChooseForm(coach, { apiBase, slug, ticketKind = 'fienta', ticket = '', onDone, onClose } = {}) {
   closeChooseForm();
+  const paid = ticketKind !== 'none';
+  const byCode = ticketKind === 'code';
+  const errorKeys = byCode ? { ...ERROR_KEYS, ...CODE_ERROR_KEYS } : ERROR_KEYS;
   let chosen = false;
   const wrapper = document.createElement('div');
   wrapper.innerHTML = `
@@ -108,11 +129,11 @@ export function openChooseForm(coach, { apiBase, slug, paid = true, onDone, onCl
           <input name="name" type="text" autocomplete="name" required></label>
         <label class="icf-choose-form__field"><span>${esc(t('projectYourEmail'))} <span class="icf-req" aria-hidden="true">*</span></span>
           <input name="email" type="email" autocomplete="email" required></label>
-        ${paid ? `<label class="icf-choose-form__field"><span>${esc(t('projectTicket'))} <span class="icf-req" aria-hidden="true">*</span></span>
-          <input name="ticket" type="text" autocomplete="off" required>
-          <small>${esc(t('projectTicketHint'))}</small></label>` : ''}
+        ${paid ? `<label class="icf-choose-form__field"><span>${esc(t(byCode ? 'projectCode' : 'projectTicket'))} <span class="icf-req" aria-hidden="true">*</span></span>
+          <input name="ticket" type="text" autocomplete="off" autocapitalize="characters" value="${esc(ticket)}" required>
+          <small>${esc(t(byCode ? 'projectCodeHint' : 'projectTicketHint'))}</small></label>` : ''}
         <label class="icf-choose-form__consent"><input name="consent" type="checkbox" required>
-          <span>${esc(t('projectConsent'))}
+          <span>${esc(t(ticketKind === 'fienta' ? 'projectConsent' : 'projectConsentGift'))}
             <a href="https://icf-cyprus.com/privacy" target="_blank" rel="noopener noreferrer">${esc(t('projectPrivacy'))}</a> <span class="icf-req" aria-hidden="true">*</span></span></label>
         <p class="icf-choose-form__message" role="status" aria-live="polite"></p>
         <button type="submit" class="icf-project-choose">${esc(t('projectSubmit'))}</button>
@@ -136,7 +157,7 @@ export function openChooseForm(coach, { apiBase, slug, paid = true, onDone, onCl
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const fields = Object.fromEntries(new FormData(form));
-    if (paid && !String(fields.ticket || '').trim()) { message.textContent = t('projectErrTicketRequired'); return; }
+    if (paid && !String(fields.ticket || '').trim()) { message.textContent = t(errorKeys.ticket_required); return; }
     if (!fields.consent) { message.textContent = t('projectErrConsent'); return; }
     submit.disabled = true;
     message.textContent = t('projectSending');
@@ -173,7 +194,7 @@ export function openChooseForm(coach, { apiBase, slug, paid = true, onDone, onCl
       return;
     }
     submit.disabled = false;
-    message.textContent = t((data && ERROR_KEYS[data.error]) || 'projectErrGeneric');
+    message.textContent = t((data && errorKeys[data.error]) || 'projectErrGeneric');
   });
 }
 

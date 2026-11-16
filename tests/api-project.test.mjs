@@ -24,9 +24,15 @@ const rows = [
   ["cim", "CIM", "closed", "anna@x.com", "1"],
 ];
 eq("the project's coaches and places", projectFromRows(rows, "wit"), {
-  slug: "wit", name: "Coaching with WIT Cyprus", status: "open",
+  slug: "wit", name: "Coaching with WIT Cyprus", status: "open", ticket: "fienta",
   coaches: [{ email: "anna@x.com", placesLeft: 2, taken: 1 }, { email: "bea@x.com", placesLeft: 0, taken: 3 }],
 });
+eq("an older file without the Ticket kind column: a Fienta ticket, as before", projectFromRows(rows, "wit").ticket, "fienta");
+{
+  const withKind = [[...rows[0], "Ticket kind"], [...rows[1], "code"], [...rows[2], "code"], ["free", "Free", "open", "", "0", "0", "none"]];
+  eq("certificate codes", projectFromRows(withKind, "wit").ticket, "code");
+  eq("a free project asks for nothing", projectFromRows(withKind, "free").ticket, "none");
+}
 eq("unknown project", projectFromRows(rows, "nope"), null);
 eq("empty file", projectFromRows([], "wit"), null);
 

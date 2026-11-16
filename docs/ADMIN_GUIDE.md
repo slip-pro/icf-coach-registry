@@ -213,6 +213,9 @@ the file itself; a project page in /admin comes later.
    **`Fienta event ID`** — digits only. Free project: leave it empty, no ticket is asked. Tickets sold
    in a partner's Fienta, which our key cannot see: type `manual`. The number is then not checked in
    Fienta, each number works once, and the lead gets a letter to check it against the order letters.
+   A gift project with printed certificates: type `codes` and list every certificate's code on the
+   **`Codes`** tab (`Project` = the slug, `Code`). A guest is let in only by a listed code, and each
+   code works once. Run `setupProjects` again once to get the tab.
 4. `Places per coach` — how many participants a coach takes by default.
 5. `Status`: `draft` while preparing, **`open`** to take coaches and participants, `closed` after.
 
