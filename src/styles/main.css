@@ -190,6 +190,17 @@
   line-height: 1.4;
 }
 
+/* A project's page: the name starts at the left edge, in line with the search box */
+.icf-page-header--project .icf-header__brand:empty {
+  display: none;
+}
+
+.icf-page-header--project .icf-page-title {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: left;
+}
+
 /* A project's name: each part on a line of its own */
 .icf-page-title__line {
   display: block;
@@ -1195,6 +1206,15 @@
     padding: 3px 14px;
   }
 
+  /* A project's page: the name on a row of its own, under the language switch */
+  .icf-page-header--project .icf-page-title {
+    flex-basis: 100%;
+  }
+
+  .icf-page-header--project .icf-lang-switch {
+    margin-left: auto;
+  }
+
   .icf-header__logo {
     height: 56px;
   }
@@ -1995,12 +2015,12 @@
   margin: 0 auto var(--icf-space-8);
   position: relative;
   z-index: 2;
-  text-align: center;
+  text-align: left;
   color: var(--icf-text-primary);
 }
 
 .icf-project-intro p {
-  margin: 0 auto;
+  margin: 0;
   max-width: 640px;
   color: var(--icf-text-tertiary);
   line-height: 1.5;

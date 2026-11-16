@@ -158,10 +158,8 @@ function renderHeader(titleKey = 'pageTitle', highlightKey = 'pageTitleHighlight
     : '';
 
   return `
-    <header class="icf-page-header">
-      <div class="icf-header__brand">
-        ${logoHTML}
-      </div>
+    <header class="icf-page-header${plainTitle ? ' icf-page-header--project' : ''}">
+      <div class="icf-header__brand">${logoHTML.trim()}</div>
       <h1 class="icf-page-title">${plainTitle
         ? titleLines(plainTitle).map((line) => `<span class="icf-page-title__line">${esc(line)}</span>`).join('')
         : `
