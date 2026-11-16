@@ -35,6 +35,14 @@ export function ticketFromAddress(search = (typeof location !== 'undefined' ? lo
   return /^[A-Z0-9-]{4,20}$/.test(ticket) ? ticket : '';
 }
 
+/**
+ * A project's name as the lines of the page heading: a long dash in the name
+ * ("The talk — a session as a gift") starts the second line. One line otherwise.
+ */
+export function titleLines(name) {
+  return String(name || '').split(/\s+[—–]\s+/).map((line) => line.trim()).filter(Boolean).slice(0, 2);
+}
+
 /** GET /api/project — null when the project is unknown or the call failed. */
 export async function fetchProject(apiBase, slug) {
   try {

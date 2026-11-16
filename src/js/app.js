@@ -38,7 +38,7 @@ import { submitRegistration } from './submit.js';
 import { renderEditView } from './edit.js';
 import { fetchConfig, applyConfig } from './config.js';
 import {
-  projectSlug, fetchProject, projectCoaches, renderProjectIntro, openChooseForm, ticketFromAddress,
+  projectSlug, fetchProject, projectCoaches, renderProjectIntro, openChooseForm, ticketFromAddress, titleLines,
 } from './project.js';
 import { visitorSeed, shuffled } from './shuffle.js';
 
@@ -162,7 +162,9 @@ function renderHeader(titleKey = 'pageTitle', highlightKey = 'pageTitleHighlight
       <div class="icf-header__brand">
         ${logoHTML}
       </div>
-      <h1 class="icf-page-title">${plainTitle ? esc(plainTitle) : `
+      <h1 class="icf-page-title">${plainTitle
+        ? titleLines(plainTitle).map((line) => `<span class="icf-page-title__line">${esc(line)}</span>`).join('')
+        : `
         <span data-i18n="${titleKey}">${esc(t(titleKey))}</span>
         <span class="icf-page-title__highlight" data-i18n="${highlightKey}">${esc(t(highlightKey))}</span>`}
       </h1>

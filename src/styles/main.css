@@ -190,6 +190,11 @@
   line-height: 1.4;
 }
 
+/* A project's name: each part on a line of its own */
+.icf-page-title__line {
+  display: block;
+}
+
 .icf-page-title__highlight {
   background: var(--icf-cta);
   display: inline;

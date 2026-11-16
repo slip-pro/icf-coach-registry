@@ -1,6 +1,6 @@
 // The registry's project mode (site BACKLOG #57): who is shown, in what order.
 // Run: node tests/project-mode.test.mjs
-const { projectSlug, projectCoaches, ticketFromAddress } = await import("../src/js/project.js");
+const { projectSlug, projectCoaches, ticketFromAddress, titleLines } = await import("../src/js/project.js");
 
 let passed = 0, failed = 0;
 function eq(label, got, expected) {
@@ -15,6 +15,9 @@ eq("odd characters refused", projectSlug("?project=../x"), "");
 // ---- the certificate's QR carries its code to the choice form
 eq("code from the address", ticketFromAddress("?project=longevity&ticket=lx-4f7kq"), "LX-4F7KQ");
 eq("no code in the address", ticketFromAddress("?project=longevity"), "");
+eq("a dash in the name: two heading lines", titleLines("The Longevity Experience public talk — a coaching session as a gift"),
+  ["The Longevity Experience public talk", "a coaching session as a gift"]);
+eq("no dash: one line", titleLines("ICF Cyprus x WIT Cyprus coaching programme"), ["ICF Cyprus x WIT Cyprus coaching programme"]);
 eq("not a code: left out", ticketFromAddress("?ticket=%22%3E%3Cscript%3E"), "");
 
 const catalogue = ["a", "b", "c", "d", "e"].map((n) => ({ name: n, email: `${n}@x.com` }));
